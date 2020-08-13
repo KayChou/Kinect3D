@@ -10,11 +10,14 @@ int main(int argc, char *argv[])
         RGBD_Acquisition[i]->init(FIFO_LEN);
     }
 
+
+    Ui::Widget *ui;
+
     // create window
     QApplication a(argc, argv);
-    Widget w(RGBD_Acquisition);
+    Widget w(RGBD_Acquisition, ui);
     w.show();
-    a.exec();
+    a.exec();    
 
 
     // delete FIFO ptr

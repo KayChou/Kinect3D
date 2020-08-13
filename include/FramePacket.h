@@ -25,6 +25,7 @@ public:
 
 public:
     framePacket();
+    framePacket(framePacket* packet); // copy construction
     void init(libfreenect2::Frame *color, 
                 libfreenect2::Frame *depth, 
                 Point3fRGB* verts,

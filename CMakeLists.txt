@@ -33,7 +33,7 @@ add_executable(main
   widget.cpp
   # widget.h
   widget.ui
-  KinectCapture.cpp FramePacket.cpp PlyIO.cpp imageRender.cpp FIFO.cpp utils.cpp calibration.cpp
+  KinectCapture.cpp FramePacket.cpp PlyIO.cpp FIFO.cpp utils.cpp calibration.cpp RGBD_FIFO_Process.cpp
 )
 
 target_link_libraries(main ${freenect2_LIBRARIES} ${OpenCV_LIBS})
