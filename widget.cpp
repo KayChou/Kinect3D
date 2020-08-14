@@ -4,29 +4,6 @@
 #include "ui_widget.h"
 #include "moc_widget.cpp"
 
-Widget::Widget(FIFO** FIFO_RGBD_Acquisition, Ui::Widget *ui_out, QWidget *parent) : QWidget(parent), ui(new Ui::Widget){
-    ui->setupUi(this);
-    ui_out = ui;
-    this->FIFO_RGBD_Acquisition = FIFO_RGBD_Acquisition;
-
-    bOpenFlag = false;
-    bStartFlag = false;
-    bCalibrationFlag = false;
-    FIFO_QtImageRender = new FIFO();
-    FIFO_QtImageRender->init(FIFO_LEN);
-
-    this->image = new QImage(512, 424, QImage::Format_ARGB32);
-
-
-    connect(this, SIGNAL(newFrame(int)), this, SLOT(renderNewFrame(int)));
-    i = 0;
-}
-
-Widget::~Widget()
-{
-    delete ui;
-}
-
 
 void Widget::on_pushButton_clicked()
 {
@@ -45,34 +22,20 @@ void Widget::on_pushButton_clicked()
         ui->pushButton->setText("Start");
         destoryAllKinect(numKinects);
     }
-
-    // if(!bStartFlag){
-    //     ui->pushButton->setText("Stop");
-    //     QImage image;
-    //     image.load("/home/benjamin/Pictures/Demon Slayer5.png");
-    //     ui->label->setPixmap(QPixmap::fromImage(image.scaled(512, 424)));
-    //     bStartFlag = true;
-    // }
-    // else{
-    //     ui->pushButton->setText("Start");
-    //     ui->label->clear();
-    //     bStartFlag = false;
-    // }
-    
 }
 
 
 void Widget::on_pushButton_2_clicked()
 {
     bCalibrationFlag = bCalibrationFlag ? false : true;
-    emit newFrame(i++);
-    //ui->label->setPixmap(QPixmap::fromImage(image.scaled(512, 424)));
 }
+
 
 void Widget::on_pushButton_3_clicked()
 {
 
 }
+
 
 void Widget::on_pushButton_4_clicked()
 {
@@ -80,9 +43,8 @@ void Widget::on_pushButton_4_clicked()
 }
 
 
-void Widget::renderNewFrame(int i){
+void Widget::renderNewFrame(){
     ui->label->setPixmap(QPixmap::fromImage(image->scaled(512, 424)));
-    std::printf("slot processed: %d \n", i); fflush(stdout);
 }
 
 
@@ -90,6 +52,7 @@ void Widget::QtImageFIFOProcess(){
     while(true){
         framePacket *packet = FIFO_QtImageRender->get();
         if( packet == NULL ) { break; }
+        std::printf("Qt frame rendered, FIFO length: %d\n", FIFO_QtImageRender->cnt); fflush(stdout);
 
         int h = packet->height_d;
         int w = packet->width_d;
@@ -100,7 +63,32 @@ void Widget::QtImageFIFOProcess(){
             }
         }
 
-        emit newFrame(i++);
+        emit newFrame();
         packet->destroy();
     }
+}
+
+
+
+
+Widget::Widget(FIFO<framePacket>** FIFO_RGBD_Acquisition, Ui::Widget *ui_out, QWidget *parent) : QWidget(parent), ui(new Ui::Widget){
+    ui->setupUi(this);
+    ui_out = ui;
+    this->FIFO_RGBD_Acquisition = FIFO_RGBD_Acquisition;
+
+    bOpenFlag = false;
+    bStartFlag = false;
+    bCalibrationFlag = false;
+    FIFO_QtImageRender = new FIFO<framePacket>();
+    FIFO_QtImageRender->init(FIFO_LEN);
+
+    this->image = new QImage(512, 424, QImage::Format_ARGB32);
+    connect(this, SIGNAL(newFrame()), this, SLOT(renderNewFrame()));
+}
+
+
+Widget::~Widget()
+{
+    delete ui;
+    delete FIFO_QtImageRender;
 }

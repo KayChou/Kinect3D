@@ -1,13 +1,13 @@
 #pragma once
 #include "common.h"
 
-void startAll_RGBD_FIFO_Process(FIFO** input, FIFO *output, bool &calibrationFlag);
+void startAll_RGBD_FIFO_Process(FIFO<framePacket>** input, FIFO<framePacket> *output, bool &calibrationFlag);
 void destroyAll_RGBD_FIFO_Process();
 
 
 class RGBD_FIFO_Process{
 public:
-    RGBD_FIFO_Process(FIFO* input, FIFO* output=NULL);
+    RGBD_FIFO_Process(FIFO<framePacket>* input, FIFO<framePacket>* output=NULL);
     ~RGBD_FIFO_Process();
 
     void process(bool* calibrationFlag);
@@ -16,7 +16,7 @@ public:
 public:
     cv::Mat color;
     cv::Mat registered;
-    FIFO* input_;
-    FIFO* output_;
+    FIFO<framePacket>* input_;
+    FIFO<framePacket>* output_;
     clock_t start=clock(), end=clock();
 };

@@ -3,17 +3,17 @@
 using namespace std;
 
 
-bool startAllCalibration(int numOfKinects, FIFO** input);
+bool startAllCalibration(int numOfKinects, FIFO<framePacket>** input);
 bool destoryAllCalibration(int numOfKinects);
 
 
 class Calibration{
 public:
-    Calibration(FIFO *input);
+    Calibration(FIFO<framePacket> *input);
     ~Calibration();
 
 public:
-    FIFO* input_;
+    FIFO<framePacket>* input_;
     bool calibrated;
     std::vector<float> T;
 	std::vector<std::vector<float>> R;

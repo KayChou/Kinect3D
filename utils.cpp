@@ -1,7 +1,7 @@
 #include "utils.h"
 
 
-bool saveRGBDFIFO2Image(FIFO **input, int numOfKinects){
+bool saveRGBDFIFO2Image(FIFO<framePacket> **input, int numOfKinects){
     cv::Mat color, depth;
     
     int *cnt = new int[numOfKinects];
@@ -49,7 +49,7 @@ bool saveRGBDFIFO2Image(FIFO **input, int numOfKinects){
 }
 
 
-bool saveRGBDFIFO2PLY(FIFO **input, int numOfKinects){
+bool saveRGBDFIFO2PLY(FIFO<framePacket> **input, int numOfKinects){
     int *cnt = new int[numOfKinects];
     for(int i=0; i<numOfKinects; i++){
         cnt[i] = 0;

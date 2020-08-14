@@ -4,7 +4,7 @@ std::thread *CalibrationThreadTask;
 Calibration **calibration;
 
 
-bool startAllCalibration(int numOfKinects, FIFO** input){
+bool startAllCalibration(int numOfKinects, FIFO<framePacket>** input){
 	CalibrationThreadTask = new std::thread[numOfKinects];
 	calibration = new Calibration*[numOfKinects];
 	for(int i=0; i<numOfKinects; i++){
@@ -397,7 +397,7 @@ void Calibration::RotatePoint(Point3f &point, std::vector<std::vector<float>> &R
 }
 
 
-Calibration::Calibration(FIFO *input){
+Calibration::Calibration(FIFO<framePacket> *input){
 	this->input_ = input;
 	nMinSize = 100;
 	nMaxSize = 1000000000;

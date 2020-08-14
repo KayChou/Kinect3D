@@ -22,8 +22,8 @@ QT_BEGIN_MOC_NAMESPACE
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
 struct qt_meta_stringdata_Widget_t {
-    QByteArrayData data[9];
-    char stringdata0[128];
+    QByteArrayData data[8];
+    char stringdata0[126];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -35,15 +35,14 @@ static const qt_meta_stringdata_Widget_t qt_meta_stringdata_Widget = {
 QT_MOC_LITERAL(0, 0, 6), // "Widget"
 QT_MOC_LITERAL(1, 7, 8), // "newFrame"
 QT_MOC_LITERAL(2, 16, 0), // ""
-QT_MOC_LITERAL(3, 17, 1), // "i"
-QT_MOC_LITERAL(4, 19, 21), // "on_pushButton_clicked"
-QT_MOC_LITERAL(5, 41, 23), // "on_pushButton_2_clicked"
-QT_MOC_LITERAL(6, 65, 23), // "on_pushButton_3_clicked"
-QT_MOC_LITERAL(7, 89, 23), // "on_pushButton_4_clicked"
-QT_MOC_LITERAL(8, 113, 14) // "renderNewFrame"
+QT_MOC_LITERAL(3, 17, 21), // "on_pushButton_clicked"
+QT_MOC_LITERAL(4, 39, 23), // "on_pushButton_2_clicked"
+QT_MOC_LITERAL(5, 63, 23), // "on_pushButton_3_clicked"
+QT_MOC_LITERAL(6, 87, 23), // "on_pushButton_4_clicked"
+QT_MOC_LITERAL(7, 111, 14) // "renderNewFrame"
 
     },
-    "Widget\0newFrame\0\0i\0on_pushButton_clicked\0"
+    "Widget\0newFrame\0\0on_pushButton_clicked\0"
     "on_pushButton_2_clicked\0on_pushButton_3_clicked\0"
     "on_pushButton_4_clicked\0renderNewFrame"
 };
@@ -63,24 +62,24 @@ static const uint qt_meta_data_Widget[] = {
        1,       // signalCount
 
  // signals: name, argc, parameters, tag, flags
-       1,    1,   44,    2, 0x06 /* Public */,
+       1,    0,   44,    2, 0x06 /* Public */,
 
  // slots: name, argc, parameters, tag, flags
-       4,    0,   47,    2, 0x08 /* Private */,
-       5,    0,   48,    2, 0x08 /* Private */,
-       6,    0,   49,    2, 0x08 /* Private */,
-       7,    0,   50,    2, 0x08 /* Private */,
-       8,    1,   51,    2, 0x08 /* Private */,
+       3,    0,   45,    2, 0x08 /* Private */,
+       4,    0,   46,    2, 0x08 /* Private */,
+       5,    0,   47,    2, 0x08 /* Private */,
+       6,    0,   48,    2, 0x08 /* Private */,
+       7,    0,   49,    2, 0x08 /* Private */,
 
  // signals: parameters
-    QMetaType::Void, QMetaType::Int,    3,
+    QMetaType::Void,
 
  // slots: parameters
     QMetaType::Void,
     QMetaType::Void,
     QMetaType::Void,
     QMetaType::Void,
-    QMetaType::Void, QMetaType::Int,    3,
+    QMetaType::Void,
 
        0        // eod
 };
@@ -91,24 +90,25 @@ void Widget::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void
         auto *_t = static_cast<Widget *>(_o);
         Q_UNUSED(_t)
         switch (_id) {
-        case 0: _t->newFrame((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 0: _t->newFrame(); break;
         case 1: _t->on_pushButton_clicked(); break;
         case 2: _t->on_pushButton_2_clicked(); break;
         case 3: _t->on_pushButton_3_clicked(); break;
         case 4: _t->on_pushButton_4_clicked(); break;
-        case 5: _t->renderNewFrame((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 5: _t->renderNewFrame(); break;
         default: ;
         }
     } else if (_c == QMetaObject::IndexOfMethod) {
         int *result = reinterpret_cast<int *>(_a[0]);
         {
-            using _t = void (Widget::*)(int );
+            using _t = void (Widget::*)();
             if (*reinterpret_cast<_t *>(_a[1]) == static_cast<_t>(&Widget::newFrame)) {
                 *result = 0;
                 return;
             }
         }
     }
+    Q_UNUSED(_a);
 }
 
 QT_INIT_METAOBJECT const QMetaObject Widget::staticMetaObject = { {
@@ -152,10 +152,9 @@ int Widget::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
 }
 
 // SIGNAL 0
-void Widget::newFrame(int _t1)
+void Widget::newFrame()
 {
-    void *_a[] = { nullptr, const_cast<void*>(reinterpret_cast<const void*>(std::addressof(_t1))) };
-    QMetaObject::activate(this, &staticMetaObject, 0, _a);
+    QMetaObject::activate(this, &staticMetaObject, 0, nullptr);
 }
 QT_WARNING_POP
 QT_END_MOC_NAMESPACE

@@ -10,7 +10,7 @@
 #include "common.h"
 
 
-bool openAllKinect(int numOfKinects, FIFO** output);
+bool openAllKinect(int numOfKinects, FIFO<framePacket>** output);
 void destoryAllKinect(int numOfKinects);
 
 
@@ -18,7 +18,7 @@ class oneKinect
 {
 public:
     oneKinect();
-    oneKinect(std::string serial, FIFO* output, int types=typesDefault);
+    oneKinect(std::string serial, FIFO<framePacket>* output, int types=typesDefault);
     ~oneKinect();
 
     bool init(std::string serial, int types=typesDefault);
@@ -29,7 +29,7 @@ public:
 public:
     libfreenect2::Frame *color_;
     libfreenect2::Frame *depth_;
-    FIFO* output_;
+    FIFO<framePacket>* output_;
 
 public:
     libfreenect2::Freenect2 freenect2_;

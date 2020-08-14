@@ -8,7 +8,7 @@ oneKinect** devices_;
 //=======================================================================================
 // Open all kinect
 //=======================================================================================
-bool openAllKinect(int numOfKinects, FIFO** output){
+bool openAllKinect(int numOfKinects, FIFO<framePacket>** output){
     libfreenect2::Freenect2 freenect2_;
     if(numOfKinects > freenect2_.enumerateDevices()){
         std::cerr << "The number of devices does not match the specified\n";
@@ -53,7 +53,7 @@ void destoryAllKinect(int numOfKinects){
 //=======================================================================================
 // construct one kinect
 //=======================================================================================
-oneKinect::oneKinect(std::string serial, FIFO* output, int types){
+oneKinect::oneKinect(std::string serial, FIFO<framePacket>* output, int types){
     this->output_ = output;
     this->startFlag = false;
     this->finishFlag = false;
@@ -148,7 +148,7 @@ bool oneKinect::getFrameLoop(){
         framePacket *packet = new framePacket();
         packet->init(color_, &undistorted, vertices);
         this->output_->put(packet);
-        std::printf("One packet is pushed | FIFO length: %d \n", output_->cnt); fflush(stdout);
+        //std::printf("One packet is pushed | FIFO length: %d \n", output_->cnt); fflush(stdout);
         //packet->destroy();
 
         listener_->release(frames_);
@@ -156,9 +156,12 @@ bool oneKinect::getFrameLoop(){
         //std::printf("Frame count %-4d | FIFO length: %-4d | fps: %f\n", framecount, output_->cnt, CLOCKS_PER_SEC/(double)(end - start));
         framecount++;
     }
+
     dev_->stop();
     dev_->close();
     std::printf("Thread Kinect Capture finish\n"); fflush(stdout);
     this->finishFlag = true;
+    delete pipeline_;
+    delete listener_;
     return true;
 }

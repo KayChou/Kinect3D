@@ -4,7 +4,7 @@ std::thread *RGBDProcessThreadTask;
 RGBD_FIFO_Process **rgbdProcess;
 
 
-void startAll_RGBD_FIFO_Process(FIFO** input, FIFO *output, bool &calibrationFlag){
+void startAll_RGBD_FIFO_Process(FIFO<framePacket>** input, FIFO<framePacket> *output, bool &calibrationFlag){
     RGBDProcessThreadTask = new std::thread[numKinects];
     rgbdProcess = new RGBD_FIFO_Process*[numKinects];
 
@@ -31,19 +31,19 @@ void RGBD_FIFO_Process::process(bool* calibrationFlag){
     
     while(true){
         framePacket *packet = input_->get();
-        framePacket* newPacket = new framePacket(packet);
         if( packet == NULL ) { break; }
+        
         if(this->output_ != NULL){
-            
+            framePacket* newPacket = new framePacket(packet);
             this->output_->put(newPacket);
         }
         // if calibrationFlag = false
         // just get one packet and display
         if(!*calibrationFlag){
-            std::printf("One packet destroyed | FIFO length: %d | calibration = false \n", input_->cnt); fflush(stdout);
+            //std::printf("One packet destroyed | FIFO length: %d | calibration = false \n", input_->cnt); fflush(stdout);
         }
         else{ // else perform calibration util success
-            std::printf("One packet destroyed | FIFO length: %d | calibration = true \n", input_->cnt); fflush(stdout);
+            //std::printf("One packet destroyed | FIFO length: %d | calibration = true \n", input_->cnt); fflush(stdout);
         }
         packet->destroy();
     }
@@ -56,7 +56,7 @@ void RGBD_FIFO_Process::destory(){
 }
 
 
-RGBD_FIFO_Process::RGBD_FIFO_Process(FIFO* input, FIFO* output){
+RGBD_FIFO_Process::RGBD_FIFO_Process(FIFO<framePacket>* input, FIFO<framePacket>* output){
     this->input_ = input;
     this->output_ = output;
 }

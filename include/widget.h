@@ -16,14 +16,14 @@ class Widget : public QWidget
     Q_OBJECT
 
 public:
-    Widget(FIFO** FIFO_RGBD_Acquisition, Ui::Widget *ui_out, QWidget *parent = nullptr);
+    Widget(FIFO<framePacket>** FIFO_RGBD_Acquisition, Ui::Widget *ui_out, QWidget *parent = nullptr);
     ~Widget();
 
     void QtImageFIFOProcess();
 
 
 signals:
-    void newFrame(int i);
+    void newFrame(); // this signale is emitted if FIFO_QtImageRender not empty
 
 private slots:
     void on_pushButton_clicked();
@@ -34,12 +34,12 @@ private slots:
 
     void on_pushButton_4_clicked();
 
-    void renderNewFrame(int i);
+    void renderNewFrame(); // display one frame in GUI
 
 private:
     Ui::Widget *ui;
-    FIFO** FIFO_RGBD_Acquisition;
-    FIFO* FIFO_QtImageRender;
+    FIFO<framePacket>** FIFO_RGBD_Acquisition;
+    FIFO<framePacket>* FIFO_QtImageRender;
 
 private:
     bool bStartFlag;

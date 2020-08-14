@@ -4,9 +4,9 @@
 int main(int argc, char *argv[])
 {
     // define FIFO for RGBD storage
-    FIFO **RGBD_Acquisition = new FIFO*[numKinects];
+    FIFO<framePacket> **RGBD_Acquisition = new FIFO<framePacket>*[numKinects];
     for(int i=0; i<numKinects; i++){
-        RGBD_Acquisition[i] = new FIFO();
+        RGBD_Acquisition[i] = new FIFO<framePacket>();
         RGBD_Acquisition[i]->init(FIFO_LEN);
     }
 
