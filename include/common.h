@@ -8,11 +8,12 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/opencv.hpp>
+#include "opencv/cv.h"
 
 #include <QWidget>
+#include <vector>
 
 #include "PlyIO.h"
-#include <vector>
 
 #define framemax 300
 #define FIFO_LEN 30

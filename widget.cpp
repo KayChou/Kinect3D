@@ -5,6 +5,9 @@
 #include "moc_widget.cpp"
 
 
+//=======================================================================================
+// Button: Start
+//=======================================================================================
 void Widget::on_pushButton_clicked()
 {
     // if device is not started, then start it
@@ -13,7 +16,8 @@ void Widget::on_pushButton_clicked()
         ui->pushButton->setText("Stop");
         openAllKinect(numKinects, FIFO_RGBD_Acquisition); // start Kinect, each sensor save framePacket to first FIFO
         
-        startAll_RGBD_FIFO_Process(FIFO_RGBD_Acquisition, FIFO_QtImageRender, bCalibrationFlag); // process first FIFO process
+        startAll_RGBD_FIFO_Process(FIFO_RGBD_Synchronize, FIFO_pointCloud, FIFO_QtImageRender, bCalibrationFlag); // process first FIFO process
+
         std::thread ImageFIFOThread(&Widget::QtImageFIFOProcess, this);
         ImageFIFOThread.detach();
     }
@@ -25,34 +29,52 @@ void Widget::on_pushButton_clicked()
 }
 
 
+//=======================================================================================
+// Button: Calibration
+//=======================================================================================
 void Widget::on_pushButton_2_clicked()
 {
     bCalibrationFlag = bCalibrationFlag ? false : true;
 }
 
 
+//=======================================================================================
+// Button: Refine
+//=======================================================================================
 void Widget::on_pushButton_3_clicked()
 {
     bRefineFlag = bRefineFlag ? false : true;
 }
 
 
+//=======================================================================================
+// Button: Save
+//=======================================================================================
 void Widget::on_pushButton_4_clicked()
 {
     
 }
 
 
+//=======================================================================================
+// Button: Switch camera
+//=======================================================================================
 void Widget::on_pushButton_5_clicked(){
     indexTorender = (indexTorender + 1) % numKinects;
 }
 
 
+//=======================================================================================
+// render one new frame in ui->label
+//=======================================================================================
 void Widget::renderNewFrame(){
     ui->label->setPixmap(QPixmap::fromImage(image->scaled(512, 424)));
 }
 
 
+//=======================================================================================
+// get data from FIFO
+//=======================================================================================
 void Widget::QtImageFIFOProcess(){
     while(true){
         for(int i=0; i<numKinects; i++){
@@ -68,19 +90,25 @@ void Widget::QtImageFIFOProcess(){
                         image->setPixel(x, y, color);
                     }
                 }
-
                 emit newFrame();
-                packet->destroy();
+                std::printf("QT FIFO length: %d\n", FIFO_QtImageRender[i]->cnt); fflush(stdout);
             }
+            packet->destroy();
         }
+        usleep(20000);
     }
 }
 
 
-Widget::Widget(FIFO<framePacket>** FIFO_RGBD_Acquisition, Ui::Widget *ui_out, QWidget *parent) : QWidget(parent), ui(new Ui::Widget){
+//=======================================================================================
+// construcion
+//=======================================================================================
+Widget::Widget(FIFO<framePacket>** FIFO_RGBD_Acquisition, FIFO<framePacket>** FIFO_RGBD_Synchronize, FIFO<framePacket>** FIFO_pointCloud, Ui::Widget *ui_out, QWidget *parent) : QWidget(parent), ui(new Ui::Widget){
     ui->setupUi(this);
     ui_out = ui;
     this->FIFO_RGBD_Acquisition = FIFO_RGBD_Acquisition;
+    this->FIFO_RGBD_Synchronize = FIFO_RGBD_Synchronize;
+    this->FIFO_pointCloud = FIFO_pointCloud;
 
     bOpenFlag = false;
     bStartFlag = false;
@@ -99,6 +127,9 @@ Widget::Widget(FIFO<framePacket>** FIFO_RGBD_Acquisition, Ui::Widget *ui_out, QW
 }
 
 
+//=======================================================================================
+// 
+//=======================================================================================
 Widget::~Widget()
 {
     delete ui;

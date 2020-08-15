@@ -9,13 +9,12 @@ RGBD_FIFO_Process **rgbdProcess;
 //     get data from RGBD FIFO
 //     perform calibration if needed
 //=======================================================================================
-void startAll_RGBD_FIFO_Process(FIFO<framePacket>** input, FIFO<framePacket> **output, bool &calibrationFlag){
+void startAll_RGBD_FIFO_Process(FIFO<framePacket>** input, FIFO<framePacket> **output_pd, FIFO<framePacket> **output_qt, bool &calibrationFlag){
     RGBDProcessThreadTask = new std::thread[numKinects];
     rgbdProcess = new RGBD_FIFO_Process*[numKinects];
-    //bool *flag = new bool[numKinects];
 
     for(int i=0; i<numKinects; i++){
-        rgbdProcess[i] = new RGBD_FIFO_Process(input[i], output[i]);
+        rgbdProcess[i] = new RGBD_FIFO_Process(input[i], output_qt[i]);
         RGBDProcessThreadTask[i] = std::thread(&RGBD_FIFO_Process::process, rgbdProcess[i], &calibrationFlag);
     }
     for(int i=0; i<numKinects; i++){
@@ -49,20 +48,19 @@ void RGBD_FIFO_Process::process(bool* calibrationFlag){
         framePacket *packet = input_->get();
         if( packet == NULL ) { break; } // exit over time(5s)
         // if calibrationFlag = false(stop calibration), just get one packet and display
+        //std::printf("process one frame, FIFO len: %d timeStamp: %u \n", input_->cnt, packet->timestamp_c);fflush(stdout);
+        
         if(!*calibrationFlag){
-            if(this->output_ != NULL){
-                framePacket* newPacket = new framePacket(packet);
-                this->output_->put(newPacket);
-            }
             if(calibrate.calibrated){ calibrate.calibrated = false; calibrate.calibratedNum = 0; }
         }
          // else perform calibration util success
         else{
             calibrate.performCalibration(packet);
-            if(this->output_ != NULL){
-                framePacket* newPacket = new framePacket(packet);
-                this->output_->put(newPacket);
-            }
+        }
+        
+        if(this->output_qt != NULL){
+            framePacket* newPacket = new framePacket(packet);
+            this->output_qt->put(newPacket);
         }
         packet->destroy();
     }
@@ -81,9 +79,9 @@ void RGBD_FIFO_Process::destory(){
 }
 
 
-RGBD_FIFO_Process::RGBD_FIFO_Process(FIFO<framePacket>* input, FIFO<framePacket>* output){
+RGBD_FIFO_Process::RGBD_FIFO_Process(FIFO<framePacket>* input, FIFO<framePacket>* output_qt){
     this->input_ = input;
-    this->output_ = output;
+    this->output_qt = output_qt;
     finishFlag = false;
 }
 
