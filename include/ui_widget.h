@@ -27,6 +27,7 @@ public:
     QLabel *label;
     QPushButton *pushButton_3;
     QPushButton *pushButton_4;
+    QPushButton *pushButton_5;
 
     void setupUi(QWidget *Widget)
     {
@@ -38,7 +39,7 @@ public:
         pushButton->setGeometry(QRect(50, 150, 150, 50));
         pushButton_2 = new QPushButton(Widget);
         pushButton_2->setObjectName(QString::fromUtf8("pushButton_2"));
-        pushButton_2->setGeometry(QRect(50, 250, 150, 50));
+        pushButton_2->setGeometry(QRect(50, 230, 150, 50));
         textBrowser = new QTextBrowser(Widget);
         textBrowser->setObjectName(QString::fromUtf8("textBrowser"));
         textBrowser->setGeometry(QRect(300, 20, 191, 51));
@@ -48,10 +49,13 @@ public:
         label->setGeometry(QRect(230, 120, 512, 424));
         pushButton_3 = new QPushButton(Widget);
         pushButton_3->setObjectName(QString::fromUtf8("pushButton_3"));
-        pushButton_3->setGeometry(QRect(50, 350, 150, 50));
+        pushButton_3->setGeometry(QRect(50, 310, 150, 50));
         pushButton_4 = new QPushButton(Widget);
         pushButton_4->setObjectName(QString::fromUtf8("pushButton_4"));
-        pushButton_4->setGeometry(QRect(50, 450, 150, 50));
+        pushButton_4->setGeometry(QRect(50, 390, 150, 50));
+        pushButton_5 = new QPushButton(Widget);
+        pushButton_5->setObjectName(QString::fromUtf8("pushButton_5"));
+        pushButton_5->setGeometry(QRect(50, 470, 150, 50));
 
         retranslateUi(Widget);
 
@@ -71,6 +75,7 @@ public:
         label->setText(QString());
         pushButton_3->setText(QCoreApplication::translate("Widget", "Refine", nullptr));
         pushButton_4->setText(QCoreApplication::translate("Widget", "Save", nullptr));
+        pushButton_5->setText(QCoreApplication::translate("Widget", "Switch Camera", nullptr));
     } // retranslateUi
 
 };

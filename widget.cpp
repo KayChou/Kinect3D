@@ -11,11 +11,11 @@ void Widget::on_pushButton_clicked()
     if(!bStartFlag){
         bStartFlag = true;
         ui->pushButton->setText("Stop");
-        openAllKinect(numKinects, FIFO_RGBD_Acquisition);
-        startAll_RGBD_FIFO_Process(FIFO_RGBD_Acquisition, FIFO_QtImageRender, bCalibrationFlag);
+        openAllKinect(numKinects, FIFO_RGBD_Acquisition); // start Kinect, each sensor save framePacket to first FIFO
+        
+        startAll_RGBD_FIFO_Process(FIFO_RGBD_Acquisition, FIFO_QtImageRender, bCalibrationFlag); // process first FIFO process
         std::thread ImageFIFOThread(&Widget::QtImageFIFOProcess, this);
         ImageFIFOThread.detach();
-        
     }
     else{ // else stop devices
         bStartFlag = false;
@@ -33,13 +33,18 @@ void Widget::on_pushButton_2_clicked()
 
 void Widget::on_pushButton_3_clicked()
 {
-
+    bRefineFlag = bRefineFlag ? false : true;
 }
 
 
 void Widget::on_pushButton_4_clicked()
 {
+    
+}
 
+
+void Widget::on_pushButton_5_clicked(){
+    indexTorender = (indexTorender + 1) % numKinects;
 }
 
 
@@ -50,25 +55,26 @@ void Widget::renderNewFrame(){
 
 void Widget::QtImageFIFOProcess(){
     while(true){
-        framePacket *packet = FIFO_QtImageRender->get();
-        if( packet == NULL ) { break; }
-        std::printf("Qt frame rendered, FIFO length: %d\n", FIFO_QtImageRender->cnt); fflush(stdout);
+        for(int i=0; i<numKinects; i++){
+            framePacket *packet = FIFO_QtImageRender[i]->get();
+            if( packet == NULL ) { break; }
 
-        int h = packet->height_d;
-        int w = packet->width_d;
-        for(int y=0; y<h; y++){
-            for(int x=0; x<w; x++){
-                QRgb color = qRgb(packet->vertices[y*w + x].R, packet->vertices[y*w + x].G, packet->vertices[y*w + x].B);
-                image->setPixel(x, y, color);
+            if(i == indexTorender){
+                int h = packet->height_d;
+                int w = packet->width_d;
+                for(int y=0; y<h; y++){
+                    for(int x=0; x<w; x++){
+                        QRgb color = qRgb(packet->vertices[y*w + x].R, packet->vertices[y*w + x].G, packet->vertices[y*w + x].B);
+                        image->setPixel(x, y, color);
+                    }
+                }
+
+                emit newFrame();
+                packet->destroy();
             }
         }
-
-        emit newFrame();
-        packet->destroy();
     }
 }
-
-
 
 
 Widget::Widget(FIFO<framePacket>** FIFO_RGBD_Acquisition, Ui::Widget *ui_out, QWidget *parent) : QWidget(parent), ui(new Ui::Widget){
@@ -79,16 +85,26 @@ Widget::Widget(FIFO<framePacket>** FIFO_RGBD_Acquisition, Ui::Widget *ui_out, QW
     bOpenFlag = false;
     bStartFlag = false;
     bCalibrationFlag = false;
-    FIFO_QtImageRender = new FIFO<framePacket>();
-    FIFO_QtImageRender->init(FIFO_LEN);
+    bRefineFlag = false;
+    indexTorender = 0;
 
     this->image = new QImage(512, 424, QImage::Format_ARGB32);
     connect(this, SIGNAL(newFrame()), this, SLOT(renderNewFrame()));
+
+    FIFO_QtImageRender = new FIFO<framePacket>*[numKinects];
+    for(int i=0; i<numKinects; i++){
+        FIFO_QtImageRender[i] = new FIFO<framePacket>();
+        FIFO_QtImageRender[i]->init(FIFO_LEN);
+    }
 }
 
 
 Widget::~Widget()
 {
     delete ui;
+
+    for(int i=0; i<numKinects; i++){
+        delete FIFO_QtImageRender[i];
+    }
     delete FIFO_QtImageRender;
 }

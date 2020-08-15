@@ -1,68 +1,47 @@
 #include "calibration.h"
 
-std::thread *CalibrationThreadTask;
-Calibration **calibration;
 
+bool Calibration::performCalibration(framePacket *packet){
+	cv::Mat registered(packet->height_d, packet->width_d, CV_8UC3);
 
-bool startAllCalibration(int numOfKinects, FIFO<framePacket>** input){
-	CalibrationThreadTask = new std::thread[numOfKinects];
-	calibration = new Calibration*[numOfKinects];
-	for(int i=0; i<numOfKinects; i++){
-		calibration[i] = new Calibration(input[i]);
-		CalibrationThreadTask[i] = std::thread(&Calibration::performCalibration, std::ref(calibration[i]), std::to_string(i));
-	}
-	return true;
-}
-
-
-bool destoryAllCalibration(int numOfKinects){
-	for(int i=0; i<numOfKinects; i++){
-        delete calibration[i];
-    }
-    delete calibration;
-    return true;
-}
-
-
-bool Calibration::performCalibration(std::string str){
-	while(true){
-		framePacket *packet = input_->get();
-        if( packet == NULL ) {
-            break;
-        }
-		cv::Mat registered(packet->height_d, packet->width_d, CV_8UC3);
-
-		for(int i=0; i<packet->height_d; i++){
-			for(int j=0; j<packet->width_d; j++){
-				registered.at<cv::Vec3b>(i, j)[0] = packet->vertices[i*packet->width_d + j].B;
-				registered.at<cv::Vec3b>(i, j)[1] = packet->vertices[i*packet->width_d + j].G;
-				registered.at<cv::Vec3b>(i, j)[2] = packet->vertices[i*packet->width_d + j].R;
-			}
+	for(int i=0; i<packet->height_d; i++){
+		for(int j=0; j<packet->width_d; j++){
+			registered.at<cv::Vec3b>(i, j)[0] = packet->vertices[i*packet->width_d + j].B;
+			registered.at<cv::Vec3b>(i, j)[1] = packet->vertices[i*packet->width_d + j].G;
+			registered.at<cv::Vec3b>(i, j)[2] = packet->vertices[i*packet->width_d + j].R;
 		}
-		// if current camera is not calibrated, then try to get marker
-		// if(!calibrated){
-		// 	GetMarker(registered);
-		// 	std::vector<Point3f> featurePoints;
-		// 	Point3f temp;
-		// 	if(marker.id > 0){
-		// 		for(int i=0; i<5; i++){
-		// 			temp.X = packet->vertices[(int)(marker.corners[i].Y * packet->width_d + marker.corners[i].X)].X;
-		// 			temp.Y = packet->vertices[(int)(marker.corners[i].Y * packet->width_d + marker.corners[i].X)].Y;
-		// 			temp.Z = packet->vertices[(int)(marker.corners[i].Y * packet->width_d + marker.corners[i].X)].Z;
-		// 			featurePoints.push_back(temp);
-		// 		}
-		// 		Procrusters(marker, featurePoints, T, R);
-		// 		calibrated = true;
-		// 	}
-		// }
-
-		cv::putText(registered, calibrated ? "calibrated=true" : "calibrated=false", cv::Point(0, 30), 2, 1, cv::Scalar(0, 255, 0));
-		cv::imshow("registered" + str, registered);
-		cv::waitKey(1);
-		packet->destroy();
 	}
-	cv::destroyAllWindows();
-    std::cout << "Calibration thread " << str << " stopped.\n";
+	// if current camera is not calibrated, then try to get marker
+	if(!calibrated){
+		GetMarker(registered);
+		std::vector<Point3f> featurePoints;
+		Point3f temp;
+		if(marker.id > 0){
+			for(int i=0; i<5; i++){
+				temp.X = packet->vertices[(int)(marker.corners[i].Y * packet->width_d + marker.corners[i].X)].X;
+				temp.Y = packet->vertices[(int)(marker.corners[i].Y * packet->width_d + marker.corners[i].X)].Y;
+				temp.Z = packet->vertices[(int)(marker.corners[i].Y * packet->width_d + marker.corners[i].X)].Z;
+				featurePoints.push_back(temp);
+			}
+			Procrusters(marker, featurePoints, T, R);
+			calibratedNum++;
+		}
+		else{
+			calibratedNum = 0;
+		}
+		calibrated = (calibratedNum > 30) ? true : false;
+	}
+
+	cv::putText(registered, calibrated ? "calibrated=true" : "calibrated=false", cv::Point(0, 30), 2, 1, cv::Scalar(0, 255, 0));
+
+	for(int i=0; i<packet->height_d; i++){
+		for(int j=0; j<packet->width_d; j++){
+			packet->vertices[i*packet->width_d + j].B = registered.at<cv::Vec3b>(i, j)[0];
+			packet->vertices[i*packet->width_d + j].G = registered.at<cv::Vec3b>(i, j)[1];
+			packet->vertices[i*packet->width_d + j].R = registered.at<cv::Vec3b>(i, j)[2];
+		}
+	}
+
 	return true;
 }
 
@@ -397,8 +376,7 @@ void Calibration::RotatePoint(Point3f &point, std::vector<std::vector<float>> &R
 }
 
 
-Calibration::Calibration(FIFO<framePacket> *input){
-	this->input_ = input;
+Calibration::Calibration(){
 	nMinSize = 100;
 	nMaxSize = 1000000000;
 	nThreshold = 120;
@@ -409,6 +387,7 @@ Calibration::Calibration(FIFO<framePacket> *input){
 
 	bDraw = true;
 	save2Local = false;
+	calibratedNum = 0;
 	GetMarkerPointsForWarp(vPts);
 }
 

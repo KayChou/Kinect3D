@@ -3,7 +3,6 @@
 
 #include <iostream>
 #include "KinectCapture.h"
-#include "calibration.h"
 #include "RGBD_FIFO_Process.h"
 #include "utils.h"
 
@@ -36,17 +35,20 @@ private slots:
 
     void renderNewFrame(); // display one frame in GUI
 
+    void on_pushButton_5_clicked();
+
 private:
     Ui::Widget *ui;
     FIFO<framePacket>** FIFO_RGBD_Acquisition;
-    FIFO<framePacket>* FIFO_QtImageRender;
+    FIFO<framePacket>** FIFO_QtImageRender;
 
 private:
     bool bStartFlag;
     bool bOpenFlag;
     bool bCalibrationFlag;
+    bool bRefineFlag;
 
     QImage* image;
-    int i;
+    int indexTorender;
 };
 #endif // WIDGET_H

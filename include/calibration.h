@@ -3,17 +3,12 @@
 using namespace std;
 
 
-bool startAllCalibration(int numOfKinects, FIFO<framePacket>** input);
-bool destoryAllCalibration(int numOfKinects);
-
-
 class Calibration{
 public:
-    Calibration(FIFO<framePacket> *input);
+    Calibration();
     ~Calibration();
 
 public:
-    FIFO<framePacket>* input_;
     bool calibrated;
     std::vector<float> T;
 	std::vector<std::vector<float>> R;
@@ -29,8 +24,10 @@ public:
 	bool bDraw;
     bool save2Local;
 
+    int calibratedNum;
+
 public:
-    bool performCalibration(std::string str);
+    bool performCalibration(framePacket *packet);
     bool GetMarker(cv::Mat &img);
     void Procrusters(MarkerInfo &marker, 
                      vector<Point3f> &markerInWorld, 
@@ -43,5 +40,3 @@ public:
     bool OrderCorners(vector<cv::Point2f> &corners);
     void RotatePoint(Point3f &point, std::vector<std::vector<float>> &R, std::vector<float> &T);
 };
-
-

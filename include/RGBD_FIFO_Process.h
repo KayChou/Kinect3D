@@ -1,7 +1,8 @@
 #pragma once
 #include "common.h"
+#include "calibration.h"
 
-void startAll_RGBD_FIFO_Process(FIFO<framePacket>** input, FIFO<framePacket> *output, bool &calibrationFlag);
+void startAll_RGBD_FIFO_Process(FIFO<framePacket>** input, FIFO<framePacket> **output, bool &calibrationFlag);
 void destroyAll_RGBD_FIFO_Process();
 
 
@@ -13,10 +14,17 @@ public:
     void process(bool* calibrationFlag);
     void destory();
 
+    bool getFinishFlag();
+
+private:
+    Calibration calibrate;
+
 public:
     cv::Mat color;
     cv::Mat registered;
     FIFO<framePacket>* input_;
     FIFO<framePacket>* output_;
     clock_t start=clock(), end=clock();
+
+    bool finishFlag;
 };
