@@ -33,11 +33,9 @@ add_executable(main
   widget.cpp
   # widget.h
   widget.ui
-  KinectCapture.cpp FramePacket.cpp PlyIO.cpp utils.cpp calibration.cpp RGBD_FIFO_Process.cpp
+  KinectCapture.cpp FramePacket.cpp PlyIO.cpp utils.cpp calibration.cpp RGBD_FIFO_Process.cpp PLY_Process.cpp
 )
 
 target_link_libraries(main ${freenect2_LIBRARIES} ${OpenCV_LIBS})
 target_link_libraries(main Qt5::Widgets)
 target_link_libraries(main Threads::Threads)
-
-
