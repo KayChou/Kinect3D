@@ -14,7 +14,7 @@ void startAll_RGBD_FIFO_Process(FIFO<framePacket>** input, FIFO<framePacket> **o
     rgbdProcess = new RGBD_FIFO_Process*[numKinects];
 
     for(int i=0; i<numKinects; i++){
-        rgbdProcess[i] = new RGBD_FIFO_Process(input[i], output_qt[i]);
+        rgbdProcess[i] = new RGBD_FIFO_Process(input[i], output_pcd[i], output_qt[i]);
         RGBDProcessThreadTask[i] = std::thread(&RGBD_FIFO_Process::process, rgbdProcess[i], &calibrationFlag);
     }
     for(int i=0; i<numKinects; i++){

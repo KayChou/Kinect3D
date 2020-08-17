@@ -24,6 +24,7 @@ public:
 	double dMarkerFrame;
 	bool bDraw;
     bool save2Local;
+    bool hasBeenCalibrated;
 
     int calibratedNum;
 

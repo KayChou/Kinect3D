@@ -32,22 +32,27 @@ bool Calibration::performCalibration(framePacket *packet){
 		calibrated = (calibratedNum > 30) ? true : false;
 	}
 
-	cv::putText(registered, calibrated ? "calibrated=true" : "calibrated=false", cv::Point(0, 30), 2, 1, cv::Scalar(0, 255, 0));
+	if(calibrated){ hasBeenCalibrated = true;}
+
+	cv::putText(registered, calibrated ? "" : "calibrated=false", cv::Point(0, 30), 2, 1, cv::Scalar(0, 255, 0));
 	Point3f tempPoint;
+
 	for(int i=0; i<packet->height_d; i++){
 		for(int j=0; j<packet->width_d; j++){
 			packet->vertices[i*packet->width_d + j].B = registered.at<cv::Vec3b>(i, j)[0];
 			packet->vertices[i*packet->width_d + j].G = registered.at<cv::Vec3b>(i, j)[1];
 			packet->vertices[i*packet->width_d + j].R = registered.at<cv::Vec3b>(i, j)[2];
 
-			tempPoint.X = packet->vertices[i*packet->width_d + j].X;
-			tempPoint.Y = packet->vertices[i*packet->width_d + j].Y;
-			tempPoint.Z = packet->vertices[i*packet->width_d + j].Z;
+			if(hasBeenCalibrated){
+				tempPoint.X = packet->vertices[i*packet->width_d + j].X;
+				tempPoint.Y = packet->vertices[i*packet->width_d + j].Y;
+				tempPoint.Z = packet->vertices[i*packet->width_d + j].Z;
 
-			RotatePoint(tempPoint, R, T);
-			packet->vertices[i*packet->width_d + j].X = tempPoint.X;
-			packet->vertices[i*packet->width_d + j].Y = tempPoint.Y;
-			packet->vertices[i*packet->width_d + j].Y = tempPoint.Z;
+				RotatePoint(tempPoint, R, T);
+				packet->vertices[i*packet->width_d + j].X = tempPoint.X;
+				packet->vertices[i*packet->width_d + j].Y = tempPoint.Y;
+				packet->vertices[i*packet->width_d + j].Z = tempPoint.Z;
+			}	
 		}
 	}
 
@@ -396,6 +401,7 @@ Calibration::Calibration(){
 
 	bDraw = true;
 	save2Local = false;
+	hasBeenCalibrated = false;
 	calibratedNum = 0;
 	GetMarkerPointsForWarp(vPts);
 }

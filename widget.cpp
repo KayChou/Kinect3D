@@ -19,7 +19,9 @@ void Widget::on_pushButton_clicked()
         startAll_RGBD_FIFO_Process(FIFO_RGBD_Synchronize, FIFO_pointCloud, FIFO_QtImageRender, bCalibrationFlag); // process first FIFO process
 
         std::thread ImageFIFOThread(&Widget::QtImageFIFOProcess, this);
+        std::thread PLYProcessThread(&start_PLY_FIFO_Process, FIFO_pointCloud, &bSaveFlag);
         ImageFIFOThread.detach();
+        PLYProcessThread.detach();
     }
     else{ // else stop devices
         bStartFlag = false;
@@ -35,6 +37,7 @@ void Widget::on_pushButton_clicked()
 void Widget::on_pushButton_2_clicked()
 {
     bCalibrationFlag = bCalibrationFlag ? false : true;
+    ui->pushButton_2->setText(bCalibrationFlag ? "Calibrating" : "Calibrate");
 }
 
 
@@ -53,6 +56,7 @@ void Widget::on_pushButton_3_clicked()
 void Widget::on_pushButton_4_clicked()
 {
     bSaveFlag = bSaveFlag ? false : true;
+    ui->pushButton_4->setText(bSaveFlag ? "Saving" : "Save");
 }
 
 

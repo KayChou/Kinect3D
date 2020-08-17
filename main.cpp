@@ -20,7 +20,6 @@ int main(int argc, char *argv[])
     std::thread thread_Synchronize = std::thread(Synchronize, FIFO_RGBD_Acquisition, FIFO_RGBD_Synchronize);
     thread_Synchronize.detach();
 
-
     Ui::Widget *ui;
 
     // create window
@@ -28,7 +27,6 @@ int main(int argc, char *argv[])
     Widget w(FIFO_RGBD_Acquisition, FIFO_RGBD_Synchronize, FIFO_pointCloud, ui);
     w.show();
     a.exec();    
-
 
     // delete FIFO ptr
     for(int i=0; i<numKinects; i++){
