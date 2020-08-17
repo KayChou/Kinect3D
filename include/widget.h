@@ -49,6 +49,7 @@ private:
     bool bOpenFlag;
     bool bCalibrationFlag;
     bool bRefineFlag;
+    bool bSaveFlag;
 
     QImage* image;
     int indexTorender;

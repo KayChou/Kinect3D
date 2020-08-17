@@ -52,7 +52,7 @@ void Widget::on_pushButton_3_clicked()
 //=======================================================================================
 void Widget::on_pushButton_4_clicked()
 {
-    
+    bSaveFlag = bSaveFlag ? false : true;
 }
 
 
@@ -91,7 +91,7 @@ void Widget::QtImageFIFOProcess(){
                     }
                 }
                 emit newFrame();
-                std::printf("QT FIFO length: %d\n", FIFO_QtImageRender[i]->cnt); fflush(stdout);
+                //std::printf("QT FIFO length: %d\n", FIFO_QtImageRender[i]->cnt); fflush(stdout);
             }
             packet->destroy();
         }
@@ -114,6 +114,7 @@ Widget::Widget(FIFO<framePacket>** FIFO_RGBD_Acquisition, FIFO<framePacket>** FI
     bStartFlag = false;
     bCalibrationFlag = false;
     bRefineFlag = false;
+    bSaveFlag = false;
     indexTorender = 0;
 
     this->image = new QImage(512, 424, QImage::Format_ARGB32);
@@ -128,7 +129,7 @@ Widget::Widget(FIFO<framePacket>** FIFO_RGBD_Acquisition, FIFO<framePacket>** FI
 
 
 //=======================================================================================
-// 
+// destruct
 //=======================================================================================
 Widget::~Widget()
 {

@@ -9,7 +9,7 @@ RGBD_FIFO_Process **rgbdProcess;
 //     get data from RGBD FIFO
 //     perform calibration if needed
 //=======================================================================================
-void startAll_RGBD_FIFO_Process(FIFO<framePacket>** input, FIFO<framePacket> **output_pd, FIFO<framePacket> **output_qt, bool &calibrationFlag){
+void startAll_RGBD_FIFO_Process(FIFO<framePacket>** input, FIFO<framePacket> **output_pcd, FIFO<framePacket> **output_qt, bool &calibrationFlag){
     RGBDProcessThreadTask = new std::thread[numKinects];
     rgbdProcess = new RGBD_FIFO_Process*[numKinects];
 
@@ -53,14 +53,18 @@ void RGBD_FIFO_Process::process(bool* calibrationFlag){
         if(!*calibrationFlag){
             if(calibrate.calibrated){ calibrate.calibrated = false; calibrate.calibratedNum = 0; }
         }
-         // else perform calibration util success
+        // else perform calibration util success
         else{
             calibrate.performCalibration(packet);
         }
         
-        if(this->output_qt != NULL){
+        if(this->output_qt != NULL){ // FIFO for QT image render
             framePacket* newPacket = new framePacket(packet);
             this->output_qt->put(newPacket);
+        }
+        if(this->output_pcd != NULL){ // FIFO for next step(save to local or pointcloud render)
+            framePacket* newPacket = new framePacket(packet);
+            this->output_pcd->put(newPacket);
         }
         packet->destroy();
     }
@@ -79,9 +83,10 @@ void RGBD_FIFO_Process::destory(){
 }
 
 
-RGBD_FIFO_Process::RGBD_FIFO_Process(FIFO<framePacket>* input, FIFO<framePacket>* output_qt){
+RGBD_FIFO_Process::RGBD_FIFO_Process(FIFO<framePacket>* input, FIFO<framePacket>* output_pcd, FIFO<framePacket>* output_qt){
     this->input_ = input;
     this->output_qt = output_qt;
+    this->output_pcd = output_pcd;
     finishFlag = false;
 }
 
