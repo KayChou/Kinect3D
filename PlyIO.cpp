@@ -268,8 +268,24 @@ bool readPlyFile(const char* filename, std::vector<Point3f> &verts, std::vector<
             std::printf("\nreading data...\n");
             std::printf("\tverts: %ld \n\tcolors: %ld\n", verts.size(), colors.size());
             return true;
-
         }
+
+        else if(numVertProperties == 6 && hasColor){ // x, y, z, R, G, B
+            for(unsigned int i=0; i<vn; i++){
+                fscanf(in, "%f %f %f", &tempV.X, &tempV.Y, &tempV.Z);
+                fscanf(in, "%i %i %i", &R, &G, &B);
+                tempColor.R = R;
+                tempColor.G = G;
+                tempColor.B = B;
+                verts.push_back(tempV);
+                colors.push_back(tempColor);
+            }   
+            std::printf("\nreading data...\n");
+            std::printf("\tverts: %ld \n\tcolors: %ld\n", verts.size(), colors.size());
+            return true;
+        }
+
+        
         else if(numVertProperties == 6){ // x, y, z, nx, ny, nz
             for(unsigned int i=0; i<vn; i++){
                 fscanf(in, "%f %f %f", &tempV.X, &tempV.Y, &tempV.Z);

@@ -20,7 +20,13 @@ INCLUDE_DIRECTORIES( ${freenect2_INCLUDE_DIR} )
 FIND_PACKAGE(OpenCV REQUIRED HINTS "$ENV{HOME}/lib/opencv3_4_11/share/OpenCV")
 
 INCLUDE_DIRECTORIES("include")
+INCLUDE_DIRECTORIES("include/opengl")
+INCLUDE_DIRECTORIES("include/opengl/glad/include")
 INCLUDE_DIRECTORIES("/usr/include/libusb-1.0/")
+
+set(OpenGL_GL_PREFERENCE LEGACY)
+find_package( OpenGL REQUIRED)
+find_package(glfw3 REQUIRED)
 
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
@@ -33,9 +39,11 @@ add_executable(main
   widget.cpp
   # widget.h
   widget.ui
-  KinectCapture.cpp FramePacket.cpp PlyIO.cpp utils.cpp calibration.cpp RGBD_FIFO_Process.cpp PLY_Process.cpp
+  KinectCapture.cpp FramePacket.cpp PlyIO.cpp utils.cpp calibration.cpp RGBD_FIFO_Process.cpp PLY_Process.cpp include/opengl/glad/src/glad.cpp
 )
 
 target_link_libraries(main ${freenect2_LIBRARIES} ${OpenCV_LIBS})
 target_link_libraries(main Qt5::Widgets)
 target_link_libraries(main Threads::Threads)
+target_link_libraries(main glfw)
+TARGET_LINK_LIBRARIES(main dl)

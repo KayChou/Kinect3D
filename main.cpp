@@ -20,8 +20,12 @@ int main(int argc, char *argv[])
     std::thread thread_Synchronize = std::thread(Synchronize, FIFO_RGBD_Acquisition, FIFO_RGBD_Synchronize);
     thread_Synchronize.detach();
 
-    Ui::Widget *ui;
+    bool flag = false;
 
+    std::thread PLYProcessThread(&start_PLY_FIFO_Process, FIFO_pointCloud, &flag);
+    PLYProcessThread.detach();
+
+    Ui::Widget *ui;
     // create window
     QApplication a(argc, argv);
     Widget w(FIFO_RGBD_Acquisition, FIFO_RGBD_Synchronize, FIFO_pointCloud, ui);

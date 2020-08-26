@@ -106,7 +106,7 @@ bool oneKinect::init(std::string serial, int types){
 // get frame and put data to FIFO
 //=======================================================================================
 bool oneKinect::getFrameLoop(){
-    std::cout << "New thread started" << std::endl;
+    std::cout << "Thread get frame from camera started" << std::endl;
     int framecount = 0;
     clock_t start, end;
     // get image from kinect v2
