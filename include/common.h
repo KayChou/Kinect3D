@@ -20,6 +20,13 @@
 #define numKinects 2
 #define typesDefault libfreenect2::Frame::Color | libfreenect2::Frame::Depth
 
+#define x_bbox_min -1
+#define x_bbox_max 1
+#define y_bbox_min -1
+#define y_bbox_max 1
+#define z_bbox_min -1
+#define z_bbox_max 1
+
 enum systemStatus{
     SYSTEM_RUNNING,
     SYSTEM_PAUSE,

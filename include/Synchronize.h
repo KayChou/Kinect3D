@@ -2,34 +2,74 @@
 #include "common.h"
 #include <algorithm>
 
+int timeStampThreshold = 300;
+
 
 void Synchronize(FIFO<framePacket> **input, FIFO<framePacket> **output){
-    while(true){
-        //std::printf("Camera FIFO length: %d %d\n", input[0]->cnt, input[1]->cnt); fflush(stdout);
-        int cnt[numKinects];
-        for(int i=0; i<numKinects; i++){
-            cnt[i] = input[i]->cnt;
-        }
-        int max = *max_element(cnt, cnt + numKinects);
-        int min = *min_element(cnt, cnt + numKinects);
-        int maxIdx = max_element(cnt, cnt + numKinects) - cnt;
+    bool stampClearFlag = false;
+    int cnt[numKinects];
 
-        if(max > min){
-            framePacket *packet = input[maxIdx]->get();
-            packet->destroy();
+    uint32_t timeStampInit[numKinects];
+    uint32_t timeStamp[numKinects];
+    framePacket **packetList = new framePacket*[numKinects];
+
+    uint32_t timeStampMean = 0;
+    std::printf("Thread Synchronize started \n"); fflush(stdout);
+
+    while(true){
+        if(numKinects == 1){
+            framePacket *packet = input[0]->get();
+            output[0]->put(packet);
         }
         else{
-            if(max > 0){
+            if(!stampClearFlag){
                 for(int i=0; i<numKinects; i++){
-                    framePacket *packet = input[i]->get();
-                    output[i]->put(packet);
+                    cnt[i] = input[i]->cnt;
+                }
+                int max = *max_element(cnt, cnt + numKinects);
+                int min = *min_element(cnt, cnt + numKinects);
+                int maxIdx = max_element(cnt, cnt + numKinects) - cnt;
+                //when all capture thread created, clear all FIFO and note start timeStamp
+                if(min > 0){ 
+                    stampClearFlag = true;
+                    for(int i=0; i<numKinects; i++){
+                        while(input[i]->cnt > 0){
+                            framePacket *packet = input[i]->get();
+                            timeStampInit[i] = packet->timestamp_c;
+                            packet->destroy();
+                        }
+                    }
+                }
+                else if(max > 0){
+                    framePacket *packet = input[maxIdx]->get();
+                    packet->destroy();
                 }
             }
+
+            // synchronize
             else{
-                usleep(30000);
+                for(int i=0; i<numKinects; i++){
+                    packetList[i] = input[i]->get();
+                    if(packetList[i]){
+                        timeStamp[i] = packetList[i]->timestamp_c - timeStampInit[i];
+                    }
+                    //std::printf("%d ", timeStamp[i]); fflush(stdout);
+                }
+                //std::printf("\n"); fflush(stdout);
+
+                uint32_t max = *max_element(timeStamp, timeStamp + numKinects);
+
+                for(int i=0; i<numKinects; i++){
+                    if( max - timeStamp[i] > timeStampThreshold ){
+                        packetList[i]->destroy();
+                        packetList[i] = input[i]->get();
+                        std::printf("FIFO %d throw away one frame\n", i);
+                    }
+                    output[i]->put(packetList[i]);
+                }
             }
         }
-        
-        //std::printf("Synchronized FIFO length: %d %d\n", output[0]->cnt, output[1]->cnt); fflush(stdout);
+        usleep(20000);
     }
+    delete packetList;
 }

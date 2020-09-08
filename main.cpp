@@ -21,7 +21,6 @@ int main(int argc, char *argv[])
     thread_Synchronize.detach();
 
     bool flag = false;
-
     std::thread PLYProcessThread(&start_PLY_FIFO_Process, FIFO_pointCloud, &flag);
     PLYProcessThread.detach();
 

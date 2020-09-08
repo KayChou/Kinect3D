@@ -65,6 +65,7 @@ oneKinect::~oneKinect(){
     //delete pipeline_;
 }
 
+
 void oneKinect::setStartFlag(bool flag){
     this->startFlag = flag;
 }

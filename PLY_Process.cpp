@@ -50,7 +50,11 @@ void start_PLY_FIFO_Process(FIFO<framePacket>** input, bool *saveFlag){
     }
 
     //glEnable(GL_DEPTH_TEST);
+#ifdef CMAKE
+    Shader shader("../include/opengl/vertexShader.vert", "../include/opengl/fragShader.frag");
+#else
     Shader shader("include/opengl/vertexShader.vert", "include/opengl/fragShader.frag");
+#endif
 
     // create VAO and VBO, bind VAO first, then bind and set vertex buffer
     unsigned int VBO, VAO;
@@ -70,7 +74,7 @@ void start_PLY_FIFO_Process(FIFO<framePacket>** input, bool *saveFlag){
     while(!glfwWindowShouldClose(window)){
         for(int i=0; i<numKinects; i++){
             framePacket *packet = input[i]->get();
-            if( packet == NULL ) { glfwSetWindowShouldClose(window, true); }
+            if( packet == NULL ) { continue; }
 
             for(int i=0; i<packet->height_d *  packet->width_d; i++){
                 temp.X = packet->vertices[i].X;
@@ -79,7 +83,9 @@ void start_PLY_FIFO_Process(FIFO<framePacket>** input, bool *saveFlag){
                 tempColor.B = packet->vertices[i].B;
                 tempColor.G = packet->vertices[i].G;
                 tempColor.R = packet->vertices[i].R;
-                if(temp.Z > -2 && temp.Z < 2 && temp.X > -12 && temp.X<2 && temp.Y > -2 && temp.Y<2){
+                if(temp.Z > z_bbox_min && temp.Z < z_bbox_max && 
+                   temp.X > x_bbox_min && temp.X < x_bbox_max && 
+                   temp.Y > y_bbox_min && temp.Y < y_bbox_max){
                     verts.push_back(temp);
                     colors.push_back(tempColor);
                 }
@@ -117,6 +123,8 @@ void start_PLY_FIFO_Process(FIFO<framePacket>** input, bool *saveFlag){
         processInput(window);
 
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glEnable(GL_DEPTH_TEST);
+        glClear(GL_DEPTH_BUFFER_BIT);
         glClear(GL_COLOR_BUFFER_BIT);
 
         glBufferData(GL_ARRAY_BUFFER, 6*4*verts.size(), vertices, GL_DYNAMIC_DRAW);

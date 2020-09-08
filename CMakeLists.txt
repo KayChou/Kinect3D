@@ -11,6 +11,8 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+add_definitions(-DCMAKE)
+
 # Set cmake prefix path to enable cmake to find freenect2
 set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} $ENV{HOME}/lib/freenect2/lib/cmake/freenect2)
 find_package(freenect2 REQUIRED)

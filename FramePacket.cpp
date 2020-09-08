@@ -47,9 +47,6 @@ void framePacket::init(libfreenect2::Frame *color,
 }
 
 
-
-
-
 void framePacket::destroy(){
     delete [] this->data_c;
     delete [] this->data_d;
