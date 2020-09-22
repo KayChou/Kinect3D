@@ -18,10 +18,10 @@ class oneKinect
 {
 public:
     oneKinect();
-    oneKinect(std::string serial, FIFO<framePacket>* output, int types=typesDefault);
+    oneKinect(std::string serial, FIFO<framePacket>* output);
     ~oneKinect();
 
-    bool init(std::string serial, int types=typesDefault);
+    bool init(std::string serial);
     bool getFrameLoop();
     void setStartFlag(bool flag);
     bool getFinishFlag();
@@ -37,7 +37,6 @@ public:
     libfreenect2::PacketPipeline *pipeline_;
 
     std::string serial_;
-    int types_;
     libfreenect2::SyncMultiFrameListener *listener_;
     libfreenect2::FrameMap frames_;
 

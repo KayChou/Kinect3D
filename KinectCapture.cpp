@@ -1,6 +1,5 @@
 #include "KinectCapture.h"
 
-int* types_;
 std::string* serials_;
 std::thread* kinectThreadTask;
 oneKinect** devices_;
@@ -15,7 +14,6 @@ bool openAllKinect(FIFO<framePacket>** output){
         return false;
     }
 
-    types_ = new int[numKinects];
     serials_ = new std::string[numKinects];
     kinectThreadTask = new std::thread[numKinects];
     devices_ = new oneKinect*[numKinects];
@@ -38,8 +36,6 @@ bool openAllKinect(FIFO<framePacket>** output){
 // close all kinects and free space 
 //=======================================================================================
 void destoryAllKinect(){
-    delete types_;
-    
     for(int i=0; i<numKinects; i++){
         devices_[i]->setStartFlag(false);
         while(devices_[i]->getFinishFlag()){
@@ -53,11 +49,11 @@ void destoryAllKinect(){
 //=======================================================================================
 // construct one kinect
 //=======================================================================================
-oneKinect::oneKinect(std::string serial, FIFO<framePacket>* output, int types){
+oneKinect::oneKinect(std::string serial, FIFO<framePacket>* output){
     this->output_ = output;
     this->startFlag = false;
     this->finishFlag = false;
-    init(serial, types);
+    init(serial);
 }
 
 
@@ -79,13 +75,12 @@ bool oneKinect::getFinishFlag(){
 //=======================================================================================
 // init one kinect
 //=======================================================================================
-bool oneKinect::init(std::string serial, int types){
+bool oneKinect::init(std::string serial){
     serial_ = serial;
-    types_ = types;
 
     pipeline_ = new libfreenect2::OpenGLPacketPipeline();
     dev_ = freenect2_.openDevice(serial_, pipeline_);
-    listener_ = new libfreenect2::SyncMultiFrameListener(types_);
+    listener_ = new libfreenect2::SyncMultiFrameListener(typesDefault);
 
     dev_->setColorFrameListener(listener_);
     dev_->setIrAndDepthFrameListener(listener_);

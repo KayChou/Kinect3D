@@ -8,12 +8,16 @@ typedef struct Context {
 	bool b_Calibration;
 	bool b_hasBeenCalibrated;
 	bool b_Refine;
+	bool b_enableRGB;
+	bool b_enableDepth;
 
 	Context(){
 		this->b_save2Local = false;
 		this->b_cameraStarted = false;
 		this->b_Calibration = false;
 		this->b_hasBeenCalibrated = false;
+		this->b_enableRGB = true;
+		this->b_enableDepth = true;
 	}
 } Context;
 
