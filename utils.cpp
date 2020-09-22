@@ -1,5 +1,35 @@
 #include "utils.h"
 
+void savePacket2Bin(framePacket *input, const char* filename){
+    std::ofstream binFile;
+    binFile.open(filename, std::ios::out |  std::ios::trunc | std::ios::binary);
+
+    float tmpFloat;
+    char tmpChar;
+
+    for(int i=0; i<input->width_d * input->height_d; i++){
+        tmpFloat = static_cast<float>(input->data_d[i]);
+        binFile.write(reinterpret_cast<const char*>(&tmpFloat), sizeof(float));
+    }
+
+    for(int i=0; i<input->width_d * input->height_d; i++){
+        tmpFloat = static_cast<float>(input->vertices[i].X);
+        binFile.write(reinterpret_cast<const char*>(&tmpFloat), sizeof(float));
+        tmpFloat = static_cast<float>(input->vertices[i].Y);
+        binFile.write(reinterpret_cast<const char*>(&tmpFloat), sizeof(float));
+        tmpFloat = static_cast<float>(input->vertices[i].Z);
+        binFile.write(reinterpret_cast<const char*>(&tmpFloat), sizeof(float));
+        tmpChar = static_cast<char>(input->vertices[i].R);
+        binFile.write(reinterpret_cast<const char*>(&tmpChar),sizeof(char));
+        tmpChar = static_cast<char>(input->vertices[i].G);
+        binFile.write(reinterpret_cast<const char*>(&tmpChar),sizeof(char));
+        tmpChar = static_cast<char>(input->vertices[i].B);
+        binFile.write(reinterpret_cast<const char*>(&tmpChar),sizeof(char));
+    }
+
+    binFile.close();
+}
+
 
 bool saveRGBDFIFO2Image(FIFO<framePacket> **input, int numOfKinects){
     cv::Mat color, depth;

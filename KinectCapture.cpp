@@ -147,7 +147,8 @@ bool oneKinect::getFrameLoop(){
 
         //std:printf("frame: %d has %d nan pixels\n", framecount, nanCnt); fflush(stdout);
         framePacket *packet = new framePacket();
-        packet->init(color_, &undistorted, vertices);
+        //packet->init(color_, &undistorted, vertices);
+        packet->init(color_, depth_, vertices);
         this->output_->put(packet);
         //std::printf("One packet is pushed | FIFO length: %d \n", output_->cnt); fflush(stdout);
         //packet->destroy();

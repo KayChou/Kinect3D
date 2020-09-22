@@ -19,9 +19,9 @@ public:
     uint32_t timestamp_c;
     uint32_t timestamp_d;
 
-    unsigned char* data_c;
-    float* data_d;
-    Point3fRGB *vertices;
+    unsigned char* data_c; // color image
+    float* data_d; // depth image
+    Point3fRGB *vertices; // point cloud verts(X Y Z R G B)
 
 public:
     framePacket();

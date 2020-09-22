@@ -16,9 +16,15 @@ void Synchronize(FIFO<framePacket> **input, FIFO<framePacket> **output){
     uint32_t timeStampMean = 0;
     std::printf("Thread Synchronize started \n"); fflush(stdout);
 
+    int frameCnt = 0;
+
     while(true){
         if(numKinects == 1){
             framePacket *packet = input[0]->get();
+            frameCnt++;
+            if(frameCnt == 10){
+                savePacket2Bin(packet, "frame.bin");
+            }
             output[0]->put(packet);
         }
         else{
