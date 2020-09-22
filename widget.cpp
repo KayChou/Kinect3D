@@ -11,12 +11,12 @@
 void Widget::on_pushButton_clicked()
 {
     // if device is not started, then start it
-    if(!bStartFlag){
-        bStartFlag = true;
+    if(!context->b_cameraStarted){
+        context->b_cameraStarted = true;
         ui->pushButton->setText("Stop");
-        openAllKinect(numKinects, FIFO_RGBD_Acquisition); // start Kinect, each sensor save framePacket to first FIFO
+        openAllKinect(FIFO_RGBD_Acquisition); // start Kinect, each sensor save framePacket to first FIFO
         
-        startAll_RGBD_FIFO_Process(FIFO_RGBD_Synchronize, FIFO_pointCloud, FIFO_QtImageRender, bCalibrationFlag); // process first FIFO process
+        startAll_RGBD_FIFO_Process(FIFO_RGBD_Synchronize, FIFO_pointCloud, FIFO_QtImageRender, context); // process first FIFO process
 
         std::thread ImageFIFOThread(&Widget::QtImageFIFOProcess, this);
         //std::thread PLYProcessThread(&start_PLY_FIFO_Process, FIFO_pointCloud, &bSaveFlag);
@@ -24,9 +24,9 @@ void Widget::on_pushButton_clicked()
         //PLYProcessThread.detach();
     }
     else{ // else stop devices
-        bStartFlag = false;
+        context->b_cameraStarted = false;
         ui->pushButton->setText("Start");
-        destoryAllKinect(numKinects);
+        destoryAllKinect();
     }
 }
 
@@ -36,8 +36,8 @@ void Widget::on_pushButton_clicked()
 //=======================================================================================
 void Widget::on_pushButton_2_clicked()
 {
-    bCalibrationFlag = bCalibrationFlag ? false : true;
-    ui->pushButton_2->setText(bCalibrationFlag ? "Calibrating" : "Calibrate");
+    context->b_Calibration = context->b_Calibration ? false : true;
+    ui->pushButton_2->setText(context->b_Calibration ? "Calibrating" : "Calibrate");
 }
 
 
@@ -46,7 +46,7 @@ void Widget::on_pushButton_2_clicked()
 //=======================================================================================
 void Widget::on_pushButton_3_clicked()
 {
-    bRefineFlag = bRefineFlag ? false : true;
+    context->b_Refine = context->b_Refine ? false : true;
 }
 
 
@@ -55,8 +55,8 @@ void Widget::on_pushButton_3_clicked()
 //=======================================================================================
 void Widget::on_pushButton_4_clicked()
 {
-    bSaveFlag = bSaveFlag ? false : true;
-    ui->pushButton_4->setText(bSaveFlag ? "Saving" : "Save");
+    context->b_save2Local = context->b_save2Local ? false : true;
+    ui->pushButton_4->setText(context->b_save2Local ? "Saving" : "Save");
 }
 
 
@@ -107,18 +107,22 @@ void Widget::QtImageFIFOProcess(){
 //=======================================================================================
 // construcion
 //=======================================================================================
-Widget::Widget(FIFO<framePacket>** FIFO_RGBD_Acquisition, FIFO<framePacket>** FIFO_RGBD_Synchronize, FIFO<framePacket>** FIFO_pointCloud, Ui::Widget *ui_out, QWidget *parent) : QWidget(parent), ui(new Ui::Widget){
+Widget::Widget(FIFO<framePacket>** FIFO_RGBD_Acquisition, 
+               FIFO<framePacket>** FIFO_RGBD_Synchronize, 
+               FIFO<framePacket>** FIFO_pointCloud, 
+               Context *context, 
+               Ui::Widget *ui_out, 
+               QWidget *parent) : QWidget(parent), ui(new Ui::Widget)
+{
     ui->setupUi(this);
     ui_out = ui;
+
     this->FIFO_RGBD_Acquisition = FIFO_RGBD_Acquisition;
     this->FIFO_RGBD_Synchronize = FIFO_RGBD_Synchronize;
     this->FIFO_pointCloud = FIFO_pointCloud;
 
-    bOpenFlag = false;
-    bStartFlag = false;
-    bCalibrationFlag = false;
-    bRefineFlag = false;
-    bSaveFlag = false;
+    this->context = context;
+
     indexTorender = 0;
 
     this->image = new QImage(512, 424, QImage::Format_ARGB32);
@@ -143,4 +147,5 @@ Widget::~Widget()
         delete FIFO_QtImageRender[i];
     }
     delete FIFO_QtImageRender;
+    delete this->image;
 }

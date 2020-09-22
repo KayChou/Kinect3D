@@ -9,14 +9,15 @@ RGBD_FIFO_Process **rgbdProcess;
 //     get data from RGBD FIFO
 //     perform calibration if needed
 //=======================================================================================
-void startAll_RGBD_FIFO_Process(FIFO<framePacket>** input, FIFO<framePacket> **output_pcd, FIFO<framePacket> **output_qt, bool &calibrationFlag){
+void startAll_RGBD_FIFO_Process(FIFO<framePacket>** input, FIFO<framePacket> **output_pcd, FIFO<framePacket> **output_qt, Context *context){
     RGBDProcessThreadTask = new std::thread[numKinects];
     rgbdProcess = new RGBD_FIFO_Process*[numKinects];
 
     for(int i=0; i<numKinects; i++){
         rgbdProcess[i] = new RGBD_FIFO_Process(input[i], output_pcd[i], output_qt[i]);
-        RGBDProcessThreadTask[i] = std::thread(&RGBD_FIFO_Process::process, rgbdProcess[i], &calibrationFlag);
+        RGBDProcessThreadTask[i] = std::thread(&RGBD_FIFO_Process::process, rgbdProcess[i], context);
     }
+    
     for(int i=0; i<numKinects; i++){
         RGBDProcessThreadTask[i].detach();
     }
@@ -43,14 +44,14 @@ void destroyAll_RGBD_FIFO_Process(){
 //      if output is not NULL, copy current packet to output FIFO, for QT render
 //      if calibrate button is clicked, perform calibration
 //=======================================================================================
-void RGBD_FIFO_Process::process(bool* calibrationFlag){
+void RGBD_FIFO_Process::process(Context *context){
     while(true){
         framePacket *packet = input_->get();
         if( packet == NULL ) { break; } // exit over time(5s)
         // if calibrationFlag = false(stop calibration), just get one packet and display
         //std::printf("process one frame, FIFO len: %d timeStamp: %u \n", input_->cnt, packet->timestamp_c);fflush(stdout);
         
-        if(!*calibrationFlag){
+        if(!context->b_Calibration){
             if(calibrate.calibrated){ calibrate.calibrated = false; calibrate.calibratedNum = 0; }
         }
         // else perform calibration util success

@@ -26,9 +26,3 @@
 #define y_bbox_max 1
 #define z_bbox_min -1
 #define z_bbox_max 1
-
-enum systemStatus{
-    SYSTEM_RUNNING,
-    SYSTEM_PAUSE,
-    SYSTEM_FINISH
-};

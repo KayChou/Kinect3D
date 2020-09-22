@@ -2,8 +2,23 @@
 #include <stdint.h>
 #include <vector>
 
-typedef struct Point3f
-{
+typedef struct Context {
+	bool b_save2Local;
+	bool b_cameraStarted;
+	bool b_Calibration;
+	bool b_hasBeenCalibrated;
+	bool b_Refine;
+
+	Context(){
+		this->b_save2Local = false;
+		this->b_cameraStarted = false;
+		this->b_Calibration = false;
+		this->b_hasBeenCalibrated = false;
+	}
+} Context;
+
+
+typedef struct Point3f {
 	Point3f(){
 		this->X = 0;
 		this->Y = 0;

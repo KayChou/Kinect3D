@@ -20,7 +20,7 @@ float lastFrame = 0.0f;
 // ================================================================================
 // init opengl window
 // ================================================================================
-void start_PLY_FIFO_Process(FIFO<framePacket>** input, bool *saveFlag){
+void start_PLY_FIFO_Process(FIFO<framePacket>** input, Context *context){
     std::printf("Thread opengl live render started\n"); fflush(stdout);
     std::vector<Point3f> verts;
 	std::vector<RGB> colors;
@@ -109,12 +109,11 @@ void start_PLY_FIFO_Process(FIFO<framePacket>** input, bool *saveFlag){
                 vertices[6*i + 5] = 0.0;
             }
         }
-        if(*saveFlag){
+        if(context->b_save2Local){
             std::string filename = "./datas/pointcloud_" + std::to_string(cnt++) + ".ply";
             savePlyFile(filename.c_str(), verts, false, colors);
             std::printf("Save one frame pointcloud\n");fflush(stdout);
         }
-
 
         float currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
@@ -204,8 +203,6 @@ void processInput(GLFWwindow *window)
 // ================================================================================
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
-    // make sure the viewport matches the new window dimensions; note that width and 
-    // height will be significantly larger than specified on retina displays.
     glViewport(0, 0, width, height);
 }
 

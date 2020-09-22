@@ -10,8 +10,8 @@
 #include "common.h"
 
 
-bool openAllKinect(int numOfKinects, FIFO<framePacket>** output);
-void destoryAllKinect(int numOfKinects);
+bool openAllKinect(FIFO<framePacket>** output);
+void destoryAllKinect();
 
 
 class oneKinect

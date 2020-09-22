@@ -8,25 +8,25 @@ oneKinect** devices_;
 //=======================================================================================
 // Open all kinect
 //=======================================================================================
-bool openAllKinect(int numOfKinects, FIFO<framePacket>** output){
+bool openAllKinect(FIFO<framePacket>** output){
     libfreenect2::Freenect2 freenect2_;
-    if(numOfKinects > freenect2_.enumerateDevices()){
+    if(numKinects > freenect2_.enumerateDevices()){
         std::cerr << "The number of devices does not match the specified\n";
         return false;
     }
 
-    types_ = new int[numOfKinects];
-    serials_ = new std::string[numOfKinects];
-    kinectThreadTask = new std::thread[numOfKinects];
-    devices_ = new oneKinect*[numOfKinects];
+    types_ = new int[numKinects];
+    serials_ = new std::string[numKinects];
+    kinectThreadTask = new std::thread[numKinects];
+    devices_ = new oneKinect*[numKinects];
     
-    for(int i=0; i<numOfKinects; i++){
+    for(int i=0; i<numKinects; i++){
         serials_[i] = freenect2_.getDeviceSerialNumber(i);
         devices_[i] = new oneKinect(serials_[i], output[i]);
         devices_[i]->setStartFlag(true);
     }
 
-    for(int i=0; i<numOfKinects; i++){
+    for(int i=0; i<numKinects; i++){
         kinectThreadTask[i] = std::thread(&oneKinect::getFrameLoop, std::ref(devices_[i]));
         kinectThreadTask[i].detach();
     }
@@ -37,10 +37,10 @@ bool openAllKinect(int numOfKinects, FIFO<framePacket>** output){
 //=======================================================================================
 // close all kinects and free space 
 //=======================================================================================
-void destoryAllKinect(int numOfKinects){
+void destoryAllKinect(){
     delete types_;
     
-    for(int i=0; i<numOfKinects; i++){
+    for(int i=0; i<numKinects; i++){
         devices_[i]->setStartFlag(false);
         while(devices_[i]->getFinishFlag()){
             delete devices_[i];
