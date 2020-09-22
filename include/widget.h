@@ -28,7 +28,7 @@ public:
 
 
 signals:
-    void newFrame(); // this signale is emitted if FIFO_QtImageRender not empty
+    void newFrame(); // this signal is emitted if FIFO_QtImageRender not empty
 
 private slots:
     void on_pushButton_clicked();

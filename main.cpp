@@ -4,7 +4,7 @@
 
 int main(int argc, char *argv[])
 {
-    Context* context;
+    Context* context = new Context();
 
     FIFO<framePacket> **FIFO_RGBD_Acquisition = new FIFO<framePacket>*[numKinects];
     FIFO<framePacket> **FIFO_RGBD_Synchronize = new FIFO<framePacket>*[numKinects];
@@ -41,6 +41,7 @@ int main(int argc, char *argv[])
     delete FIFO_RGBD_Acquisition;
     delete FIFO_RGBD_Synchronize;
     delete FIFO_pointCloud;
+    delete context;
 
     return 0;
 }
