@@ -6,21 +6,35 @@ int main(int argc, char *argv[])
 {
     Context* context = new Context();
 
-    FIFO<framePacket> **FIFO_RGBD_Acquisition = new FIFO<framePacket>*[numKinects];
-    FIFO<framePacket> **FIFO_RGBD_Synchronize = new FIFO<framePacket>*[numKinects];
-    FIFO<framePacket> **FIFO_pointCloud = new FIFO<framePacket>*[numKinects];
-    for(int i=0; i<numKinects; i++){
-        FIFO_RGBD_Acquisition[i] = new FIFO<framePacket>();
-        FIFO_RGBD_Synchronize[i] = new FIFO<framePacket>();
-        FIFO_pointCloud[i] = new FIFO<framePacket>();
+    FIFO<framePacket> **RGBD_Capture = new FIFO<framePacket>*[numKinects];
+    FIFO<framePacket> **synchronize = new FIFO<framePacket>*[numKinects];
+    FIFO<framePacket> **pointCloud = new FIFO<framePacket>*[numKinects];
+    FIFO<framePacket> **QtImageRender = new FIFO<framePacket>*[numKinects];
 
-        FIFO_RGBD_Acquisition[i]->init(FIFO_LEN);
-        FIFO_RGBD_Synchronize[i]->init(FIFO_LEN);
-        FIFO_pointCloud[i]->init(FIFO_LEN);
+    RGBD_FIFO_Process *rgbdProcess = new RGBD_FIFO_Process[numKinects];
+
+    for(int i=0; i<numKinects; i++){
+        RGBD_Capture[i] = new FIFO<framePacket>();
+        synchronize[i] = new FIFO<framePacket>();
+        pointCloud[i] = new FIFO<framePacket>();
+        QtImageRender[i] = new FIFO<framePacket>();
+
+        RGBD_Capture[i]->init(FIFO_LEN);
+        synchronize[i]->init(FIFO_LEN);
+        pointCloud[i]->init(FIFO_LEN);
+        QtImageRender[i]->init(FIFO_LEN);
+
+        rgbdProcess->init(synchronize[i], pointCloud[i], QtImageRender[i]);
     }
 
-    std::thread synchronize_Thread = std::thread(Synchronize, FIFO_RGBD_Acquisition, FIFO_RGBD_Synchronize);
-    std::thread opengl_Render_Thread = std::thread(&start_PLY_FIFO_Process, FIFO_pointCloud, context);
+    std::thread synchronize_Thread = std::thread(Synchronize, RGBD_Capture, synchronize);
+    std::thread opengl_Render_Thread = std::thread(&start_PLY_FIFO_Process, pointCloud, context);
+    std::thread rgbd_Process_Thread[numKinects];
+
+    for(int i=0; i<numKinects; i++){
+        rgbd_Process_Thread[i] = std::thread(&RGBD_FIFO_Process::process, rgbdProcess[i], context);
+        rgbd_Process_Thread[i].detach();
+    }
 
     synchronize_Thread.detach();
     opengl_Render_Thread.detach();
@@ -28,20 +42,22 @@ int main(int argc, char *argv[])
     Ui::Widget *ui;
     // create window
     QApplication a(argc, argv);
-    Widget w(FIFO_RGBD_Acquisition, FIFO_RGBD_Synchronize, FIFO_pointCloud, context, ui);
+    Widget w(RGBD_Capture, synchronize, pointCloud, QtImageRender, context, ui);
     w.show();
     a.exec();
 
     // delete FIFO ptr
     for(int i=0; i<numKinects; i++){
-        delete FIFO_RGBD_Acquisition[i];
-        delete FIFO_RGBD_Synchronize[i];
-        delete FIFO_pointCloud[i];
+        delete [] RGBD_Capture[i];
+        delete [] synchronize[i];
+        delete [] pointCloud[i];
+        delete [] QtImageRender[i];
     }
-    delete FIFO_RGBD_Acquisition;
-    delete FIFO_RGBD_Synchronize;
-    delete FIFO_pointCloud;
-    delete context;
+    delete [] RGBD_Capture;
+    delete [] synchronize;
+    delete [] pointCloud;
+    delete [] QtImageRender;
+    delete [] context;
 
     return 0;
 }

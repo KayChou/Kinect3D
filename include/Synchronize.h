@@ -77,5 +77,5 @@ void Synchronize(FIFO<framePacket> **input, FIFO<framePacket> **output){
         }
         usleep(20000);
     }
-    delete packetList;
+    delete [] packetList;
 }

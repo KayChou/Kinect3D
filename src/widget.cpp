@@ -1,6 +1,4 @@
 #include "widget.h"
-// #include "./build/demo_autogen/include/ui_widget.h"
-// #include "./build/demo_autogen/include/moc_widget.cpp"
 #include "ui_widget.h"
 #include "moc_widget.cpp"
 
@@ -15,13 +13,9 @@ void Widget::on_pushButton_clicked()
         context->b_cameraStarted = true;
         ui->pushButton->setText("Stop");
         openAllKinect(FIFO_RGBD_Acquisition); // start Kinect, each sensor save framePacket to first FIFO
-        
-        startAll_RGBD_FIFO_Process(FIFO_RGBD_Synchronize, FIFO_pointCloud, FIFO_QtImageRender, context); // process first FIFO process
 
         std::thread ImageFIFOThread(&Widget::QtImageFIFOProcess, this);
-        //std::thread PLYProcessThread(&start_PLY_FIFO_Process, FIFO_pointCloud, &bSaveFlag);
         ImageFIFOThread.detach();
-        //PLYProcessThread.detach();
     }
     else{ // else stop devices
         context->b_cameraStarted = false;
@@ -82,7 +76,7 @@ void Widget::renderNewFrame(){
 void Widget::QtImageFIFOProcess(){
     while(true){
         for(int i=0; i<numKinects; i++){
-            framePacket *packet = FIFO_QtImageRender[i]->get();
+            framePacket *packet = QtImageRender[i]->get();
             if( packet == NULL ) { break; }
 
             if(i == indexTorender){
@@ -95,7 +89,6 @@ void Widget::QtImageFIFOProcess(){
                     }
                 }
                 emit newFrame();
-                //std::printf("QT FIFO length: %d\n", FIFO_QtImageRender[i]->cnt); fflush(stdout);
             }
             packet->destroy();
         }
@@ -110,6 +103,7 @@ void Widget::QtImageFIFOProcess(){
 Widget::Widget(FIFO<framePacket>** FIFO_RGBD_Acquisition, 
                FIFO<framePacket>** FIFO_RGBD_Synchronize, 
                FIFO<framePacket>** FIFO_pointCloud, 
+               FIFO<framePacket>** QtImageRender, 
                Context *context, 
                Ui::Widget *ui_out, 
                QWidget *parent) : QWidget(parent), ui(new Ui::Widget)
@@ -120,6 +114,7 @@ Widget::Widget(FIFO<framePacket>** FIFO_RGBD_Acquisition,
     this->FIFO_RGBD_Acquisition = FIFO_RGBD_Acquisition;
     this->FIFO_RGBD_Synchronize = FIFO_RGBD_Synchronize;
     this->FIFO_pointCloud = FIFO_pointCloud;
+    this->QtImageRender = QtImageRender;
 
     this->context = context;
 
@@ -127,12 +122,6 @@ Widget::Widget(FIFO<framePacket>** FIFO_RGBD_Acquisition,
 
     this->image = new QImage(512, 424, QImage::Format_ARGB32);
     connect(this, SIGNAL(newFrame()), this, SLOT(renderNewFrame()));
-
-    FIFO_QtImageRender = new FIFO<framePacket>*[numKinects];
-    for(int i=0; i<numKinects; i++){
-        FIFO_QtImageRender[i] = new FIFO<framePacket>();
-        FIFO_QtImageRender[i]->init(FIFO_LEN);
-    }
 }
 
 
@@ -141,11 +130,6 @@ Widget::Widget(FIFO<framePacket>** FIFO_RGBD_Acquisition,
 //=======================================================================================
 Widget::~Widget()
 {
-    delete ui;
-
-    for(int i=0; i<numKinects; i++){
-        delete FIFO_QtImageRender[i];
-    }
-    delete FIFO_QtImageRender;
+    delete ui;    
     delete this->image;
 }
