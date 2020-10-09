@@ -31,6 +31,9 @@ int main(int argc, char *argv[])
     KinectsManager *kinects = new KinectsManager();
     RGBD_FIFO_Process *rgbdProcess = new RGBD_FIFO_Process[numKinects];
     openglRender *render = new openglRender();
+    Ui::Widget *ui;
+    QApplication a(argc, argv);
+    Widget w(QtImageRender, context, ui);
 
     for(int i=0; i<numKinects; i++){
         capture_output[i] = RGBD_Capture[i];
@@ -48,6 +51,7 @@ int main(int argc, char *argv[])
     std::thread synchronize_Thread = std::thread(Synchronize, synchronize_input, synchronize_output);
     std::thread opengl_Render_Thread = std::thread(&openglRender::loop, std::ref(render));
     std::thread rgbd_Process_Thread[numKinects];
+    std::thread ImageFIFOThread(&Widget::QtImageFIFOProcess, std::ref(w));
 
     for(int i=0; i<numKinects; i++){
         rgbd_Process_Thread[i] = std::thread(&RGBD_FIFO_Process::process, rgbdProcess[i], context);
@@ -57,11 +61,8 @@ int main(int argc, char *argv[])
     KinectsManager_Thread.detach();
     synchronize_Thread.detach();
     opengl_Render_Thread.detach();
+    ImageFIFOThread.detach();
 
-    Ui::Widget *ui;
-    // create window
-    QApplication a(argc, argv);
-    Widget w(RGBD_Capture, synchronize, pointCloud, QtImageRender, context, ui);
     w.show();
     a.exec();
 
@@ -76,8 +77,13 @@ int main(int argc, char *argv[])
     delete [] synchronize;
     delete [] pointCloud;
     delete [] QtImageRender;
+    delete [] capture_output;
+    delete [] synchronize_input;
+    delete [] synchronize_output;
+    delete [] opengl_render_input;
     delete [] context;
     delete kinects;
+    delete render;
 
     return 0;
 }

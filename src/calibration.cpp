@@ -1,9 +1,9 @@
 #include "calibration.h"
 
 
-bool Calibration::performCalibration(framePacket *packet){
+bool Calibration::performCalibration(framePacket *packet, std::vector<float> &T, std::vector<std::vector<float>> &R){
+	// if current camera is not calibrated, then try to get marker
 	cv::Mat registered(packet->height_d, packet->width_d, CV_8UC3);
-
 	for(int i=0; i<packet->height_d; i++){
 		for(int j=0; j<packet->width_d; j++){
 			registered.at<cv::Vec3b>(i, j)[0] = packet->vertices[i*packet->width_d + j].B;
@@ -11,52 +11,20 @@ bool Calibration::performCalibration(framePacket *packet){
 			registered.at<cv::Vec3b>(i, j)[2] = packet->vertices[i*packet->width_d + j].R;
 		}
 	}
-	// if current camera is not calibrated, then try to get marker
-	if(!calibrated){
-		GetMarker(registered);
-		std::vector<Point3f> featurePoints;
-		Point3f temp;
-		if(marker.id > 0){
-			for(int i=0; i<5; i++){
-				temp.X = packet->vertices[(int)(marker.corners[i].Y * packet->width_d + marker.corners[i].X)].X;
-				temp.Y = packet->vertices[(int)(marker.corners[i].Y * packet->width_d + marker.corners[i].X)].Y;
-				temp.Z = packet->vertices[(int)(marker.corners[i].Y * packet->width_d + marker.corners[i].X)].Z;
-				featurePoints.push_back(temp);
-			}
-			Procrusters(marker, featurePoints, T, R);
-			calibratedNum++;
+	GetMarker(registered);
+	std::vector<Point3f> featurePoints;
+	Point3f temp;
+	if(marker.id > 0){
+		for(int i=0; i<5; i++){
+			temp.X = packet->vertices[(int)(marker.corners[i].Y * packet->width_d + marker.corners[i].X)].X;
+			temp.Y = packet->vertices[(int)(marker.corners[i].Y * packet->width_d + marker.corners[i].X)].Y;
+			temp.Z = packet->vertices[(int)(marker.corners[i].Y * packet->width_d + marker.corners[i].X)].Z;
+			featurePoints.push_back(temp);
 		}
-		else{
-			calibratedNum = 0;
-		}
-		calibrated = (calibratedNum > 30) ? true : false;
+		Procrusters(marker, featurePoints, T, R);
+		return true;
 	}
-
-	if(calibrated){ hasBeenCalibrated = true;}
-
-	cv::putText(registered, calibrated ? "" : "calibrated=false", cv::Point(0, 30), 2, 1, cv::Scalar(0, 255, 0));
-	Point3f tempPoint;
-
-	for(int i=0; i<packet->height_d; i++){
-		for(int j=0; j<packet->width_d; j++){
-			packet->vertices[i*packet->width_d + j].B = registered.at<cv::Vec3b>(i, j)[0];
-			packet->vertices[i*packet->width_d + j].G = registered.at<cv::Vec3b>(i, j)[1];
-			packet->vertices[i*packet->width_d + j].R = registered.at<cv::Vec3b>(i, j)[2];
-
-			if(hasBeenCalibrated){
-				tempPoint.X = packet->vertices[i*packet->width_d + j].X;
-				tempPoint.Y = packet->vertices[i*packet->width_d + j].Y;
-				tempPoint.Z = packet->vertices[i*packet->width_d + j].Z;
-
-				RotatePoint(tempPoint, R, T);
-				packet->vertices[i*packet->width_d + j].X = tempPoint.X;
-				packet->vertices[i*packet->width_d + j].Y = tempPoint.Y;
-				packet->vertices[i*packet->width_d + j].Z = tempPoint.Z;
-			}	
-		}
-	}
-
-	return true;
+	return false;
 }
 
 
@@ -373,23 +341,6 @@ bool Calibration::OrderCorners(vector<cv::Point2f> &corners)
 }
 
 
-void Calibration::RotatePoint(Point3f &point, std::vector<std::vector<float>> &R, std::vector<float> &T)
-{
-	std::vector<float> res(3);
-	point.X += T[0];
-	point.Y += T[1];
-	point.Z += T[2];
-
-	res[0] = point.X * R[0][0] + point.Y * R[0][1] + point.Z * R[0][2];
-	res[1] = point.X * R[1][0] + point.Y * R[1][1] + point.Z * R[1][2];
-	res[2] = point.X * R[2][0] + point.Y * R[2][1] + point.Z * R[2][2];
-
-	point.X = res[0];
-	point.Y = res[1];
-	point.Z = res[2];
-}
-
-
 Calibration::Calibration(){
 	nMinSize = 100;
 	nMaxSize = 1000000000;
@@ -401,8 +352,6 @@ Calibration::Calibration(){
 
 	bDraw = true;
 	save2Local = false;
-	hasBeenCalibrated = false;
-	calibratedNum = 0;
 	GetMarkerPointsForWarp(vPts);
 }
 

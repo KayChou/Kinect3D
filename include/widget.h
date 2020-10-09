@@ -16,10 +16,7 @@ class Widget : public QWidget
     Q_OBJECT
 
 public:
-    Widget(FIFO<framePacket>** FIFO_RGBD_Acquisition, 
-           FIFO<framePacket>** FIFO_RGBD_Synchronize, 
-           FIFO<framePacket>** FIFO_pointCloud, 
-           FIFO<framePacket>** QtImageRender, 
+    Widget(FIFO<framePacket>** QtImageRender, 
            Context *context, 
            Ui::Widget *ui_out, 
            QWidget *parent = nullptr);

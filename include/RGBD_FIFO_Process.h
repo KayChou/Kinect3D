@@ -8,8 +8,12 @@ public:
     void process(Context *context);
     void init(FIFO<framePacket>* input, FIFO<framePacket>* output_pcd, FIFO<framePacket>* output_qt);
 
+    void RotatePoint(Point3f &point, std::vector<std::vector<float>> &R, std::vector<float> &T);
+
 private:
     Calibration calibrate;
+    std::vector<float> T;
+	std::vector<std::vector<float>> R;
 
 public:
     cv::Mat color;

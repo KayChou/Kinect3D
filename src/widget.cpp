@@ -2,19 +2,13 @@
 #include "ui_widget.h"
 #include "moc_widget.cpp"
 
-
-//=======================================================================================
 // Button: Start
-//=======================================================================================
 void Widget::on_pushButton_clicked()
 {
     // if device is not started, then start it
     if(!context->b_start_Camera){
         context->b_start_Camera = true;
         ui->pushButton->setText("Stop");
-
-        std::thread ImageFIFOThread(&Widget::QtImageFIFOProcess, this);
-        ImageFIFOThread.detach();
     }
     else{ // else stop devices
         context->b_start_Camera = false;
@@ -23,9 +17,7 @@ void Widget::on_pushButton_clicked()
 }
 
 
-//=======================================================================================
 // Button: Calibration
-//=======================================================================================
 void Widget::on_pushButton_2_clicked()
 {
     context->b_Calibration = context->b_Calibration ? false : true;
@@ -33,18 +25,14 @@ void Widget::on_pushButton_2_clicked()
 }
 
 
-//=======================================================================================
 // Button: Refine
-//=======================================================================================
 void Widget::on_pushButton_3_clicked()
 {
     context->b_Refine = context->b_Refine ? false : true;
 }
 
 
-//=======================================================================================
 // Button: Save
-//=======================================================================================
 void Widget::on_pushButton_4_clicked()
 {
     context->b_save2Local = context->b_save2Local ? false : true;
@@ -52,25 +40,19 @@ void Widget::on_pushButton_4_clicked()
 }
 
 
-//=======================================================================================
 // Button: Switch camera
-//=======================================================================================
 void Widget::on_pushButton_5_clicked(){
     indexTorender = (indexTorender + 1) % numKinects;
 }
 
 
-//=======================================================================================
 // render one new frame in ui->label
-//=======================================================================================
 void Widget::renderNewFrame(){
     ui->label->setPixmap(QPixmap::fromImage(image->scaled(512, 424)));
 }
 
 
-//=======================================================================================
 // get data from FIFO
-//=======================================================================================
 void Widget::QtImageFIFOProcess(){
     std::cout << "Thread Qt image process started\n" << std::endl;
     while(true){
@@ -97,13 +79,8 @@ void Widget::QtImageFIFOProcess(){
 }
 
 
-//=======================================================================================
 // construcion
-//=======================================================================================
-Widget::Widget(FIFO<framePacket>** FIFO_RGBD_Acquisition, 
-               FIFO<framePacket>** FIFO_RGBD_Synchronize, 
-               FIFO<framePacket>** FIFO_pointCloud, 
-               FIFO<framePacket>** QtImageRender, 
+Widget::Widget(FIFO<framePacket>** QtImageRender, 
                Context *context, 
                Ui::Widget *ui_out, 
                QWidget *parent) : QWidget(parent), ui(new Ui::Widget)
@@ -111,9 +88,6 @@ Widget::Widget(FIFO<framePacket>** FIFO_RGBD_Acquisition,
     ui->setupUi(this);
     ui_out = ui;
 
-    //this->FIFO_RGBD_Acquisition = FIFO_RGBD_Acquisition;
-    this->FIFO_RGBD_Synchronize = FIFO_RGBD_Synchronize;
-    this->FIFO_pointCloud = FIFO_pointCloud;
     this->QtImageRender = QtImageRender;
 
     this->context = context;
@@ -125,9 +99,7 @@ Widget::Widget(FIFO<framePacket>** FIFO_RGBD_Acquisition,
 }
 
 
-//=======================================================================================
 // destruct
-//=======================================================================================
 Widget::~Widget()
 {
     delete ui;    
