@@ -9,18 +9,16 @@
 void Widget::on_pushButton_clicked()
 {
     // if device is not started, then start it
-    if(!context->b_cameraStarted){
-        context->b_cameraStarted = true;
+    if(!context->b_start_Camera){
+        context->b_start_Camera = true;
         ui->pushButton->setText("Stop");
-        openAllKinect(FIFO_RGBD_Acquisition); // start Kinect, each sensor save framePacket to first FIFO
 
         std::thread ImageFIFOThread(&Widget::QtImageFIFOProcess, this);
         ImageFIFOThread.detach();
     }
     else{ // else stop devices
-        context->b_cameraStarted = false;
+        context->b_start_Camera = false;
         ui->pushButton->setText("Start");
-        destoryAllKinect();
     }
 }
 
@@ -74,10 +72,12 @@ void Widget::renderNewFrame(){
 // get data from FIFO
 //=======================================================================================
 void Widget::QtImageFIFOProcess(){
+    std::cout << "Thread Qt image process started\n" << std::endl;
     while(true){
         for(int i=0; i<numKinects; i++){
             framePacket *packet = QtImageRender[i]->get();
             if( packet == NULL ) { break; }
+            std::cout << "Qt image render get one frame\n" << std::endl;
 
             if(i == indexTorender){
                 int h = packet->height_d;
@@ -111,7 +111,7 @@ Widget::Widget(FIFO<framePacket>** FIFO_RGBD_Acquisition,
     ui->setupUi(this);
     ui_out = ui;
 
-    this->FIFO_RGBD_Acquisition = FIFO_RGBD_Acquisition;
+    //this->FIFO_RGBD_Acquisition = FIFO_RGBD_Acquisition;
     this->FIFO_RGBD_Synchronize = FIFO_RGBD_Synchronize;
     this->FIFO_pointCloud = FIFO_pointCloud;
     this->QtImageRender = QtImageRender;

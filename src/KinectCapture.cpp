@@ -1,99 +1,26 @@
 #include "KinectCapture.h"
 
-std::string* serials_;
-std::thread* kinectThreadTask;
-oneKinect** devices_;
-
-//=======================================================================================
-// Open all kinect
-//=======================================================================================
-bool openAllKinect(FIFO<framePacket>** output){
-    libfreenect2::Freenect2 freenect2_;
-    if(numKinects > freenect2_.enumerateDevices()){
-        std::cerr << "The number of devices does not match the specified\n";
-        return false;
-    }
-
-    serials_ = new std::string[numKinects];
-    kinectThreadTask = new std::thread[numKinects];
-    devices_ = new oneKinect*[numKinects];
-    
-    for(int i=0; i<numKinects; i++){
-        serials_[i] = freenect2_.getDeviceSerialNumber(i);
-        devices_[i] = new oneKinect(serials_[i], output[i]);
-        devices_[i]->setStartFlag(true);
-    }
-
-    for(int i=0; i<numKinects; i++){
-        kinectThreadTask[i] = std::thread(&oneKinect::getFrameLoop, std::ref(devices_[i]));
-        kinectThreadTask[i].detach();
-    }
-    return true;
-}
-
-
-//=======================================================================================
-// close all kinects and free space 
-//=======================================================================================
-void destoryAllKinect(){
-    for(int i=0; i<numKinects; i++){
-        devices_[i]->setStartFlag(false);
-        while(devices_[i]->getFinishFlag()){
-            delete devices_[i];
-        }
-    }
-    delete devices_;
-}
-
-
-//=======================================================================================
-// construct one kinect
-//=======================================================================================
-oneKinect::oneKinect(std::string serial, FIFO<framePacket>* output){
-    this->output_ = output;
-    this->startFlag = false;
-    this->finishFlag = false;
-    init(serial);
-}
-
-
-oneKinect::~oneKinect(){
-    //delete pipeline_;
-}
-
-
-void oneKinect::setStartFlag(bool flag){
-    this->startFlag = flag;
-}
-
-
-bool oneKinect::getFinishFlag(){
-    return this->finishFlag;
-}
-
-
 //=======================================================================================
 // init one kinect
 //=======================================================================================
-bool oneKinect::init(std::string serial){
-    serial_ = serial;
+bool Kinect::init(std::string serial, FIFO<framePacket>* output, Context *context){
+    this->serial = serial;
+    this->context = context;
+    this->output = output;
 
-    pipeline_ = new libfreenect2::OpenGLPacketPipeline();
-    dev_ = freenect2_.openDevice(serial_, pipeline_);
-    listener_ = new libfreenect2::SyncMultiFrameListener(typesDefault);
+    this->pipeline = new libfreenect2::OpenGLPacketPipeline();
+    this->dev = freenect2.openDevice(serial, pipeline); // open Kinect
+    this->listener = new libfreenect2::SyncMultiFrameListener(typesDefault);
 
-    dev_->setColorFrameListener(listener_);
-    dev_->setIrAndDepthFrameListener(listener_);
+    this->dev->setColorFrameListener(listener);
+    this->dev->setIrAndDepthFrameListener(listener);
 
-    if(!dev_->start()){ return false; }
-
-    config_.EnableBilateralFilter = true;
-    config_.EnableEdgeAwareFilter = true;
-    config_.MinDepth = 0.3f;
-    config_.MaxDepth = 12.0f;
-    dev_->setConfiguration(config_);
-
-    registration_ = new libfreenect2::Registration(dev_->getIrCameraParams(), dev_->getColorCameraParams());
+    this->config.EnableBilateralFilter = true;
+    this->config.EnableEdgeAwareFilter = true;
+    this->config.MinDepth = 0.3f;
+    this->config.MaxDepth = 12.0f;
+    this->dev->setConfiguration(this->config);
+    this->cameraStarted = false;
     return true;
 }
 
@@ -101,64 +28,106 @@ bool oneKinect::init(std::string serial){
 //=======================================================================================
 // get frame and put data to FIFO
 //=======================================================================================
-bool oneKinect::getFrameLoop(){
+bool Kinect::getFrameLoop(){
     std::cout << "Thread get frame from camera started" << std::endl;
-    int framecount = 0;
-    clock_t start, end;
-    // get image from kinect v2
     libfreenect2::Frame undistorted(512, 424, 4), registered(512, 424, 4), depth2rgb(1920, 1080 + 2, 4);
 
-    while(startFlag){
-        //start = clock();
-        if (!listener_->waitForNewFrame(frames_, 10*1000)) { // 10 seconds
-            std::cout << "timeout!" << std::endl;
-            return -1;
+    while(true){
+        if(!context->b_start_Camera && this->cameraStarted) { // if current camera is started and need to close:
+            this->dev->stop();
+            // this->dev->close();
+            this->cameraStarted = false;
+            delete this->registration;
         }
 
-        color_ = frames_[libfreenect2::Frame::Color];
-        depth_ = frames_[libfreenect2::Frame::Depth];
-        registration_->apply(color_, depth_, &undistorted, &registered, true, &depth2rgb);
+        if(context->b_start_Camera) { // if camera need to start
 
-        Point3fRGB *vertices = new Point3fRGB[depth_->width * depth_->height];
-        float rgb;
-        int nanCnt = 0;
-        for(int i=0; i < depth_->width * depth_->height; i++){
-            registration_->getPointXYZRGB(&undistorted, &registered, i/512, i%512, vertices[i].X, vertices[i].Y, vertices[i].Z, rgb);
-
-            if(std::isnan(vertices[i].X) | std::isnan(vertices[i].Y) | std::isnan(vertices[i].Z)){
-                vertices[i].X = 0;
-                vertices[i].Y = 0;
-                vertices[i].Z = 0;
-                nanCnt ++;
+            if(!this->cameraStarted) { // if not started, then start it 
+                this->dev->start();
+                this->registration = new libfreenect2::Registration(this->dev->getIrCameraParams(), this->dev->getColorCameraParams());
+                this->cameraStarted = true;
             }
 
-            //if(vertices[i].Z > 0 && vertices[i].Z < 4.5){
+            if (!listener->waitForNewFrame(frames, 10*1000)) { // 10 seconds
+                std::cout << "timeout!" << std::endl;
+            }
+
+            this->color = frames[libfreenect2::Frame::Color];
+            this->depth = frames[libfreenect2::Frame::Depth];
+            this->registration->apply(color, depth, &undistorted, &registered, true, &depth2rgb);
+
+            Point3fRGB *vertices = new Point3fRGB[depth->width * depth->height];
+            float rgb;
+            for(int i=0; i < depth->width * depth->height; i++){
+                this->registration->getPointXYZRGB(&undistorted, &registered, i/512, i%512, vertices[i].X, vertices[i].Y, vertices[i].Z, rgb);
+
+                if(std::isnan(vertices[i].X) || std::isnan(vertices[i].Y) || std::isnan(vertices[i].Z)){
+                    vertices[i].X = 0;
+                    vertices[i].Y = 0;
+                    vertices[i].Z = 0;
+                }
                 const uint8_t *c = reinterpret_cast<uint8_t*>(&rgb);
                 vertices[i].B = c[0];
                 vertices[i].G = c[1];
                 vertices[i].R = c[2];
-            //}
+            }
+
+            framePacket *packet = new framePacket();
+            packet->init(color, depth, vertices);
+            this->output->put(packet);
+            std::printf("capture get one frame\n");
+
+            listener->release(frames);
         }
+        
+    }
+    dev->stop();
+    dev->close();
+    std::printf("Thread Kinect Capture finish\n"); fflush(stdout);
+    delete pipeline;
+    delete listener;
+    return true;
+}
 
-        //std:printf("frame: %d has %d nan pixels\n", framecount, nanCnt); fflush(stdout);
-        framePacket *packet = new framePacket();
-        //packet->init(color_, &undistorted, vertices);
-        packet->init(color_, depth_, vertices);
-        this->output_->put(packet);
-        //std::printf("One packet is pushed | FIFO length: %d \n", output_->cnt); fflush(stdout);
-        //packet->destroy();
 
-        listener_->release(frames_);
-        //end = clock();
-        //std::printf("Frame count %-4d | FIFO length: %-4d | fps: %f\n", framecount, output_->cnt, CLOCKS_PER_SEC/(double)(end - start));
-        framecount++;
+
+void KinectsManager::init(FIFO<framePacket>** output, Context *context)
+{
+    this->output = output;
+    this->context = context;
+    this->cameraStarted = false;
+}
+
+//=======================================================================================
+// find all kinect and init: configure device serial and output FIFO
+//=======================================================================================
+bool KinectsManager::init_Kinect()
+{
+    if(numKinects > freenect2.enumerateDevices()){
+        std::cerr << "The number of devices does not match the specified\n";
+        return false;
+    }
+    
+    for(int i=0; i<numKinects; i++) {
+        serials[i] = freenect2.getDeviceSerialNumber(i);
+        cameras[i].init(serials[i], output[i], context);
     }
 
-    dev_->stop();
-    dev_->close();
-    std::printf("Thread Kinect Capture finish\n"); fflush(stdout);
-    this->finishFlag = true;
-    delete pipeline_;
-    delete listener_;
+    for(int i=0; i<numKinects; i++) {
+        capture_thread[i] = std::thread(&Kinect::getFrameLoop, &this->cameras[i]);
+        capture_thread[i].detach();
+    }
     return true;
+}
+
+
+void KinectsManager::loop()
+{
+    while(true){
+        if(!this->cameraStarted && context->b_start_Camera){
+            this->init_Kinect();
+            this->cameraStarted = true;
+        }
+        usleep(100000);
+    }
 }

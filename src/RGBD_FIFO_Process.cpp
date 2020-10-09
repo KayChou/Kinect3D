@@ -1,6 +1,5 @@
 #include "RGBD_FIFO_Process.h"
 
-
 //=======================================================================================
 // main loop: get data from RGBD FIFO
 //      if there is no packet for 5s, break
@@ -10,9 +9,9 @@
 void RGBD_FIFO_Process::process(Context *context){
     while(true){
         framePacket *packet = input->get();
+        std::printf("RGBD Process get one frame\n");
         // if( packet == NULL ) { break; } // exit over time(5s)
         // if calibrationFlag = false(stop calibration), just get one packet and display
-        // std::printf("process one frame, FIFO len: %d timeStamp: %u \n", input_->cnt, packet->timestamp_c);fflush(stdout);
         
         if(!context->b_Calibration){
             if(calibrate.calibrated){ calibrate.calibrated = false; calibrate.calibratedNum = 0; }

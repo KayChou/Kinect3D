@@ -12,6 +12,7 @@ int main(int argc, char *argv[])
     FIFO<framePacket> **QtImageRender = new FIFO<framePacket>*[numKinects];
 
     RGBD_FIFO_Process *rgbdProcess = new RGBD_FIFO_Process[numKinects];
+    KinectsManager *kinects = new KinectsManager();
 
     for(int i=0; i<numKinects; i++){
         RGBD_Capture[i] = new FIFO<framePacket>();
@@ -24,9 +25,12 @@ int main(int argc, char *argv[])
         pointCloud[i]->init(FIFO_LEN);
         QtImageRender[i]->init(FIFO_LEN);
 
-        rgbdProcess->init(synchronize[i], pointCloud[i], QtImageRender[i]);
+        rgbdProcess[i].init(synchronize[i], pointCloud[i], QtImageRender[i]);
     }
+    
+    kinects->init(RGBD_Capture, context);
 
+    std::thread KinectsManager_Thread = std::thread(&KinectsManager::loop, std::ref(kinects));
     std::thread synchronize_Thread = std::thread(Synchronize, RGBD_Capture, synchronize);
     std::thread opengl_Render_Thread = std::thread(&start_PLY_FIFO_Process, pointCloud, context);
     std::thread rgbd_Process_Thread[numKinects];
@@ -36,6 +40,7 @@ int main(int argc, char *argv[])
         rgbd_Process_Thread[i].detach();
     }
 
+    KinectsManager_Thread.detach();
     synchronize_Thread.detach();
     opengl_Render_Thread.detach();
 
@@ -58,6 +63,7 @@ int main(int argc, char *argv[])
     delete [] pointCloud;
     delete [] QtImageRender;
     delete [] context;
+    delete kinects;
 
     return 0;
 }

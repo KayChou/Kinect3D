@@ -21,10 +21,7 @@ void Synchronize(FIFO<framePacket> **input, FIFO<framePacket> **output){
     while(true){
         if(numKinects == 1){
             framePacket *packet = input[0]->get();
-            frameCnt++;
-            if(frameCnt == 10){
-                savePacket2Bin(packet, "frame.bin");
-            }
+            std::printf("synchronize get one frame\n");
             output[0]->put(packet);
         }
         else{
@@ -61,6 +58,7 @@ void Synchronize(FIFO<framePacket> **input, FIFO<framePacket> **output){
                     }
                     //std::printf("%d ", timeStamp[i]); fflush(stdout);
                 }
+                std::printf("synchronize get one frame\n");
                 //std::printf("\n"); fflush(stdout);
 
                 uint32_t max = *max_element(timeStamp, timeStamp + numKinects);
@@ -75,7 +73,7 @@ void Synchronize(FIFO<framePacket> **input, FIFO<framePacket> **output){
                 }
             }
         }
-        usleep(20000);
+        usleep(2000);
     }
     delete [] packetList;
 }

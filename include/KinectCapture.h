@@ -14,37 +14,54 @@ bool openAllKinect(FIFO<framePacket>** output);
 void destoryAllKinect();
 
 
-class oneKinect
+class Kinect
 {
 public:
-    oneKinect();
-    oneKinect(std::string serial, FIFO<framePacket>* output);
-    ~oneKinect();
-
-    bool init(std::string serial);
+    bool init(std::string serial, FIFO<framePacket>* output, Context *context);
     bool getFrameLoop();
     void setStartFlag(bool flag);
     bool getFinishFlag();
 
 public:
-    libfreenect2::Frame *color_;
-    libfreenect2::Frame *depth_;
-    FIFO<framePacket>* output_;
+    libfreenect2::Frame *color;
+    libfreenect2::Frame *depth;
+    FIFO<framePacket>* output;
 
 public:
-    libfreenect2::Freenect2 freenect2_;
-    libfreenect2::Freenect2Device *dev_;
-    libfreenect2::PacketPipeline *pipeline_;
+    libfreenect2::Freenect2 freenect2;
+    libfreenect2::Freenect2Device *dev;
+    libfreenect2::PacketPipeline *pipeline;
 
-    std::string serial_;
-    libfreenect2::SyncMultiFrameListener *listener_;
-    libfreenect2::FrameMap frames_;
+    std::string serial;
+    libfreenect2::SyncMultiFrameListener *listener;
+    libfreenect2::FrameMap frames;
 
-    libfreenect2::Freenect2Device::Config config_;
-    libfreenect2::Registration* registration_;
+    libfreenect2::Freenect2Device::Config config;
+    libfreenect2::Registration* registration;
 
-    bool startFlag;
-    bool finishFlag;
+    Context *context;
+    bool cameraStarted;
+};
+
+
+class KinectsManager
+{
+public:
+    FIFO<framePacket>** output;
+    Context *context;
+
+    libfreenect2::Freenect2 freenect2;
+    std::string serials[numKinects];
+    Kinect cameras[numKinects];
+
+    std::thread capture_thread[numKinects];
+
+    bool cameraStarted;
+
+public:
+    void init(FIFO<framePacket>** output, Context *context);
+    bool init_Kinect();
+    void loop();
 };
 
 #endif

@@ -4,7 +4,7 @@
 
 typedef struct Context {
 	bool b_save2Local;
-	bool b_cameraStarted;
+	bool b_start_Camera;
 	bool b_Calibration;
 	bool b_hasBeenCalibrated;
 	bool b_Refine;
@@ -13,7 +13,7 @@ typedef struct Context {
 
 	Context(){
 		this->b_save2Local = false;
-		this->b_cameraStarted = false;
+		this->b_start_Camera = false;
 		this->b_Calibration = false;
 		this->b_hasBeenCalibrated = false;
 		this->b_enableRGB = true;

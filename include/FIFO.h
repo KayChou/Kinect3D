@@ -75,7 +75,7 @@ public:
         while(true){
             if(this->is_empty()){
                 timeoutCnt++;
-                if(timeoutCnt > 5000){return NULL;}
+                // if(timeoutCnt > 5000){return NULL;}
                 usleep(1000);
                 continue;
             }
