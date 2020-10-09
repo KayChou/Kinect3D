@@ -21,7 +21,7 @@ void Synchronize(FIFO<framePacket> **input, FIFO<framePacket> **output){
     while(true){
         if(numKinects == 1){
             framePacket *packet = input[0]->get();
-            std::printf("synchronize get one frame\n");
+            std::printf("synchronize get one frame\n"); fflush(stdout);
             output[0]->put(packet);
         }
         else{
@@ -47,6 +47,7 @@ void Synchronize(FIFO<framePacket> **input, FIFO<framePacket> **output){
                     framePacket *packet = input[maxIdx]->get();
                     packet->destroy();
                 }
+                usleep(30000);
             }
 
             // synchronize
@@ -58,7 +59,7 @@ void Synchronize(FIFO<framePacket> **input, FIFO<framePacket> **output){
                     }
                     //std::printf("%d ", timeStamp[i]); fflush(stdout);
                 }
-                std::printf("synchronize get one frame\n");
+                std::printf("synchronize get one frame\n"); fflush(stdout);
                 //std::printf("\n"); fflush(stdout);
 
                 uint32_t max = *max_element(timeStamp, timeStamp + numKinects);
@@ -67,7 +68,7 @@ void Synchronize(FIFO<framePacket> **input, FIFO<framePacket> **output){
                     if( max - timeStamp[i] > timeStampThreshold ){
                         packetList[i]->destroy();
                         packetList[i] = input[i]->get();
-                        std::printf("FIFO %d throw away one frame\n", i);
+                        std::printf("FIFO %d throw away one frame\n", i); fflush(stdout);
                     }
                     output[i]->put(packetList[i]);
                 }

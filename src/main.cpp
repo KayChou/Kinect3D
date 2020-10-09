@@ -11,9 +11,6 @@ int main(int argc, char *argv[])
     FIFO<framePacket> **pointCloud = new FIFO<framePacket>*[numKinects];
     FIFO<framePacket> **QtImageRender = new FIFO<framePacket>*[numKinects];
 
-    RGBD_FIFO_Process *rgbdProcess = new RGBD_FIFO_Process[numKinects];
-    KinectsManager *kinects = new KinectsManager();
-
     for(int i=0; i<numKinects; i++){
         RGBD_Capture[i] = new FIFO<framePacket>();
         synchronize[i] = new FIFO<framePacket>();
@@ -24,15 +21,31 @@ int main(int argc, char *argv[])
         synchronize[i]->init(FIFO_LEN);
         pointCloud[i]->init(FIFO_LEN);
         QtImageRender[i]->init(FIFO_LEN);
+    }
+
+    FIFO<framePacket> **capture_output = new FIFO<framePacket>*[numKinects];
+    FIFO<framePacket> **synchronize_input = new FIFO<framePacket>*[numKinects];
+    FIFO<framePacket> **synchronize_output = new FIFO<framePacket>*[numKinects];
+    FIFO<framePacket> **opengl_render_input = new FIFO<framePacket>*[numKinects];
+    FIFO<framePacket> **opengl_render_output = new FIFO<framePacket>*[numKinects];
+
+    KinectsManager *kinects = new KinectsManager();
+    RGBD_FIFO_Process *rgbdProcess = new RGBD_FIFO_Process[numKinects];
+
+    for(int i=0; i<numKinects; i++){
+        capture_output[i] = RGBD_Capture[i];
+        synchronize_input[i] = RGBD_Capture[i];
+        synchronize_output[i] = synchronize[i];
+        opengl_render_input[i] = pointCloud[i];
 
         rgbdProcess[i].init(synchronize[i], pointCloud[i], QtImageRender[i]);
     }
     
-    kinects->init(RGBD_Capture, context);
+    kinects->init(capture_output, context);
 
     std::thread KinectsManager_Thread = std::thread(&KinectsManager::loop, std::ref(kinects));
-    std::thread synchronize_Thread = std::thread(Synchronize, RGBD_Capture, synchronize);
-    std::thread opengl_Render_Thread = std::thread(&start_PLY_FIFO_Process, pointCloud, context);
+    std::thread synchronize_Thread = std::thread(Synchronize, synchronize_input, synchronize_output);
+    std::thread opengl_Render_Thread = std::thread(&start_PLY_FIFO_Process, opengl_render_input, context);
     std::thread rgbd_Process_Thread[numKinects];
 
     for(int i=0; i<numKinects; i++){
