@@ -4,7 +4,7 @@
 #include <iostream>
 #include "KinectCapture.h"
 #include "RGBD_FIFO_Process.h"
-#include "PLY_Process.h"
+#include "openglRender.h"
 #include "utils.h"
 
 QT_BEGIN_NAMESPACE

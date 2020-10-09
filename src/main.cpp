@@ -27,10 +27,10 @@ int main(int argc, char *argv[])
     FIFO<framePacket> **synchronize_input = new FIFO<framePacket>*[numKinects];
     FIFO<framePacket> **synchronize_output = new FIFO<framePacket>*[numKinects];
     FIFO<framePacket> **opengl_render_input = new FIFO<framePacket>*[numKinects];
-    FIFO<framePacket> **opengl_render_output = new FIFO<framePacket>*[numKinects];
 
     KinectsManager *kinects = new KinectsManager();
     RGBD_FIFO_Process *rgbdProcess = new RGBD_FIFO_Process[numKinects];
+    openglRender *render = new openglRender();
 
     for(int i=0; i<numKinects; i++){
         capture_output[i] = RGBD_Capture[i];
@@ -42,10 +42,11 @@ int main(int argc, char *argv[])
     }
     
     kinects->init(capture_output, context);
+    render->init(opengl_render_input, context);
 
     std::thread KinectsManager_Thread = std::thread(&KinectsManager::loop, std::ref(kinects));
     std::thread synchronize_Thread = std::thread(Synchronize, synchronize_input, synchronize_output);
-    std::thread opengl_Render_Thread = std::thread(&start_PLY_FIFO_Process, opengl_render_input, context);
+    std::thread opengl_Render_Thread = std::thread(&openglRender::loop, std::ref(render));
     std::thread rgbd_Process_Thread[numKinects];
 
     for(int i=0; i<numKinects; i++){
