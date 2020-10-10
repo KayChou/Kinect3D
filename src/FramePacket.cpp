@@ -52,3 +52,24 @@ void framePacket::destroy(){
     delete [] this->data_d;
     delete [] this->vertices;
 }
+
+
+frameMesh::frameMesh() { }
+
+
+void frameMesh::init(Point3fRGB *vertices, triIndex* triangles, size_t Vn, size_t Fn)
+{
+    this->Vn = Vn;
+    this->Fn = Fn;
+    this->vertices = new Point3fRGB[Vn];
+    this->triangles = new triIndex[Fn];
+
+    memcpy(this->vertices, vertices, this->Vn);
+    memcpy(this->triangles, triangles, this->Fn);
+}
+
+void frameMesh::destory()
+{
+    delete [] this->vertices;
+    delete [] this->triangles;
+}

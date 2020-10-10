@@ -35,7 +35,6 @@ bool Kinect::getFrameLoop(){
     while(true){
         if(!context->b_start_Camera && this->cameraStarted) { // if current camera is started and need to close:
             this->dev->stop();
-            // this->dev->close();
             this->cameraStarted = false;
             delete this->registration;
         }

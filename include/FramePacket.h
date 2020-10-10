@@ -37,6 +37,19 @@ public:
 };
 
 
+class frameMesh
+{
+public:
+    size_t Vn;
+    size_t Fn;
+    Point3fRGB *vertices;
+    triIndex* triangles;
 
+public:
+    frameMesh();
+    void init(Point3fRGB *vertices, triIndex* triangles, size_t Vn, size_t Fn);
+
+    void destory();
+};
 
 #endif

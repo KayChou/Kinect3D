@@ -34,14 +34,17 @@ typedef struct Point3fRGB {
 } Point3fRGB;
 
 
-struct TriIndex {
-	TriIndex() {
+typedef struct triIndex
+{
+	triIndex() {
 		this->v1 = 0;
 		this->v2 = 0;
 		this->v3 = 0;
 	}
-	int v1, v2, v3;
-};
+	int v1;
+	int v2;
+	int v3;
+} triIndex;
 
 
 typedef struct RGB {
