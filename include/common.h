@@ -17,7 +17,7 @@
 
 #define framemax 300
 #define FIFO_LEN 30
-#define numKinects 1
+#define numKinects 2
 #define typesDefault libfreenect2::Frame::Color | libfreenect2::Frame::Depth
 
 #define x_bbox_min -1
@@ -51,6 +51,6 @@ typedef struct Context {
 		this->b_enableDepth = true;
 		this->depth_w = 512;
 		this->depth_h = 424;
-		this->Td = 0.5f;
+		this->Td = 0.025f;
 	}
 } Context;

@@ -47,8 +47,8 @@ void RGBD_FIFO_Process::process(Context *context){
                 }
 
                 // push valid point to "points"
-                if(tempPoint.Z > z_bbox_min && tempPoint.Z < z_bbox_max && 
-                    tempPoint.X > x_bbox_min && tempPoint.X < x_bbox_max && 
+                if(tempPoint.Z > z_bbox_min && tempPoint.Z < z_bbox_max &&
+                    tempPoint.X > x_bbox_min && tempPoint.X < x_bbox_max &&
                     tempPoint.Y > y_bbox_min && tempPoint.Y < y_bbox_max) {
                     mask[ptr_idx] = Vn;
                     points[Vn++] = packet->vertices[ptr_idx];
@@ -63,9 +63,9 @@ void RGBD_FIFO_Process::process(Context *context){
                     int t = ptr_idx - packet->width_d; // top
                     int lt = ptr_idx - 1 - packet->width_d; // left top
 
-                    if(pow(verts[c].X - verts[l].X, 2) + pow(verts[c].Y - verts[l].Y, 2) + pow(verts[c].Z - verts[l].Z, 2) < context->Td && 
-                        pow(verts[t].X - verts[l].X, 2) + pow(verts[t].Y - verts[l].Y, 2) + pow(verts[t].Z - verts[l].Z, 2) < context->Td && 
-                        pow(verts[c].X - verts[t].X, 2) + pow(verts[c].Y - verts[t].Y, 2) + pow(verts[c].Z - verts[t].Z, 2) < context->Td && 
+                    if(abs(verts[c].X - verts[l].X) + abs(verts[c].Y - verts[l].Y) + abs(verts[c].Z - verts[l].Z) < context->Td && 
+                        abs(verts[t].X - verts[l].X) + abs(verts[t].Y - verts[l].Y) + abs(verts[t].Z - verts[l].Z) < context->Td && 
+                        abs(verts[c].X - verts[t].X) + abs(verts[c].Y - verts[t].Y) + abs(verts[c].Z - verts[t].Z) < context->Td && 
                         mask[c] && mask[l] && mask[t]) {
                         tempTri.v1 = mask[l];
                         tempTri.v2 = mask[c];
@@ -73,9 +73,9 @@ void RGBD_FIFO_Process::process(Context *context){
                         triangles[Fn++] = tempTri;
                     }
 
-                    if(pow(verts[lt].X - verts[l].X, 2) + pow(verts[lt].Y - verts[l].Y, 2) + pow(verts[lt].Z - verts[l].Z, 2) < context->Td && 
-                        pow(verts[t].X - verts[l].X, 2) + pow(verts[t].Y - verts[l].Y, 2) + pow(verts[t].Z - verts[l].Z, 2) < context->Td && 
-                        pow(verts[lt].X - verts[t].X, 2) + pow(verts[lt].Y - verts[t].Y, 2) + pow(verts[lt].Z - verts[t].Z, 2) < context->Td &&
+                    if(abs(verts[lt].X - verts[l].X) + abs(verts[lt].Y - verts[l].Y) + abs(verts[lt].Z - verts[l].Z) < context->Td && 
+                        abs(verts[t].X - verts[l].X) + abs(verts[t].Y - verts[l].Y) + abs(verts[t].Z - verts[l].Z) < context->Td && 
+                        abs(verts[lt].X - verts[t].X) + abs(verts[lt].Y - verts[t].Y) + abs(verts[lt].Z - verts[t].Z) < context->Td &&
                         mask[l] && mask[lt] && mask[t]) {
                         tempTri.v1 = mask[l];
                         tempTri.v2 = mask[lt];

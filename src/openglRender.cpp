@@ -31,6 +31,8 @@ void openglRender::loop()
     Point3f temp;
     int Vn = 0;
     int Fn = 0;
+    int cnt = 0;
+    std::string filename;
 
     glInit();
 
@@ -39,6 +41,15 @@ void openglRender::loop()
         Fn = 0;
         for(int i=0; i<numKinects; i++){
             frameMesh *packet = input[i]->get();
+
+            for(int i=0; i<packet->Fn; i++){
+                faces[3 * Fn + 0] = packet->triangles[i].v1 + Vn;
+                faces[3 * Fn + 1] = packet->triangles[i].v2 + Vn;
+                faces[3 * Fn + 2] = packet->triangles[i].v3 + Vn;
+                if(faces[3 * Fn + 0] && faces[3 * Fn + 1] && faces[3 * Fn + 2]){
+                    Fn++;
+                }
+            }
 
             for(int i=0; i<packet->Vn; i++){
                 vertices[6 * Vn + 0] = packet->vertices[i].X;
@@ -49,19 +60,15 @@ void openglRender::loop()
                 vertices[6 * Vn + 5] = (float)packet->vertices[i].B / 255.0f;
                 Vn++;
             } 
-
-            for(int i=0; i<packet->Fn; i++){
-                faces[3 * Fn + 0] = packet->triangles[i].v1;
-                faces[3 * Fn + 1] = packet->triangles[i].v2;
-                faces[3 * Fn + 2] = packet->triangles[i].v3;
-                if(faces[3 * Fn + 0] && faces[3 * Fn + 1] && faces[3 * Fn + 2]){
-                    Fn++;
-                }
-            }
-            packet->destroy();       
+            packet->destroy();
         }
         Vn--;
         Fn--;
+
+        if(context->b_save2Local){ // save pointcloud to local
+            filename =  "datas/mesh" + std::to_string(cnt) + ".ply", cnt++;
+            savePlyFile(filename.c_str(), vertices, faces, Vn, Fn);
+        }
 
         float currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;

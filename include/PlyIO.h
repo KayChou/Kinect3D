@@ -18,4 +18,6 @@ bool parasePlyHeader(std::ifstream &in, const char* filename, unsigned int &vn, 
 bool readPlyFile(const char* filename, std::vector<Point3f> &verts, std::vector<RGB> &colors);
 void savePlyFile(const char* filename, std::vector<Point3f> vertices, bool BINARY=true, std::vector<RGB> colors=std::vector<RGB>());
 
+void savePlyFile(const char* filename, float* vertices, int* faces, int Vn, int Fn);
+
 #endif
