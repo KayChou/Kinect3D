@@ -64,11 +64,11 @@ void frameMesh::init(Point3fRGB *vertices, triIndex* triangles, size_t Vn, size_
     this->vertices = new Point3fRGB[Vn];
     this->triangles = new triIndex[Fn];
 
-    memcpy(this->vertices, vertices, this->Vn);
-    memcpy(this->triangles, triangles, this->Fn);
+    memcpy(this->vertices, vertices, sizeof(Point3fRGB) * this->Vn);
+    memcpy(this->triangles, triangles, sizeof(triIndex) * this->Fn);
 }
 
-void frameMesh::destory()
+void frameMesh::destroy()
 {
     delete [] this->vertices;
     delete [] this->triangles;

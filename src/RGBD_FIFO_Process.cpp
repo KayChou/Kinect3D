@@ -2,8 +2,6 @@
 
 //=======================================================================================
 // main loop: get data from RGBD FIFO
-//      if there is no packet for 5s, break
-//      if output is not NULL, copy current packet to output FIFO, for QT render
 //      if calibrate button is clicked, perform calibration
 //=======================================================================================
 void RGBD_FIFO_Process::process(Context *context){
@@ -25,78 +23,78 @@ void RGBD_FIFO_Process::process(Context *context){
             context->b_hasBeenCalibrated = calibrate.performCalibration(packet, T, R);
         }
 
-        if(context->b_hasBeenCalibrated) {
+        Point3f tempPoint;
+        triIndex tempTri;
+        Vn = 0;
+        Fn = 0;
 
-            Point3f tempPoint;
-            triIndex tempTri;
-            Vn = 0;
-            Fn = 0;
+        verts = packet->vertices;
 
-            verts = packet->vertices;
+        for(int i=0; i<packet->height_d; i++) {
+            for(int j=0; j<packet->width_d; j++) {
 
-            for(int i=0; i<packet->height_d; i++) {
-                for(int j=0; j<packet->width_d; j++) {
+                ptr_idx = i*packet->width_d + j;
 
-                    ptr_idx = i*packet->width_d + j;
+                tempPoint.X = packet->vertices[ptr_idx].X;
+                tempPoint.Y = packet->vertices[ptr_idx].Y;
+                tempPoint.Z = packet->vertices[ptr_idx].Z;
 
-                    tempPoint.X = packet->vertices[ptr_idx].X;
-                    tempPoint.Y = packet->vertices[ptr_idx].Y;
-                    tempPoint.Z = packet->vertices[ptr_idx].Z;
-
+                if(context->b_hasBeenCalibrated) {
                     RotatePoint(tempPoint, R, T);
                     packet->vertices[ptr_idx].X = tempPoint.X;
                     packet->vertices[ptr_idx].Y = tempPoint.Y;
                     packet->vertices[ptr_idx].Z = tempPoint.Z;
+                }
 
-                    // push valid point to "points"
-                    if(tempPoint.Z > z_bbox_min && tempPoint.Z < z_bbox_max && 
-                       tempPoint.X > x_bbox_min && tempPoint.X < x_bbox_max && 
-                       tempPoint.Y > y_bbox_min && tempPoint.Y < y_bbox_max) {
-                        mask[ptr_idx] = Vn;
-                        points[Vn++] = packet->vertices[ptr_idx];
+                // push valid point to "points"
+                if(tempPoint.Z > z_bbox_min && tempPoint.Z < z_bbox_max && 
+                    tempPoint.X > x_bbox_min && tempPoint.X < x_bbox_max && 
+                    tempPoint.Y > y_bbox_min && tempPoint.Y < y_bbox_max) {
+                    mask[ptr_idx] = Vn;
+                    points[Vn++] = packet->vertices[ptr_idx];
+                }
+                else{
+                    mask[ptr_idx] = 0;
+                }
+
+                if(i > 0 && j > 1){
+                    int c = mask[ptr_idx]; // center
+                    int l = mask[ptr_idx - 1]; // left
+                    int t = mask[ptr_idx - packet->width_d]; // top
+                    int lt = mask[ptr_idx - 1 - packet->width_d]; // left top
+
+                    if(pow(verts[c].X - verts[l].X, 2) + pow(verts[c].Y - verts[l].Y, 2) + pow(verts[c].Z - verts[l].Z, 2) < context->Td && 
+                        pow(verts[t].X - verts[l].X, 2) + pow(verts[t].Y - verts[l].Y, 2) + pow(verts[t].Z - verts[l].Z, 2) < context->Td && 
+                        pow(verts[c].X - verts[t].X, 2) + pow(verts[c].Y - verts[t].Y, 2) + pow(verts[c].Z - verts[t].Z, 2) < context->Td && 
+                        c && l && t) {
+                        tempTri.v1 = mask[l];
+                        tempTri.v2 = mask[c];
+                        tempTri.v3 = mask[t];
+                        Fn ++;
                     }
-                    else{
-                        mask[ptr_idx] = 0;
-                    }
 
-                    if(i > 0 && j > 1){
-                        int c = mask[ptr_idx]; // center
-                        int l = mask[ptr_idx - 1]; // left
-                        int t = mask[ptr_idx - packet->width_d]; // top
-                        int lt = mask[ptr_idx - 1 - packet->width_d]; // left top
-
-                        if(pow(verts[c].X - verts[l].X, 2) + pow(verts[c].Y - verts[l].Y, 2) + pow(verts[c].Z - verts[l].Z, 2) < context->Td && 
-                           pow(verts[t].X - verts[l].X, 2) + pow(verts[t].Y - verts[l].Y, 2) + pow(verts[t].Z - verts[l].Z, 2) < context->Td && 
-                           pow(verts[c].X - verts[t].X, 2) + pow(verts[c].Y - verts[t].Y, 2) + pow(verts[c].Z - verts[t].Z, 2) < context->Td && 
-                           c && l && t) {
-                            tempTri.v1 = mask[l];
-                            tempTri.v2 = mask[c];
-                            tempTri.v3 = mask[t];
-                            Fn ++;
-                        }
-
-                        if(pow(verts[lt].X - verts[l].X, 2) + pow(verts[lt].Y - verts[l].Y, 2) + pow(verts[lt].Z - verts[l].Z, 2) < context->Td && 
-                           pow(verts[t].X - verts[l].X, 2) + pow(verts[t].Y - verts[l].Y, 2) + pow(verts[t].Z - verts[l].Z, 2) < context->Td && 
-                           pow(verts[lt].X - verts[t].X, 2) + pow(verts[lt].Y - verts[t].Y, 2) + pow(verts[lt].Z - verts[t].Z, 2) < context->Td &&
-                           l && lt && t) {
-                            tempTri.v1 = l;
-                            tempTri.v2 = lt;
-                            tempTri.v3 = t;
-                            Fn ++;
-                        }
+                    if(pow(verts[lt].X - verts[l].X, 2) + pow(verts[lt].Y - verts[l].Y, 2) + pow(verts[lt].Z - verts[l].Z, 2) < context->Td && 
+                        pow(verts[t].X - verts[l].X, 2) + pow(verts[t].Y - verts[l].Y, 2) + pow(verts[t].Z - verts[l].Z, 2) < context->Td && 
+                        pow(verts[lt].X - verts[t].X, 2) + pow(verts[lt].Y - verts[t].Y, 2) + pow(verts[lt].Z - verts[t].Z, 2) < context->Td &&
+                        l && lt && t) {
+                        tempTri.v1 = l;
+                        tempTri.v2 = lt;
+                        tempTri.v3 = t;
+                        Fn ++;
                     }
                 }
             }
-            std::printf("Vn: %d Fn %d\n", Vn, Fn); fflush(stdout);
         }
+        std::printf("Vn: %d Fn %d\n", Vn, Fn); fflush(stdout);
         
         if(this->output_qt != NULL){ // FIFO for QT image render
             framePacket* newPacket = new framePacket(packet);
             this->output_qt->put(newPacket);
         }
         if(this->output_pcd != NULL){ // FIFO for next step(save to local or pointcloud render)
-            framePacket* newPacket = new framePacket(packet);
-            this->output_pcd->put(newPacket);
+            frameMesh *newMesh = new frameMesh();
+            newMesh->init(points, triangles, Vn, Fn);
+            this->output_pcd->put(newMesh);
         }
         packet->destroy();
         usleep(20000);
@@ -107,7 +105,7 @@ void RGBD_FIFO_Process::process(Context *context){
 }
 
 
-void RGBD_FIFO_Process::init(FIFO<framePacket>* input, FIFO<framePacket>* output_pcd, FIFO<framePacket>* output_qt){
+void RGBD_FIFO_Process::init(FIFO<framePacket>* input, FIFO<frameMesh>* output_pcd, FIFO<framePacket>* output_qt){
     this->input = input;
     this->output_qt = output_qt;
     this->output_pcd = output_pcd;

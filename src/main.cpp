@@ -8,13 +8,13 @@ int main(int argc, char *argv[])
 
     FIFO<framePacket> **RGBD_Capture = new FIFO<framePacket>*[numKinects];
     FIFO<framePacket> **synchronize = new FIFO<framePacket>*[numKinects];
-    FIFO<framePacket> **pointCloud = new FIFO<framePacket>*[numKinects];
+    FIFO<frameMesh> **pointCloud = new FIFO<frameMesh>*[numKinects];
     FIFO<framePacket> **QtImageRender = new FIFO<framePacket>*[numKinects];
 
     for(int i=0; i<numKinects; i++){
         RGBD_Capture[i] = new FIFO<framePacket>();
         synchronize[i] = new FIFO<framePacket>();
-        pointCloud[i] = new FIFO<framePacket>();
+        pointCloud[i] = new FIFO<frameMesh>();
         QtImageRender[i] = new FIFO<framePacket>();
 
         RGBD_Capture[i]->init(FIFO_LEN);
@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
     FIFO<framePacket> **capture_output = new FIFO<framePacket>*[numKinects];
     FIFO<framePacket> **synchronize_input = new FIFO<framePacket>*[numKinects];
     FIFO<framePacket> **synchronize_output = new FIFO<framePacket>*[numKinects];
-    FIFO<framePacket> **opengl_render_input = new FIFO<framePacket>*[numKinects];
+    FIFO<frameMesh> **opengl_render_input = new FIFO<frameMesh>*[numKinects];
 
     KinectsManager *kinects = new KinectsManager();
     RGBD_FIFO_Process *rgbdProcess = new RGBD_FIFO_Process[numKinects];

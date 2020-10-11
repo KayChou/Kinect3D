@@ -48,7 +48,7 @@ bool Kinect::getFrameLoop(){
             }
 
             if (!listener->waitForNewFrame(frames, 10*1000)) { // 10 seconds
-                std::cout << "timeout!" << std::endl;
+                std::cout << "timeout!" << std::endl; fflush(stdout);
             }
 
             this->color = frames[libfreenect2::Frame::Color];
@@ -80,7 +80,7 @@ bool Kinect::getFrameLoop(){
         }
         
     }
-    dev->stop();
+    if(this->cameraStarted) dev->stop();
     dev->close();
     std::printf("Thread Kinect Capture finish\n"); fflush(stdout);
     delete pipeline;

@@ -49,7 +49,7 @@ public:
     frameMesh();
     void init(Point3fRGB *vertices, triIndex* triangles, size_t Vn, size_t Fn);
 
-    void destory();
+    void destroy();
 };
 
 #endif
