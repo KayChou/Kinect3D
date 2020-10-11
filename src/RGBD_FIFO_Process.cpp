@@ -57,34 +57,36 @@ void RGBD_FIFO_Process::process(Context *context){
                     mask[ptr_idx] = 0;
                 }
 
-                if(i > 0 && j > 1){
-                    int c = mask[ptr_idx]; // center
-                    int l = mask[ptr_idx - 1]; // left
-                    int t = mask[ptr_idx - packet->width_d]; // top
-                    int lt = mask[ptr_idx - 1 - packet->width_d]; // left top
+                if(i > 0 && j > 0){
+                    int c = ptr_idx; // center
+                    int l = ptr_idx - 1; // left
+                    int t = ptr_idx - packet->width_d; // top
+                    int lt = ptr_idx - 1 - packet->width_d; // left top
 
                     if(pow(verts[c].X - verts[l].X, 2) + pow(verts[c].Y - verts[l].Y, 2) + pow(verts[c].Z - verts[l].Z, 2) < context->Td && 
                         pow(verts[t].X - verts[l].X, 2) + pow(verts[t].Y - verts[l].Y, 2) + pow(verts[t].Z - verts[l].Z, 2) < context->Td && 
                         pow(verts[c].X - verts[t].X, 2) + pow(verts[c].Y - verts[t].Y, 2) + pow(verts[c].Z - verts[t].Z, 2) < context->Td && 
-                        c && l && t) {
+                        mask[c] && mask[l] && mask[t]) {
                         tempTri.v1 = mask[l];
                         tempTri.v2 = mask[c];
                         tempTri.v3 = mask[t];
-                        Fn ++;
+                        triangles[Fn++] = tempTri;
                     }
 
                     if(pow(verts[lt].X - verts[l].X, 2) + pow(verts[lt].Y - verts[l].Y, 2) + pow(verts[lt].Z - verts[l].Z, 2) < context->Td && 
                         pow(verts[t].X - verts[l].X, 2) + pow(verts[t].Y - verts[l].Y, 2) + pow(verts[t].Z - verts[l].Z, 2) < context->Td && 
                         pow(verts[lt].X - verts[t].X, 2) + pow(verts[lt].Y - verts[t].Y, 2) + pow(verts[lt].Z - verts[t].Z, 2) < context->Td &&
-                        l && lt && t) {
-                        tempTri.v1 = l;
-                        tempTri.v2 = lt;
-                        tempTri.v3 = t;
-                        Fn ++;
+                        mask[l] && mask[lt] && mask[t]) {
+                        tempTri.v1 = mask[l];
+                        tempTri.v2 = mask[lt];
+                        tempTri.v3 = mask[t];
+                        triangles[Fn++] = tempTri;
                     }
                 }
             }
         }
+        Vn--;
+        Fn--;
         std::printf("Vn: %d Fn %d\n", Vn, Fn); fflush(stdout);
         
         if(this->output_qt != NULL){ // FIFO for QT image render
@@ -97,7 +99,7 @@ void RGBD_FIFO_Process::process(Context *context){
             this->output_pcd->put(newMesh);
         }
         packet->destroy();
-        usleep(20000);
+        usleep(1000);
     }
     delete [] points;
     delete [] triangles;

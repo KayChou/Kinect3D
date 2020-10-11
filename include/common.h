@@ -51,6 +51,6 @@ typedef struct Context {
 		this->b_enableDepth = true;
 		this->depth_w = 512;
 		this->depth_h = 424;
-		this->Td = 3.0f;
+		this->Td = 0.5f;
 	}
 } Context;
