@@ -1,0 +1,20 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "include",
+                "/home/benjamin/lib/opencv3_4_11/include",
+                "/home/benjamin/lib/freenect2/include"
+            ],
+            "defines": [],
+            "compilerPath": "/usr/bin/clang",
+            "cStandard": "c11",
+            "cppStandard": "c++11",
+            "intelliSenseMode": "clang-x64",
+            "configurationProvider": "ms-vscode.cmake-tools"
+        }
+    ],
+    "version": 4
+}

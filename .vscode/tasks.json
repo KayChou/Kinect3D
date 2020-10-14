@@ -1,0 +1,44 @@
+{
+    "tasks": [
+        {
+            "type": "shell",
+            "label": "C/C++: g++ build active file",
+            "command": "/usr/bin/g++",
+            "args": [
+                "-std=c++11",
+                "`pkg-config", "--cflags", "--libs", "opencv`",
+                "`pkg-config", "--cflags", "--libs", "Qt5Widgets`",
+                "`pkg-config", "--cflags", "--libs", "Qt5Core`",
+                "`pkg-config", "--cflags", "--libs", "Qt5Gui`",
+                "`pkg-config", "--cflags", "--libs", "freenect2`",
+
+                "-g",
+                "src/main.cpp", "src/widget.cpp", "src/KinectCapture.cpp", "src/FramePacket.cpp", "src/PlyIO.cpp", 
+                "src/utils.cpp", "src/calibration.cpp", "src/RGBD_FIFO_Process.cpp", "src/openglRender.cpp",
+                "include/opengl/glad/src/glad.cpp",
+                
+                "-I", "./include",
+                "-I", "./include/opengl",
+                "-I", "/home/benjamin/lib/glad/include/",
+
+                "-lglfw3", "-lGL", "-lm", "-lXrandr", "-lXi", "-lX11", 
+                "-lXxf86vm", "-lpthread", "-ldl", "-lXinerama", "-lXcursor",
+
+                "-o",
+                "${fileDirname}/${fileBasenameNoExtension}", 
+                "-fPIC"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        }
+    ],
+    "version": "2.0.0"
+}
