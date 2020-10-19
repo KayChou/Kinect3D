@@ -62,12 +62,12 @@ void openglRender::loop()
             } 
             packet->destroy();
         }
-        Vn--;
-        Fn--;
 
         if(context->b_save2Local){ // save pointcloud to local
-            filename =  "datas/mesh" + std::to_string(cnt) + ".ply", cnt++;
+            std::printf("Begin to save one frame\n"); fflush(stdout);
+            filename =  "../datas/mesh_" + std::to_string(cnt++) + ".ply";
             savePlyFile(filename.c_str(), vertices, faces, Vn, Fn);
+            std::printf("Finish save one frame\n"); fflush(stdout);
         }
 
         float currentFrame = glfwGetTime();

@@ -85,8 +85,6 @@ void RGBD_FIFO_Process::process(Context *context){
                 }
             }
         }
-        Vn--;
-        Fn--;
         std::printf("Vn: %d Fn %d\n", Vn, Fn); fflush(stdout);
         
         if(this->output_qt != NULL){ // FIFO for QT image render
@@ -111,6 +109,19 @@ void RGBD_FIFO_Process::init(FIFO<framePacket>* input, FIFO<frameMesh>* output_p
     this->input = input;
     this->output_qt = output_qt;
     this->output_pcd = output_pcd;
+    
+    this->R.resize(3);
+
+	for (int i = 0; i < 3; i++) {
+		this->R[i].resize(3);
+		for (int j = 0; j < 3; j++) {
+			this->R[i][j] = 0;
+		}
+	}
+    this->T.resize(3);
+    this->T[0] = 0;
+    this->T[1] = 0;
+    this->T[2] = 0;
 }
 
 

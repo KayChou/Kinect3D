@@ -386,20 +386,22 @@ void savePlyFile(const char* filename, std::vector<Point3f> vertices, bool BINAR
 
 
 void savePlyFile(const char* filename, float* vertices, int* faces, int Vn, int Fn){ 
+    std::printf(filename); fflush(stdout);
     FILE *f = fopen(filename, "w");
     fprintf(f, "ply\nformat ascii 1.0\n");
     fprintf(f, "element vertex %d\n", Vn);
     fprintf(f, "property float x\nproperty float y\nproperty float z\n");
     fprintf(f, "property uchar red\nproperty uchar green\nproperty uchar blue\n");
-    //fprintf(f, "element face %d\n", Fn);
-    //fprintf(f, "property list uchar int vertex_indices\n");
+    fprintf(f, "element face %d\n", Fn);
+    fprintf(f, "property list uchar int vertex_indices\n");
 
     fprintf(f, "end_header\n");
     for (int i = 0; i < Vn; i++) {
-        fprintf(f, "%f %f %f %d %d %d\n", vertices[6*i], vertices[6*i+1], vertices[6*i+2], (int)255*vertices[6*i+3], (int)255*vertices[6*i+4], (int)255*vertices[6*i+5]);
+        fprintf(f, "%f %f %f %d %d %d\n", vertices[6*i], vertices[6*i+1], vertices[6*i+2], 
+                                        (int)(255.0f*vertices[6*i+3]), (int)(255.0f*vertices[6*i+4]), (int)(255.0f*vertices[6*i+5]));
     }
-    // for(int i=0; i<Fn; i++){
-    //     fprintf(f, "3 %d %d %d\n", faces[3*i], faces[3*i+1], faces[3*i+2]);
-    // }
+    for(int i=0; i<Fn; i++){
+        fprintf(f, "3 %d %d %d\n", faces[3*i], faces[3*i+1], faces[3*i+2]);
+    }
     fclose(f);
 }
