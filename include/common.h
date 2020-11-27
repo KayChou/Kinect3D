@@ -17,7 +17,7 @@
 
 #define framemax 300
 #define FIFO_LEN 30
-#define numKinects 2
+#define numKinects 1
 #define typesDefault libfreenect2::Frame::Color | libfreenect2::Frame::Depth
 
 #define x_bbox_min -1

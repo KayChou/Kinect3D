@@ -165,6 +165,7 @@ void openglRender::glInit()
 // ================================================================================
 void openglRender::processInput()
 {
+    float translationSpeed = 0.1;
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 
@@ -196,6 +197,30 @@ void openglRender::processInput()
         glm::vec3 temp = (cameraPos - cameraSpeed * cameraUp);
         cameraPos = cameraTar + glm::length(cameraTar - cameraPos) * glm::normalize(temp - cameraTar);
         cameraUp = glm::normalize(glm::cross(cameraTar - cameraPos, right));
+    }
+    if (glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS){ // translate x +
+        cameraPos += glm::vec3(translationSpeed, 0.0f, 0.0f);
+        cameraTar += glm::vec3(translationSpeed, 0.0f, 0.0f);
+    }
+    if (glfwGetKey(window, GLFW_KEY_O) == GLFW_PRESS){ // translate y +
+        cameraPos += glm::vec3(0.0f, translationSpeed, 0.0f);
+        cameraTar += glm::vec3(0.0f, translationSpeed, 0.0f);
+    }
+    if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS){ // translate z +
+        cameraPos += glm::vec3(0.0f, 0.0f, translationSpeed);
+        cameraTar += glm::vec3(0.0f, 0.0f, translationSpeed);
+    }
+    if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS){ // translate x -
+        cameraPos -= glm::vec3(translationSpeed, 0.0f, 0.0f);
+        cameraTar -= glm::vec3(translationSpeed, 0.0f, 0.0f);
+    }
+    if (glfwGetKey(window, GLFW_KEY_K) == GLFW_PRESS){ // translate y -
+        cameraPos -= glm::vec3(0.0f, translationSpeed, 0.0f);
+        cameraTar -= glm::vec3(0.0f, translationSpeed, 0.0f);
+    }
+    if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS){ // translate z -
+        cameraPos -= glm::vec3(0.0f, 0.0f, translationSpeed);
+        cameraTar -= glm::vec3(0.0f, 0.0f, translationSpeed);
     }
 }
 
