@@ -9,7 +9,7 @@ void openglRender::init(FIFO<frameMesh>** input, Context *context)
     this->input = input;
     this->context = context;
 
-    this->cameraPos = glm::vec3(0.0f, 0.0f, 1.0f);
+    this->cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
     this->cameraTar = glm::vec3(0.0f, 0.0f, 0.0f);
     this->cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
     this->fov =  45.0f;

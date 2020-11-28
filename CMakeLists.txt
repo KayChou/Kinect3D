@@ -38,6 +38,9 @@ find_package(Qt5 COMPONENTS Widgets REQUIRED)
 file(GLOB SOURCES "${PROJECT_SOURCE_DIR}/src/*.cpp")
 file(GLOB GLAD "${PROJECT_SOURCE_DIR}/include/opengl/glad/src/glad.cpp")
 
+add_subdirectory(cuda)
+set (EXTRA_LIBS ${EXTRA_LIBS} gpu)
+
 add_executable(main ${SOURCES} ${GLAD} src/widget.ui)
 
 target_link_libraries(main ${freenect2_LIBRARIES} ${OpenCV_LIBS})
@@ -45,3 +48,4 @@ target_link_libraries(main Qt5::Widgets)
 target_link_libraries(main Threads::Threads)
 target_link_libraries(main glfw)
 TARGET_LINK_LIBRARIES(main dl)
+target_link_libraries(main ${EXTRA_LIBS})

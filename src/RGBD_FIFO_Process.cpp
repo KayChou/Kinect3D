@@ -30,6 +30,10 @@ void RGBD_FIFO_Process::process(Context *context){
 
         verts = packet->vertices;
 
+        if(context->b_hasBeenCalibrated) {
+            Transform((int)packet->width_d, (int)packet->height_d, packet, R, T);
+        }
+        
         for(int i=0; i<packet->height_d; i++) {
             for(int j=0; j<packet->width_d; j++) {
 
@@ -39,12 +43,12 @@ void RGBD_FIFO_Process::process(Context *context){
                 tempPoint.Y = packet->vertices[ptr_idx].Y;
                 tempPoint.Z = packet->vertices[ptr_idx].Z;
 
-                if(context->b_hasBeenCalibrated) {
-                    RotatePoint(tempPoint, R, T);
-                    packet->vertices[ptr_idx].X = tempPoint.X;
-                    packet->vertices[ptr_idx].Y = tempPoint.Y;
-                    packet->vertices[ptr_idx].Z = tempPoint.Z;
-                }
+                // if(context->b_hasBeenCalibrated) {
+                //     RotatePoint(tempPoint, R, T);
+                //     packet->vertices[ptr_idx].X = tempPoint.X;
+                //     packet->vertices[ptr_idx].Y = tempPoint.Y;
+                //     packet->vertices[ptr_idx].Z = tempPoint.Z;
+                // }
 
                 // push valid point to "points"
                 if(tempPoint.Z > z_bbox_min && tempPoint.Z < z_bbox_max &&
