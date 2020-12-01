@@ -27,6 +27,9 @@
 #define z_bbox_min -1
 #define z_bbox_max 1
 
+#define Width_depth_HR 512 * 2
+#define Height_depth_HR 424 * 2
+
 
 typedef struct Context {
 	bool b_save2Local;

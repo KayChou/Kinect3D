@@ -1,5 +1,6 @@
 {
     "files.associations": {
+        "*.cu": "cpp",
         "array": "cpp",
         "atomic": "cpp",
         "hash_map": "cpp",
@@ -74,6 +75,7 @@
         "future": "cpp",
         "cfenv": "cpp",
         "typeindex": "cpp",
-        "*.ipp": "cpp"
+        "*.ipp": "cpp",
+        "*.cuh": "cpp"
     }
 }

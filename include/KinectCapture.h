@@ -39,6 +39,7 @@ public:
 
     libfreenect2::Freenect2Device::Config config;
     libfreenect2::Registration* registration;
+    libfreenect2::Alignment* alignment;
 
     Context *context;
     bool cameraStarted;
