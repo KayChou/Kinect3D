@@ -55,6 +55,14 @@ bool Kinect::getFrameLoop(){
             this->depth = frames[libfreenect2::Frame::Depth];
             this->registration->apply(color, depth, &undistorted, &registered, true, &depth2rgb);
 
+            cv::Mat depthmat, registeredmat;
+            cv::Mat(424, 512, CV_32FC1, undistorted.data).copyTo(depthmat);
+            cv::imwrite("undistored.png", depthmat);
+
+            cv::Mat(424, 512, CV_8UC4, registered.data).copyTo(registeredmat);
+            cv::imwrite("registered.png", registeredmat);
+
+
             Point3fRGB *vertices = new Point3fRGB[depth->width * depth->height];
             float rgb;
             for(int i=0; i < depth->width * depth->height; i++){

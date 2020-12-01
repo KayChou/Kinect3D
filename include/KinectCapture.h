@@ -7,6 +7,7 @@
 #include <libfreenect2/registration.h>
 #include <libfreenect2/packet_pipeline.h>
 #include <libfreenect2/config.h>
+#include "alignment.h"
 #include "common.h"
 
 
