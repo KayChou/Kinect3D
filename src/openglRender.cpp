@@ -18,8 +18,8 @@ void openglRender::init(FIFO<frameMesh>** input, Context *context)
     this->deltaTime = 0.0f;	// time between current frame and last frame
     this->lastFrame = 0.0f;
 
-    this->vertices = new float[512 * 424 * 6 * 5];
-    this->faces = new int[512 * 424 * 3 * 5];
+    this->vertices = new float[Width_depth_HR * Height_depth_HR * 6 * 5];
+    this->faces = new int[Width_depth_HR * Height_depth_HR * 3 * 5];
 }
 
 

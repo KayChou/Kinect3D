@@ -27,9 +27,6 @@
 #define z_bbox_min -1
 #define z_bbox_max 1
 
-#define Width_depth_HR 512 * 2
-#define Height_depth_HR 424 * 2
-
 
 typedef struct Context {
 	bool b_save2Local;
@@ -52,8 +49,8 @@ typedef struct Context {
 		this->b_hasBeenCalibrated = false;
 		this->b_enableRGB = true;
 		this->b_enableDepth = true;
-		this->depth_w = 512;
-		this->depth_h = 424;
+		this->depth_w = Width_depth_HR;
+		this->depth_h = Height_depth_HR;
 		this->Td = 0.025f;
 	}
 } Context;

@@ -54,20 +54,22 @@ void Widget::renderNewFrame(){
 
 // get data from FIFO
 void Widget::QtImageFIFOProcess(){
+    float x_ratio = (512.f - 1) / Width_depth_HR;
+    float y_ratio = (424.f - 1) / Height_depth_HR;
     std::cout << "Thread Qt image process started\n" << std::endl;
     while(true){
         for(int i=0; i<numKinects; i++){
             framePacket *packet = QtImageRender[i]->get();
             if( packet == NULL ) { break; }
-            std::cout << "Qt image render get one frame\n" << std::endl;
+            std::cout << "Qt image render get one frame\n" << x_ratio << y_ratio << std::endl;
 
             if(i == indexTorender){
                 int h = packet->height_d;
                 int w = packet->width_d;
-                for(int y=0; y<h; y++){
-                    for(int x=0; x<w; x++){
+                for(int y = 0; y < h; y++){
+                    for(int x = 0; x < w; x++){
                         QRgb color = qRgb(packet->vertices[y*w + x].R, packet->vertices[y*w + x].G, packet->vertices[y*w + x].B);
-                        image->setPixel(x, y, color);
+                        image->setPixel((int)(x * x_ratio), (int)(y * y_ratio), color);
                     }
                 }
                 emit newFrame();

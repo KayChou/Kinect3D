@@ -30,8 +30,10 @@ bool Kinect::init(std::string serial, FIFO<framePacket>* output, Context *contex
 //=======================================================================================
 bool Kinect::getFrameLoop(){
     std::cout << "Thread get frame from camera started" << std::endl;
-    libfreenect2::Frame undistorted(512, 424, 4), registered(512, 424, 4), depth2rgb(1920, 1080 + 2, 4);
+    libfreenect2::Frame undistorted_LR(512, 424, 4);
     libfreenect2::Frame depth_HR(Width_depth_HR, Height_depth_HR, 4);
+    libfreenect2::Frame registered(Width_depth_HR, Height_depth_HR, 4);
+    libfreenect2::Frame depth2rgb(Width_depth_HR, Height_depth_HR + 2, 4);
 
     while(true){
         if(!context->b_start_Camera && this->cameraStarted) { // if current camera is started and need to close:
@@ -56,25 +58,30 @@ bool Kinect::getFrameLoop(){
 
             this->color = frames[libfreenect2::Frame::Color];
             this->depth = frames[libfreenect2::Frame::Depth];
+
+            this->alignment->gen_undistorted_LR(this->depth, &undistorted_LR);
+            this->alignment->bilinearSR((float *)undistorted_LR.data, (float *)depth_HR.data, Width_depth_HR, Height_depth_HR);
+            this->alignment->apply(color, &depth_HR, &registered, false, &depth2rgb);
+
             // this->registration->apply(color, depth, &undistorted, &registered, true, &depth2rgb);
-            this->alignment->apply(color, depth, &undistorted, &registered, true, &depth2rgb);
+            // this->alignment->apply(color, depth, &registered, true, &depth2rgb);
 
             //this->alignment->bilinearSR(&undistorted, &depth_HR, Width_depth_HR, Height_depth_HR);
-            // cv::Mat depthmat, registeredmat;
-            // cv::Mat(Height_depth_HR, Width_depth_HR, CV_32FC1, depth_HR.data).copyTo(depthmat);
-            // cv::imwrite("undistored_HR.png", depthmat);
+            cv::Mat depthmat, registeredmat;
+            cv::Mat(Height_depth_HR, Width_depth_HR, CV_32FC1, depth_HR.data).copyTo(depthmat);
+            cv::imwrite("undistored_HR.png", depthmat);
             // cv::Mat(424, 512, CV_32FC1, undistorted.data).copyTo(depthmat);
             // cv::imwrite("undistored_LR.png", depthmat);
 
-            // cv::Mat(424, 512, CV_8UC4, registered.data).copyTo(registeredmat);
-            // cv::imwrite("registered.png", registeredmat);
+            cv::Mat(Height_depth_HR, Width_depth_HR, CV_8UC4, registered.data).copyTo(registeredmat);
+            cv::imwrite("registered.png", registeredmat);
 
 
-            Point3fRGB *vertices = new Point3fRGB[depth->width * depth->height];
+            Point3fRGB *vertices = new Point3fRGB[Width_depth_HR * Height_depth_HR];
             float rgb;
-            for(int i=0; i < depth->width * depth->height; i++){
+            for(int i=0; i < Width_depth_HR * Height_depth_HR; i++){
                 // this->registration->getPointXYZRGB(&undistorted, &registered, i/512, i%512, vertices[i].X, vertices[i].Y, vertices[i].Z, rgb);
-                this->alignment->getPointXYZRGB(&undistorted, &registered, i/512, i%512, vertices[i].X, vertices[i].Y, vertices[i].Z, rgb);
+                this->alignment->getPointXYZRGB(&depth_HR, &registered, i/Width_depth_HR, i%Width_depth_HR, vertices[i].X, vertices[i].Y, vertices[i].Z, rgb);
 
                 if(std::isnan(vertices[i].X) || std::isnan(vertices[i].Y) || std::isnan(vertices[i].Z)){
                     vertices[i].X = 0;
@@ -88,7 +95,7 @@ bool Kinect::getFrameLoop(){
             }
 
             framePacket *packet = new framePacket();
-            packet->init(color, depth, vertices);
+            packet->init(color, &depth_HR, vertices, 1920, 1080, Width_depth_HR, Height_depth_HR);
             this->output->put(packet);
             std::printf("capture get one frame\n");
 

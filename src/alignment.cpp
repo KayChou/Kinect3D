@@ -8,17 +8,19 @@ Alignment::Alignment(Freenect2Device::IrCameraParams depth_p, Freenect2Device::C
 {
     depth_q = 0.01;
     color_q = 0.002199;
+    get_depth_to_color_mapper(Width_depth_HR, Height_depth_HR);
 }
 
 
 //=======================================================================================
 // de-distortion for low resolution depth frame
 //=======================================================================================
-void Alignment::gen_undistorted_LR(const Frame *depth)
+void Alignment::gen_undistorted_LR(const Frame *depth, Frame *undistorted)
 {
     float mx, my;
     int ix, iy, index;
     int *map_dist = distort_map;
+    float *undistorted_data = (float *)undistorted->data;
 
     for (int y = 0; y < 424; y++) {
         for (int x = 0; x < 512; x++) {
@@ -43,13 +45,13 @@ void Alignment::gen_undistorted_LR(const Frame *depth)
         const int index = *map_dist; // getting index of distorted depth pixel
 
         if(index < 0) {  // check if distorted depth pixel is outside of the depth image
-            undistorted_LR[i] = 0;
+            undistorted_data[i] = 0;
             continue;
         }
 
         // getting depth value for current pixel
         const float z = depth_data[index];
-        undistorted_LR[i] = z;
+        undistorted_data[i] = z;
 
         // checking for invalid depth value
         if(z <= 0.0f){
@@ -64,7 +66,7 @@ void Alignment::gen_undistorted_LR(const Frame *depth)
 //=======================================================================================
 void Alignment::bilinearSR(float* depth_LR, float* depth_HR, int tarW, int tarH)
 {
-    int w  = 512;
+    int w = 512;
     int h = 424;
     const float *depth_data = depth_LR;
     float* output_data = depth_HR;
@@ -72,11 +74,8 @@ void Alignment::bilinearSR(float* depth_LR, float* depth_HR, int tarW, int tarH)
     int x, y, idx;
     float x_diff, y_diff, a, b, c, d, output;
 
-    x_ratio = (float)(w - 1) / (float)tarW;
-    y_ratio = (float)(h - 1) / (float)tarH;
-
-    for(int i=0; i < tarH; i++) {
-        for(int j=0; j < tarW; j++) {
+    for(int i = 0; i < tarH; i++) {
+        for(int j = 0; j < tarW; j++) {
             x = (int)(x_ratio * j);
             y = (int)(y_ratio * i);
 
@@ -106,6 +105,11 @@ void Alignment::get_depth_to_color_mapper(int tarW, int tarH)
     float* map_x = depth_to_color_map_x;
     float* map_y = depth_to_color_map_y;
     int* map_yi = depth_to_color_map_yi;
+    float rx, ry;
+    
+    x_ratio = (float)(512 - 1) / (float)tarW;
+    y_ratio = (float)(424 - 1) / (float)tarH;
+
     for (int y = 0; y < tarH; y++) {
         for (int x = 0; x < tarW; x++) {
             depth_to_color(x * x_ratio, y * y_ratio, rx, ry);
@@ -118,23 +122,24 @@ void Alignment::get_depth_to_color_mapper(int tarW, int tarH)
 
 
 //=======================================================================================
-// for each pixel in HR depth frame, compute corresponding color idx
+// gen registered image according rgb and de-distortioned depth
 //=======================================================================================
-void Alignment::apply(const Frame *rgb, Frame *undistorted, Frame *registered, const bool enable_filter, Frame *bigdepth, int *color_depth_map) const
+void Alignment::apply(const Frame *rgb, const Frame *depth, Frame *registered, const bool enable_filter, Frame *bigdepth, int *color_depth_map) const
 {
     // Check if all frames are valid and have the correct size
-    if (!rgb || !undistorted || !registered)
+    if (!rgb || !depth || !registered)
         return;
 
-    const float *depth_data = (float*)depth->data;
+    float *depth_data = (float*)depth->data;
     const unsigned int *rgb_data = (unsigned int*)rgb->data;
-    float *undistorted_data = (float*)undistorted->data;
-    unsigned int *registered_data = (unsigned int*)registered->data;
-    const int *map_dist = distort_map;
-    const float *map_x = depth_to_color_map_x;
-    const int *map_yi = depth_to_color_map_yi;
 
-    const int size_depth = 512 * 424;
+    unsigned int *registered_data = (unsigned int*)registered->data;
+
+    const int *map_dist = distort_map; // 512 * 424
+    const float *map_x = depth_to_color_map_x; // Width_depth_HR * Height_depth_HR
+    const int *map_yi = depth_to_color_map_yi; // Width_depth_HR * Height_depth_HR
+
+    const int size_depth = Width_depth_HR * Height_depth_HR;
     const int size_color = 1920 * 1080;
     const float color_cx = color.cx + 0.5f; // 0.5f added for later rounding
 
@@ -154,41 +159,31 @@ void Alignment::apply(const Frame *rgb, Frame *undistorted, Frame *registered, c
     int *map_c_off = depth_to_c_off;
 
     // initializing the depth_map with values outside of the Kinect2 range
-    if(enable_filter){
+    if(enable_filter) {
+        // printf("init filter map\n");
         filter_map = bigdepth ? (float*)bigdepth->data : new float[size_filter_map];
         p_filter_map = filter_map + offset_filter_map;
 
         for(float *it = filter_map, *end = filter_map + size_filter_map; it != end; ++it){
             *it = std::numeric_limits<float>::infinity();
         }
+        // printf("finish init filter map\n");
     }
-
-    /* Fix depth distortion, and compute pixel to use from 'rgb' based on depth measurement,
-    * stored as x/y offset in the rgb data.
-    */
 
     // iterating over all pixels from undistorted depth and registered color image
     // the four maps have the same structure as the images, so their pointers are increased each iteration as well
-    for(int i = 0; i < size_depth; ++i, ++undistorted_data, ++map_dist, ++map_x, ++map_yi, ++map_c_off) {
-        // getting index of distorted depth pixel
-        const int index = *map_dist;
-
-        // check if distorted depth pixel is outside of the depth image
-        if(index < 0){
-            *map_c_off = -1;
-            *undistorted_data = 0;
-            continue;
-        }
-
+    for(int i = 0; i < size_depth; ++i, ++map_x, ++map_yi, ++map_c_off) {
         // getting depth value for current pixel
-        const float z = depth_data[index];
-        *undistorted_data = z;
+        // printf("iter pixel %d \n", i);
+        const float z = depth_data[i];
 
         // checking for invalid depth value
-        if(z <= 0.0f){
+        if(z <= 0.0f) {
             *map_c_off = -1;
+            // printf("z continue\n");
             continue;
         }
+        // printf("enter apply: %d\n", i);
 
         // calculating x offset for rgb image based on depth value
         const float rx = (*map_x + (color.shift_m / z)) * color.fx + color_cx;
@@ -200,15 +195,18 @@ void Alignment::apply(const Frame *rgb, Frame *undistorted, Frame *registered, c
 
         // check if c_off is outside of rgb image
         // checking rx/cx is not needed because the color image is much wider then the depth image
-        if(c_off < 0 || c_off >= size_color){
+        if(c_off < 0 || c_off >= size_color) {
             *map_c_off = -1;
+            // printf("continue\n");
             continue;
         }
 
         // saving the offset for later
         *map_c_off = c_off;
+        // printf("c_off: %d\n", c_off);
 
-        if(enable_filter){
+        if(enable_filter) {
+            // printf("begin filter\n");
             // setting a window around the filter map pixel corresponding to the color pixel with the current z value
             int yi = (cy - filter_height_half) * 1920 + cx - filter_width_half; // index of first pixel to set
             for(int r = -filter_height_half; r <= filter_height_half; ++r, yi += 1920) {// index increased by a full row each iteration
@@ -220,6 +218,7 @@ void Alignment::apply(const Frame *rgb, Frame *undistorted, Frame *registered, c
                     }
                 }
             }
+            // printf("finish filter\n");
         }
     }
 
@@ -227,22 +226,22 @@ void Alignment::apply(const Frame *rgb, Frame *undistorted, Frame *registered, c
 
     // reseting the pointers to the beginning
     map_c_off = depth_to_c_off;
-    undistorted_data = (float*)undistorted->data;
 
+    // printf("enter apply: filter\n");
     /* Filter drops duplicate pixels due to aspect of two cameras. */
     if(enable_filter) {
         // run through all registered color pixels and set them based on filter results
-        for(int i = 0; i < size_depth; ++i, ++map_c_off, ++undistorted_data, ++registered_data) {
+        for(int i = 0; i < size_depth; ++i, ++map_c_off, ++registered_data) {
             const int c_off = *map_c_off;
 
             // check if offset is out of image
-            if(c_off < 0){
+            if(c_off < 0) {
                 *registered_data = 0;
                 continue;
             }
 
             const float min_z = p_filter_map[c_off];
-            const float z = *undistorted_data;
+            const float z = depth_data[i];
 
             // check for allowed depth noise
             *registered_data = (z - min_z) / z > filter_tolerance ? 0 : *(rgb_data + c_off);
@@ -261,6 +260,7 @@ void Alignment::apply(const Frame *rgb, Frame *undistorted, Frame *registered, c
     }
     if (!color_depth_map) delete[] depth_to_c_off;
 }
+
 
 void Alignment::apply(int dx, int dy, float dz, float& cx, float &cy) const
 {
@@ -282,7 +282,7 @@ void Alignment::getPointXYZRGB(const Frame* undistorted, const Frame* registered
     }
     else {
         float* registered_data = (float *)registered->data;
-        rgb = registered_data[512*r+c];
+        rgb = registered_data[Width_depth_HR * r + c];
     }
 }
 
@@ -293,14 +293,14 @@ void Alignment::getPointXYZ(const Frame *undistorted, int r, int c, float &x, fl
     const float cx(depth.cx), cy(depth.cy);
     const float fx(1/depth.fx), fy(1/depth.fy);
     float* undistorted_data = (float *)undistorted->data;
-    const float depth_val = undistorted_data[512*r+c]/1000.0f; //scaling factor, so that value of 1 is one meter.
+    const float depth_val = undistorted_data[Width_depth_HR * r + c]/1000.0f; //scaling factor, so that value of 1 is one meter.
     if (isnan(depth_val) || depth_val <= 0.001) {
         //depth value is not valid
         x = y = z = bad_point;
     }
     else {
-        x = (c + 0.5 - cx) * fx * depth_val;
-        y = (r + 0.5 - cy) * fy * depth_val;
+        x = (c * x_ratio + 0.5 - cx) * fx * depth_val;
+        y = (r * y_ratio + 0.5 - cy) * fy * depth_val;
         z = depth_val;
     }
 }

@@ -76,6 +76,7 @@
         "cfenv": "cpp",
         "typeindex": "cpp",
         "*.ipp": "cpp",
-        "*.cuh": "cpp"
+        "*.cuh": "cpp",
+        "__nullptr": "cpp"
     }
 }

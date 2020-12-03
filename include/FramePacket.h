@@ -9,6 +9,9 @@
 #include <stdio.h>
 #include "typedefs.h"
 
+#define Width_depth_HR 1024
+#define Height_depth_HR 828
+
 class framePacket{
 
 public:
@@ -31,8 +34,8 @@ public:
                 Point3fRGB* verts,
                 int width_c=1920, 
                 int height_c=1080,
-                int width_d=512,
-                int height_d=424);
+                int width_d=Width_depth_HR,
+                int height_d=Height_depth_HR);
     void destroy();
 };
 
