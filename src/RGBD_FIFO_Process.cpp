@@ -4,7 +4,8 @@
 // main loop: get data from RGBD FIFO
 //      if calibrate button is clicked, perform calibration
 //=======================================================================================
-void RGBD_FIFO_Process::process(Context *context){
+void RGBD_FIFO_Process::process(Context *context)
+{
     Point3fRGB *points = new Point3fRGB[context->depth_w * context->depth_h * 5];
     triIndex *triangles = new triIndex[context->depth_w * context->depth_h * 5 * 3];
     int *mask = new int[context->depth_w * context->depth_h]; // revcord valid point index
@@ -21,6 +22,19 @@ void RGBD_FIFO_Process::process(Context *context){
         
         if(context->b_Calibration){
             context->b_hasBeenCalibrated = calibrate.performCalibration(packet, T, R);
+
+            context->T[idx][0] = T[0];
+            context->T[idx][1] = T[1];
+            context->T[idx][2] = T[2];
+            context->R[idx][0][0] = R[0][0];
+            context->R[idx][0][1] = R[0][1];
+            context->R[idx][0][2] = R[0][2];
+            context->R[idx][1][0] = R[1][0];
+            context->R[idx][1][1] = R[1][1];
+            context->R[idx][1][2] = R[1][2];
+            context->R[idx][2][0] = R[2][0];
+            context->R[idx][2][1] = R[2][1];
+            context->R[idx][2][2] = R[2][2];
         }
 
         Point3f tempPoint;
@@ -102,7 +116,9 @@ void RGBD_FIFO_Process::process(Context *context){
 }
 
 
-void RGBD_FIFO_Process::init(FIFO<framePacket>* input, FIFO<frameMesh>* output_pcd, FIFO<framePacket>* output_qt){
+void RGBD_FIFO_Process::init(int idx, FIFO<framePacket>* input, FIFO<frameMesh>* output_pcd, FIFO<framePacket>* output_qt) 
+{
+    this->idx = idx;
     this->input = input;
     this->output_qt = output_qt;
     this->output_pcd = output_pcd;

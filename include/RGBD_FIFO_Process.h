@@ -8,11 +8,12 @@ class RGBD_FIFO_Process{
 public:
 
     void process(Context *context);
-    void init(FIFO<framePacket>* input, FIFO<frameMesh>* output_pcd, FIFO<framePacket>* output_qt);
+    void init(int idx, FIFO<framePacket>* input, FIFO<frameMesh>* output_pcd, FIFO<framePacket>* output_qt);
 
     void RotatePoint(Point3f &point, std::vector<std::vector<float>> &R, std::vector<float> &T);
 
 private:
+    int idx;
     Calibration calibrate;
     std::vector<float> T;
 	std::vector<std::vector<float>> R;
@@ -23,5 +24,5 @@ public:
     FIFO<framePacket>* input;
     FIFO<framePacket>* output_qt;
     FIFO<frameMesh>* output_pcd;
-    clock_t start=clock(), end=clock();
+    clock_t start = clock(), end = clock();
 };

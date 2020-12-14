@@ -1,6 +1,8 @@
 #pragma once
 #include "common.h"
 
+void saveKRT(Context *context);
+
 void savePacket2Bin(framePacket *input, const char* filename);
 
 bool saveRGBDFIFO2Image(FIFO<framePacket> **input, int numOfKinects);

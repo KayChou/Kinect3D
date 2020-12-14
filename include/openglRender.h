@@ -8,6 +8,7 @@
 
 #include "shader.h"
 #include "common.h"
+#include "utils.h"
 
 bool render(std::vector<Point3f> verts, std::vector<RGB> colors);
 

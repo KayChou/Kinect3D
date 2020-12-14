@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
         synchronize_output[i] = synchronize[i];
         opengl_render_input[i] = pointCloud[i];
 
-        rgbdProcess[i].init(synchronize[i], pointCloud[i], QtImageRender[i]);
+        rgbdProcess[i].init(i, synchronize[i], pointCloud[i], QtImageRender[i]);
     }
     
     kinects->init(capture_output, context);

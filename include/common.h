@@ -36,18 +36,22 @@ typedef struct Context {
 	bool b_Refine;
 	bool b_enableRGB;
 	bool b_enableDepth;
+	bool b_cfg_saved;
 
 	int depth_w;
 	int depth_h;
 
 	float Td;
 	std::string DeviceSerialNumber[4];
+	std::vector<float> T[numKinects];
+	std::vector<std::vector<float>> R[numKinects];
 
 	Context(){
 		this->b_save2Local = false;
 		this->b_start_Camera = false;
 		this->b_Calibration = false;
 		this->b_hasBeenCalibrated = false;
+		this->b_cfg_saved = false;
 		this->b_enableRGB = true;
 		this->b_enableDepth = true;
 		this->depth_w = Width_depth_HR;
@@ -56,5 +60,21 @@ typedef struct Context {
 
 		DeviceSerialNumber[0] = "021871240647";
 		DeviceSerialNumber[1] = "010845342847";
+
+		for(int n=0; n<numKinects; n++) {
+			this->R[n].resize(3);
+
+			for (int i = 0; i < 3; i++) {
+				this->R[n][i].resize(3);
+				for (int j = 0; j < 3; j++) {
+					this->R[n][i][j] = 0;
+				}
+			}
+			this->T[n].resize(3);
+			this->T[n][0] = 0;
+			this->T[n][1] = 0;
+			this->T[n][2] = 0;
+		}
+		
 	}
 } Context;

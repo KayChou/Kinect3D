@@ -149,7 +149,7 @@ void KinectsManager::loop()
         if(!this->cameraStarted && context->b_start_Camera) {
             this->init_Kinect();
             this->cameraStarted = true;
-            printf("init Kinect Devicen\n");
+            printf("init Kinect Device\n");
         }
         usleep(100000);
     }

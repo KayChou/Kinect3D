@@ -1,5 +1,20 @@
 #include "utils.h"
 
+void saveKRT(Context *context)
+{
+    FILE *f = fopen("cameras.config", "w");
+    fprintf(f, "numKinects: %d\n", numKinects);
+    for(int i=0; i<numKinects; i++) {
+        fprintf(f, "camera %d\n", i);
+        fprintf(f, "R\n\t%f %f %f\n", context->R[i][0][0], context->R[i][0][1], context->R[i][0][2]);
+        fprintf(f, "\t%f %f %f\n", context->R[i][1][0], context->R[i][1][1], context->R[i][1][2]);
+        fprintf(f, "\t%f %f %f\n", context->R[i][2][0], context->R[i][2][1], context->R[i][2][2]);
+        fprintf(f, "T\n\t%f %f %f\n", context->T[i][0], context->T[i][1], context->T[i][2]);
+    }
+    fclose(f);
+}
+
+
 void savePacket2Bin(framePacket *input, const char* filename){
     std::ofstream binFile;
     binFile.open(filename, std::ios::out |  std::ios::trunc | std::ios::binary);
@@ -79,7 +94,8 @@ bool saveRGBDFIFO2Image(FIFO<framePacket> **input, int numOfKinects){
 }
 
 
-bool saveRGBDFIFO2PLY(FIFO<framePacket> **input, int numOfKinects){
+bool saveRGBDFIFO2PLY(FIFO<framePacket> **input, int numOfKinects)
+{
     int *cnt = new int[numOfKinects];
     for(int i=0; i<numOfKinects; i++){
         cnt[i] = 0;

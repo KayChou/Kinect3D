@@ -36,22 +36,22 @@ void openglRender::loop()
 
     glInit();
 
-    while(!glfwWindowShouldClose(window)){
+    while(!glfwWindowShouldClose(window)) {
         Vn = 0;
         Fn = 0;
-        for(int i=0; i<numKinects; i++){
+        for(int i=0; i<numKinects; i++) {
             frameMesh *packet = input[i]->get();
 
-            for(int i=0; i<packet->Fn; i++){
+            for(int i=0; i<packet->Fn; i++) {
                 faces[3 * Fn + 0] = packet->triangles[i].v1 + Vn;
                 faces[3 * Fn + 1] = packet->triangles[i].v2 + Vn;
                 faces[3 * Fn + 2] = packet->triangles[i].v3 + Vn;
-                if(faces[3 * Fn + 0] && faces[3 * Fn + 1] && faces[3 * Fn + 2]){
+                if(faces[3 * Fn + 0] && faces[3 * Fn + 1] && faces[3 * Fn + 2]) {
                     Fn++;
                 }
             }
 
-            for(int i=0; i<packet->Vn; i++){
+            for(int i=0; i<packet->Vn; i++) {
                 vertices[6 * Vn + 0] = packet->vertices[i].X;
                 vertices[6 * Vn + 1] = packet->vertices[i].Y;
                 vertices[6 * Vn + 2] = packet->vertices[i].Z;
@@ -63,11 +63,15 @@ void openglRender::loop()
             packet->destroy();
         }
 
-        if(context->b_save2Local){ // save pointcloud to local
-            std::printf("Begin to save one frame\n"); fflush(stdout);
-            filename =  "../datas/mesh_" + std::to_string(cnt++) + ".ply";
-            savePlyFile(filename.c_str(), vertices, faces, Vn, Fn);
-            std::printf("Finish save one frame\n"); fflush(stdout);
+        if(context->b_save2Local) { // save pointcloud to local
+            // std::printf("Begin to save one frame\n"); fflush(stdout);
+            // filename =  "../datas/mesh_" + std::to_string(cnt++) + ".ply";
+            // savePlyFile(filename.c_str(), vertices, faces, Vn, Fn);
+            // std::printf("Finish save one frame\n"); fflush(stdout);
+            if(context->b_cfg_saved == false) {
+                saveKRT(this->context);
+                context->b_cfg_saved = true;
+            }
         }
 
         float currentFrame = glfwGetTime();

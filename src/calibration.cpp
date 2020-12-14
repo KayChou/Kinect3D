@@ -4,8 +4,8 @@
 bool Calibration::performCalibration(framePacket *packet, std::vector<float> &T, std::vector<std::vector<float>> &R){
 	// if current camera is not calibrated, then try to get marker
 	cv::Mat registered(packet->height_d, packet->width_d, CV_8UC3);
-	for(int i=0; i<packet->height_d; i++){
-		for(int j=0; j<packet->width_d; j++){
+	for(int i=0; i<packet->height_d; i++) {
+		for(int j=0; j<packet->width_d; j++) {
 			registered.at<cv::Vec3b>(i, j)[0] = packet->vertices[i*packet->width_d + j].B;
 			registered.at<cv::Vec3b>(i, j)[1] = packet->vertices[i*packet->width_d + j].G;
 			registered.at<cv::Vec3b>(i, j)[2] = packet->vertices[i*packet->width_d + j].R;
@@ -14,8 +14,8 @@ bool Calibration::performCalibration(framePacket *packet, std::vector<float> &T,
 	GetMarker(registered);
 	std::vector<Point3f> featurePoints;
 	Point3f temp;
-	if(marker.id > 0){
-		for(int i=0; i<5; i++){
+	if(marker.id > 0) {
+		for(int i=0; i<5; i++) {
 			temp.X = packet->vertices[(int)(marker.corners[i].Y * packet->width_d + marker.corners[i].X)].X;
 			temp.Y = packet->vertices[(int)(marker.corners[i].Y * packet->width_d + marker.corners[i].X)].Y;
 			temp.Z = packet->vertices[(int)(marker.corners[i].Y * packet->width_d + marker.corners[i].X)].Z;
