@@ -3,7 +3,8 @@
 //=======================================================================================
 // init one kinect
 //=======================================================================================
-bool Kinect::init(std::string serial, FIFO<framePacket>* output, Context *context){
+bool Kinect::init(std::string serial, FIFO<framePacket>* output, Context *context)
+{
     this->serial = serial;
     this->context = context;
     this->output = output;
@@ -52,7 +53,7 @@ bool Kinect::getFrameLoop(){
                 this->cameraStarted = true;
             }
 
-            if (!listener->waitForNewFrame(frames, 10*1000)) { // 10 seconds
+            if (!listener->waitForNewFrame(frames, 10 * 1000)) { // 10 seconds
                 std::cout << "timeout!" << std::endl; fflush(stdout);
             }
 
@@ -66,24 +67,23 @@ bool Kinect::getFrameLoop(){
             // this->registration->apply(color, depth, &undistorted, &registered, true, &depth2rgb);
             // this->alignment->apply(color, depth, &registered, true, &depth2rgb);
 
-            //this->alignment->bilinearSR(&undistorted, &depth_HR, Width_depth_HR, Height_depth_HR);
-            cv::Mat depthmat, registeredmat;
-            cv::Mat(Height_depth_HR, Width_depth_HR, CV_32FC1, depth_HR.data).copyTo(depthmat);
-            cv::imwrite("undistored_HR.png", depthmat);
+            // this->alignment->bilinearSR(&undistorted, &depth_HR, Width_depth_HR, Height_depth_HR);
+            // cv::Mat depthmat, registeredmat;
+            // cv::Mat(Height_depth_HR, Width_depth_HR, CV_32FC1, depth_HR.data).copyTo(depthmat);
+            // cv::imwrite("undistored_HR.png", depthmat);
             // cv::Mat(424, 512, CV_32FC1, undistorted.data).copyTo(depthmat);
             // cv::imwrite("undistored_LR.png", depthmat);
 
-            cv::Mat(Height_depth_HR, Width_depth_HR, CV_8UC4, registered.data).copyTo(registeredmat);
-            cv::imwrite("registered.png", registeredmat);
-
+            // cv::Mat(Height_depth_HR, Width_depth_HR, CV_8UC4, registered.data).copyTo(registeredmat);
+            // cv::imwrite("registered.png", registeredmat);
 
             Point3fRGB *vertices = new Point3fRGB[Width_depth_HR * Height_depth_HR];
             float rgb;
-            for(int i=0; i < Width_depth_HR * Height_depth_HR; i++){
+            for(int i=0; i < Width_depth_HR * Height_depth_HR; i++) {
                 // this->registration->getPointXYZRGB(&undistorted, &registered, i/512, i%512, vertices[i].X, vertices[i].Y, vertices[i].Z, rgb);
                 this->alignment->getPointXYZRGB(&depth_HR, &registered, i/Width_depth_HR, i%Width_depth_HR, vertices[i].X, vertices[i].Y, vertices[i].Z, rgb);
 
-                if(std::isnan(vertices[i].X) || std::isnan(vertices[i].Y) || std::isnan(vertices[i].Z)){
+                if(std::isnan(vertices[i].X) || std::isnan(vertices[i].Y) || std::isnan(vertices[i].Z)) {
                     vertices[i].X = 0;
                     vertices[i].Y = 0;
                     vertices[i].Z = 0;
@@ -101,7 +101,6 @@ bool Kinect::getFrameLoop(){
 
             listener->release(frames);
         }
-        
     }
     if(this->cameraStarted) dev->stop();
     dev->close();
@@ -110,7 +109,6 @@ bool Kinect::getFrameLoop(){
     delete listener;
     return true;
 }
-
 
 
 void KinectsManager::init(FIFO<framePacket>** output, Context *context)
@@ -125,13 +123,15 @@ void KinectsManager::init(FIFO<framePacket>** output, Context *context)
 //=======================================================================================
 bool KinectsManager::init_Kinect()
 {
-    if(numKinects > freenect2.enumerateDevices()){
+    if(numKinects > freenect2.enumerateDevices()) {
         std::cerr << "The number of devices does not match the specified\n";
         return false;
     }
     
     for(int i=0; i<numKinects; i++) {
-        serials[i] = freenect2.getDeviceSerialNumber(i);
+        // serials[i] = freenect2.getDeviceSerialNumber(i);
+        serials[i] = this->context->DeviceSerialNumber[i];
+        printf("Device serial number: %s\n", serials[i].c_str());
         cameras[i].init(serials[i], output[i], context);
     }
 
@@ -145,10 +145,11 @@ bool KinectsManager::init_Kinect()
 
 void KinectsManager::loop()
 {
-    while(true){
-        if(!this->cameraStarted && context->b_start_Camera){
+    while(true) {
+        if(!this->cameraStarted && context->b_start_Camera) {
             this->init_Kinect();
             this->cameraStarted = true;
+            printf("init Kinect Devicen\n");
         }
         usleep(100000);
     }

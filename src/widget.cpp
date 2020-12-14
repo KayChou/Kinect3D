@@ -61,7 +61,7 @@ void Widget::QtImageFIFOProcess(){
         for(int i=0; i<numKinects; i++){
             framePacket *packet = QtImageRender[i]->get();
             if( packet == NULL ) { break; }
-            std::cout << "Qt image render get one frame\n" << x_ratio << y_ratio << std::endl;
+            std::cout << "Qt image render get one frame\n" << std::endl;
 
             if(i == indexTorender){
                 int h = packet->height_d;

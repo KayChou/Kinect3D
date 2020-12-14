@@ -41,6 +41,7 @@ typedef struct Context {
 	int depth_h;
 
 	float Td;
+	std::string DeviceSerialNumber[4];
 
 	Context(){
 		this->b_save2Local = false;
@@ -52,5 +53,8 @@ typedef struct Context {
 		this->depth_w = Width_depth_HR;
 		this->depth_h = Height_depth_HR;
 		this->Td = 0.025f;
+
+		DeviceSerialNumber[0] = "021871240647";
+		DeviceSerialNumber[1] = "010845342847";
 	}
 } Context;
