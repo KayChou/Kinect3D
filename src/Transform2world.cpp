@@ -1,10 +1,10 @@
-#include "RGBD_FIFO_Process.h"
+#include "Transform2world.h"
 
 //=======================================================================================
 // main loop: get data from RGBD FIFO
 //      if calibrate button is clicked, perform calibration
 //=======================================================================================
-void RGBD_FIFO_Process::process(Context *context)
+void Transform2world::process(Context *context)
 {
     Point3fRGB *points = new Point3fRGB[context->depth_w * context->depth_h * 5];
     triIndex *triangles = new triIndex[context->depth_w * context->depth_h * 5 * 3];
@@ -112,11 +112,11 @@ void RGBD_FIFO_Process::process(Context *context)
     }
     delete [] points;
     delete [] triangles;
-    std::printf("Thread RGBD_FIFO_Process quit \n", input->cnt); fflush(stdout);
+    std::printf("Thread Transform2world quit \n", input->cnt); fflush(stdout);
 }
 
 
-void RGBD_FIFO_Process::init(int idx, FIFO<framePacket>* input, FIFO<frameMesh>* output_pcd, FIFO<framePacket>* output_qt) 
+void Transform2world::init(int idx, FIFO<framePacket>* input, FIFO<frameMesh>* output_pcd, FIFO<framePacket>* output_qt) 
 {
     this->idx = idx;
     this->input = input;
@@ -138,7 +138,7 @@ void RGBD_FIFO_Process::init(int idx, FIFO<framePacket>* input, FIFO<frameMesh>*
 }
 
 
-void RGBD_FIFO_Process::RotatePoint(Point3f &point, std::vector<std::vector<float>> &R, std::vector<float> &T)
+void Transform2world::RotatePoint(Point3f &point, std::vector<std::vector<float>> &R, std::vector<float> &T)
 {
 	std::vector<float> res(3);
 	point.X += T[0];

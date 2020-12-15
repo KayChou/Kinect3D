@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
     FIFO<frameMesh> **opengl_render_input = new FIFO<frameMesh>*[numKinects];
 
     KinectsManager *kinects = new KinectsManager();
-    RGBD_FIFO_Process *rgbdProcess = new RGBD_FIFO_Process[numKinects];
+    Transform2world *transform = new Transform2world[numKinects];
     openglRender *render = new openglRender();
     Ui::Widget *ui;
     QApplication a(argc, argv);
@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
         synchronize_output[i] = synchronize[i];
         opengl_render_input[i] = pointCloud[i];
 
-        rgbdProcess[i].init(i, synchronize[i], pointCloud[i], QtImageRender[i]);
+        transform[i].init(i, synchronize[i], pointCloud[i], QtImageRender[i]);
     }
     
     kinects->init(capture_output, context);
@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
     std::thread ImageFIFOThread(&Widget::QtImageFIFOProcess, std::ref(w));
 
     for(int i=0; i<numKinects; i++){
-        rgbd_Process_Thread[i] = std::thread(&RGBD_FIFO_Process::process, rgbdProcess[i], context);
+        rgbd_Process_Thread[i] = std::thread(&Transform2world::process, transform[i], context);
         rgbd_Process_Thread[i].detach();
     }
 

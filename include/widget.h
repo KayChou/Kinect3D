@@ -3,7 +3,7 @@
 
 #include <iostream>
 #include "KinectCapture.h"
-#include "RGBD_FIFO_Process.h"
+#include "Transform2world.h"
 #include "openglRender.h"
 #include "utils.h"
 

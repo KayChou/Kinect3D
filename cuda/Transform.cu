@@ -1,5 +1,6 @@
 #include "cuda.cuh"
 
+
 __device__ void RotatePoint(float *point, float* R, float* T)
 {
 	float res[3];
@@ -15,6 +16,7 @@ __device__ void RotatePoint(float *point, float* R, float* T)
 	point[1] = res[1];
 	point[2] = res[2];
 }
+
 
 __global__ void Transform_Kernel(int width_d, int height_d, Point3fRGB *vertices, float *R, float* T)
 {
