@@ -3,6 +3,14 @@
 #include <vector>
 
 
+typedef struct Cam_K {
+	float fx; ///< Focal length x (pixel)
+    float fy; ///< Focal length y (pixel)
+    float cx; ///< Principal point x (pixel)
+    float cy; ///< Principal point y (pixel)
+} Cam_K;
+
+
 typedef struct Point3f {
 	Point3f(){
 		this->X = 0;

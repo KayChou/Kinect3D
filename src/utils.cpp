@@ -6,10 +6,34 @@ void saveKRT(Context *context)
     fprintf(f, "numKinects: %d\n", numKinects);
     for(int i=0; i<numKinects; i++) {
         fprintf(f, "camera %d\n", i);
-        fprintf(f, "R\n\t%f %f %f\n", context->R[i][0][0], context->R[i][0][1], context->R[i][0][2]);
-        fprintf(f, "\t%f %f %f\n", context->R[i][1][0], context->R[i][1][1], context->R[i][1][2]);
-        fprintf(f, "\t%f %f %f\n", context->R[i][2][0], context->R[i][2][1], context->R[i][2][2]);
-        fprintf(f, "T\n\t%f %f %f\n", context->T[i][0], context->T[i][1], context->T[i][2]);
+        fprintf(f, "fx: %f\n", context->K[i].fx);
+        fprintf(f, "fy: %f\n", context->K[i].fy);
+        fprintf(f, "cx: %f\n", context->K[i].cx);
+        fprintf(f, "cy: %f\n", context->K[i].cy);
+        fprintf(f, "R\n%f %f %f\n", context->R[i][0][0], context->R[i][0][1], context->R[i][0][2]);
+        fprintf(f, "%f %f %f\n", context->R[i][1][0], context->R[i][1][1], context->R[i][1][2]);
+        fprintf(f, "%f %f %f\n", context->R[i][2][0], context->R[i][2][1], context->R[i][2][2]);
+        fprintf(f, "T\n%f %f %f\n", context->T[i][0], context->T[i][1], context->T[i][2]);
+    }
+    fclose(f);
+}
+
+
+void loadKRT(Context *context)
+{
+    char str[100];
+    int n;
+    FILE *f = fopen ("cameras.config", "r");
+    fscanf(f, "%s %d", str, &n);
+    for(int i=0; i<n; i++) {
+        fscanf(f, "%s %f", str, &context->K[i].fx);
+        fscanf(f, "%s %f", str, &context->K[i].fy);
+        fscanf(f, "%s %f", str, &context->K[i].cx);
+        fscanf(f, "%s %f", str, &context->K[i].cy);
+        fscanf(f, "%s %f %f %f", str, &context->R[i][0][0], &context->R[i][0][1], &context->R[i][0][2]);
+        fscanf(f, "%f %f %f", &context->R[i][1][0], &context->R[i][1][1], &context->R[i][1][2]);
+        fscanf(f, "%f %f %f", &context->R[i][2][0], &context->R[i][2][1], &context->R[i][2][2]);
+        fscanf(f, "%s %f %f %f", str, &context->T[i][0], &context->T[i][1], &context->T[i][2]);
     }
     fclose(f);
 }

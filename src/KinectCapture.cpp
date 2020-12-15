@@ -3,8 +3,9 @@
 //=======================================================================================
 // init one kinect
 //=======================================================================================
-bool Kinect::init(std::string serial, FIFO<framePacket>* output, Context *context)
+bool Kinect::init(int idx, std::string serial, FIFO<framePacket>* output, Context *context)
 {
+    this->idx = idx;
     this->serial = serial;
     this->context = context;
     this->output = output;
@@ -49,7 +50,12 @@ bool Kinect::getFrameLoop(){
             if(!this->cameraStarted) { // if not started, then start it 
                 this->dev->start();
                 // this->registration = new libfreenect2::Registration(this->dev->getIrCameraParams(), this->dev->getColorCameraParams());
+                libfreenect2::Freenect2Device::IrCameraParams CamParam = this->dev->getIrCameraParams();
                 this->alignment = new libfreenect2::Alignment(this->dev->getIrCameraParams(), this->dev->getColorCameraParams());
+                context->K[idx].fx = CamParam.fx;
+                context->K[idx].fy = CamParam.fy;
+                context->K[idx].cx = CamParam.cx;
+                context->K[idx].cy = CamParam.cy;
                 this->cameraStarted = true;
             }
 
@@ -132,7 +138,7 @@ bool KinectsManager::init_Kinect()
         // serials[i] = freenect2.getDeviceSerialNumber(i);
         serials[i] = this->context->DeviceSerialNumber[i];
         printf("Device serial number: %s\n", serials[i].c_str());
-        cameras[i].init(serials[i], output[i], context);
+        cameras[i].init(i, serials[i], output[i], context);
     }
 
     for(int i=0; i<numKinects; i++) {

@@ -18,7 +18,7 @@ void destoryAllKinect();
 class Kinect
 {
 public:
-    bool init(std::string serial, FIFO<framePacket>* output, Context *context);
+    bool init(int idx, std::string serial, FIFO<framePacket>* output, Context *context);
     bool getFrameLoop();
     void setStartFlag(bool flag);
     bool getFinishFlag();
@@ -29,6 +29,7 @@ public:
     FIFO<framePacket>* output;
 
 public:
+    int idx;
     libfreenect2::Freenect2 freenect2;
     libfreenect2::Freenect2Device *dev;
     libfreenect2::PacketPipeline *pipeline;

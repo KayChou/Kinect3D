@@ -43,6 +43,8 @@ typedef struct Context {
 
 	float Td;
 	std::string DeviceSerialNumber[4];
+
+	Cam_K K[numKinects];
 	std::vector<float> T[numKinects];
 	std::vector<std::vector<float>> R[numKinects];
 
@@ -74,6 +76,10 @@ typedef struct Context {
 			this->T[n][0] = 0;
 			this->T[n][1] = 0;
 			this->T[n][2] = 0;
+			this->K[n].fx = 0;
+			this->K[n].fy = 0;
+			this->K[n].cx = 0;
+			this->K[n].cx = 0;
 		}
 		
 	}
