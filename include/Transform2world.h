@@ -8,7 +8,7 @@ class Transform2world{
 public:
 
     void process(Context *context);
-    void init(int idx, FIFO<framePacket>* input, FIFO<frameMesh>* output_pcd, FIFO<framePacket>* output_qt);
+    void init(int idx, FIFO<framePacket>* input, FIFO<framePacket>* output, FIFO<framePacket>* output_qt);
 
     void RotatePoint(Point3f &point, std::vector<std::vector<float>> &R, std::vector<float> &T);
 
@@ -23,6 +23,6 @@ public:
     cv::Mat registered;
     FIFO<framePacket>* input;
     FIFO<framePacket>* output_qt;
-    FIFO<frameMesh>* output_pcd;
+    FIFO<framePacket>* output;
     clock_t start = clock(), end = clock();
 };

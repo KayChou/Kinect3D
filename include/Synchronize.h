@@ -33,7 +33,7 @@ void Synchronize(FIFO<framePacket> **input, FIFO<framePacket> **output){
                 int min = *min_element(cnt, cnt + numKinects);
                 int maxIdx = max_element(cnt, cnt + numKinects) - cnt;
                 //when all capture thread created, clear all FIFO and note start timeStamp
-                if(min > 0){ 
+                if(min > 0) {
                     stampClearFlag = true;
                     for(int i=0; i<numKinects; i++) {
                         while(input[i]->cnt > 0) {
