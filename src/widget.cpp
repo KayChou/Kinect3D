@@ -56,12 +56,12 @@ void Widget::renderNewFrame(){
 void Widget::QtImageFIFOProcess(){
     float x_ratio = (512.f - 1) / Width_depth_HR;
     float y_ratio = (424.f - 1) / Height_depth_HR;
-    std::cout << "Thread Qt image process started\n" << std::endl;
+    std::cout << "Thread Qt image process started\n";
     while(true){
         for(int i=0; i<numKinects; i++){
             framePacket *packet = QtImageRender[i]->get();
             if( packet == NULL ) { break; }
-            std::cout << "Qt image render get one frame\n" << std::endl;
+            std::cout << "Qt image render get one frame\n";
 
             if(i == indexTorender){
                 int h = packet->height_d;

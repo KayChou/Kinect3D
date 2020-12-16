@@ -103,7 +103,7 @@ bool Kinect::getFrameLoop(){
             framePacket *packet = new framePacket();
             packet->init(color, &depth_HR, vertices, 1920, 1080, Width_depth_HR, Height_depth_HR);
             this->output->put(packet);
-            std::printf("capture get one frame\n");
+            std::printf("\ncapture get one frame\n");
 
             listener->release(frames);
         }

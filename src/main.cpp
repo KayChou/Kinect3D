@@ -10,6 +10,7 @@ int main(int argc, char *argv[])
     FIFO<framePacket> **RGBD_Capture = new FIFO<framePacket>*[numKinects];
     FIFO<framePacket> **synchronize = new FIFO<framePacket>*[numKinects];
     FIFO<framePacket> **transform2world = new FIFO<framePacket>*[numKinects];
+    FIFO<framePacket> **pointcloud_overlap_removed = new FIFO<framePacket>*[numKinects];
     FIFO<frameMesh> **mesh = new FIFO<frameMesh>*[numKinects];
     FIFO<framePacket> **QtImageRender = new FIFO<framePacket>*[numKinects];
 
@@ -17,28 +18,38 @@ int main(int argc, char *argv[])
         RGBD_Capture[i] = new FIFO<framePacket>();
         synchronize[i] = new FIFO<framePacket>();
         transform2world[i] = new FIFO<framePacket>();
+        pointcloud_overlap_removed[i] = new FIFO<framePacket>();
         mesh[i] = new FIFO<frameMesh>();
         QtImageRender[i] = new FIFO<framePacket>();
 
         RGBD_Capture[i]->init(FIFO_LEN);
         synchronize[i]->init(FIFO_LEN);
         transform2world[i]->init(FIFO_LEN);
+        pointcloud_overlap_removed[i]->init(FIFO_LEN);
         mesh[i]->init(FIFO_LEN);
         QtImageRender[i]->init(FIFO_LEN);
     }
 
     FIFO<framePacket> **capture_output = new FIFO<framePacket>*[numKinects];
+
     FIFO<framePacket> **synchronize_input = new FIFO<framePacket>*[numKinects];
     FIFO<framePacket> **synchronize_output = new FIFO<framePacket>*[numKinects];
+
     FIFO<framePacket> **transform_input = new FIFO<framePacket>*[numKinects];
     FIFO<framePacket> **transform_output = new FIFO<framePacket>*[numKinects];
+
+    FIFO<framePacket> **overlap_remove_input = new FIFO<framePacket>*[numKinects];
+    FIFO<framePacket> **overlap_remove_output = new FIFO<framePacket>*[numKinects];
+
     FIFO<framePacket> **meshing_input = new FIFO<framePacket>*[numKinects];
     FIFO<frameMesh> **meshing_output = new FIFO<frameMesh>*[numKinects];
+
     FIFO<frameMesh> **opengl_render_input = new FIFO<frameMesh>*[numKinects];
 
     // ============================ create class instance ====================================
     KinectsManager *kinects = new KinectsManager();
     Transform2world *transform = new Transform2world[numKinects];
+    overlap_removal *overlap_remove = new overlap_removal();
     Meshing *meshing = new Meshing[numKinects];
     openglRender *render = new openglRender();
     Ui::Widget *ui;
@@ -47,12 +58,19 @@ int main(int argc, char *argv[])
 
     for(int i=0; i<numKinects; i++){
         capture_output[i] = RGBD_Capture[i];
+
         synchronize_input[i] = RGBD_Capture[i];
         synchronize_output[i] = synchronize[i];
+
         transform_input[i] = synchronize[i];
         transform_output[i] = transform2world[i];
-        meshing_input[i] = transform2world[i];
+
+        overlap_remove_input[i] = transform2world[i];
+        overlap_remove_output[i] = pointcloud_overlap_removed[i];
+
+        meshing_input[i] = pointcloud_overlap_removed[i];
         meshing_output[i] = mesh[i];
+
         opengl_render_input[i] = mesh[i];
 
         transform[i].init(i, transform_input[i], transform_output[i], QtImageRender[i]);
@@ -60,14 +78,16 @@ int main(int argc, char *argv[])
     }
     
     kinects->init(capture_output, context);
+    overlap_remove->init(overlap_remove_input, overlap_remove_output);
     render->init(opengl_render_input, context);
 
     // ============================ start thread =======================================
     std::thread KinectsManager_Thread = std::thread(&KinectsManager::loop, std::ref(kinects));
     std::thread synchronize_Thread = std::thread(Synchronize, synchronize_input, synchronize_output);
-    std::thread opengl_Render_Thread = std::thread(&openglRender::loop, std::ref(render));
     std::thread transform_Thread[numKinects];
+    std::thread overlap_remove_Thread = std::thread(&overlap_removal::loop, std::ref(overlap_remove), context);
     std::thread meshing_Thread[numKinects];
+    std::thread opengl_Render_Thread = std::thread(&openglRender::loop, std::ref(render));
     std::thread ImageFIFOThread(&Widget::QtImageFIFOProcess, std::ref(w));
 
     for(int i=0; i<numKinects; i++){
@@ -79,6 +99,7 @@ int main(int argc, char *argv[])
 
     KinectsManager_Thread.detach();
     synchronize_Thread.detach();
+    overlap_remove_Thread.detach();
     opengl_Render_Thread.detach();
     ImageFIFOThread.detach();
 

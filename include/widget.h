@@ -4,6 +4,7 @@
 #include <iostream>
 #include "KinectCapture.h"
 #include "Transform2world.h"
+#include "overlap_removal.h"
 #include "meshing.h"
 #include "openglRender.h"
 #include "utils.h"
