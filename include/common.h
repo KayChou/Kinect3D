@@ -17,7 +17,7 @@
 
 #define framemax 300
 #define FIFO_LEN 30
-#define numKinects 2
+#define numKinects 1
 #define typesDefault libfreenect2::Frame::Color | libfreenect2::Frame::Depth
 
 #define x_bbox_min -1
@@ -47,6 +47,7 @@ typedef struct Context {
 	Cam_K K[numKinects];
 	std::vector<float> T[numKinects];
 	std::vector<std::vector<float>> R[numKinects];
+	std::vector<std::vector<float>> invR[numKinects];
 
 	Context(){
 		this->b_save2Local = false;
@@ -65,11 +66,14 @@ typedef struct Context {
 
 		for(int n=0; n<numKinects; n++) {
 			this->R[n].resize(3);
+			this->invR[n].resize(3);
 
 			for (int i = 0; i < 3; i++) {
 				this->R[n][i].resize(3);
+				this->invR[n][i].resize(3);
 				for (int j = 0; j < 3; j++) {
 					this->R[n][i][j] = 0;
+					this->invR[n][i][j] = 0;
 				}
 			}
 			this->T[n].resize(3);

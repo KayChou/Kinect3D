@@ -1,5 +1,26 @@
 #include "utils.h"
 
+
+// compute inverse rotation matrix
+// actually invR is transpose R
+void inv_Matrix_3x3(std::vector<std::vector<float>> R, std::vector<std::vector<float>> &invR)
+{
+    float detR = 0;
+    detR = R[0][0] * (R[1][1] * R[2][2] - R[2][1] * R[1][2]) \
+         - R[0][1] * (R[1][0] * R[2][2] - R[2][0] * R[1][2]) \
+         + R[0][2] * (R[1][0] * R[2][1] - R[2][0] * R[1][1]);
+    invR[0][0] = ( R[1][1] * R[2][2] - R[2][1] * R[1][2] ) / detR;
+    invR[1][0] = ( R[1][0] * R[2][2] - R[2][0] * R[1][2] ) / detR * (-1);
+    invR[2][0] = ( R[1][0] * R[2][1] - R[2][0] * R[1][1] ) / detR;
+    invR[0][1] = ( R[0][1] * R[2][2] - R[2][1] * R[0][2] ) / detR * (-1);
+    invR[1][1] = ( R[0][0] * R[2][2] - R[2][0] * R[0][2] ) / detR;
+    invR[2][1] = ( R[0][0] * R[2][1] - R[2][0] * R[0][1] ) / detR * (-1);
+    invR[0][2] = ( R[0][1] * R[1][2] - R[1][1] * R[0][2] ) / detR;
+    invR[1][2] = ( R[0][0] * R[1][2] - R[1][0] * R[0][2] ) / detR * (-1);
+    invR[2][2] = ( R[0][0] * R[1][1] - R[1][0] * R[0][1] ) / detR;
+}
+
+
 void saveKRT(Context *context)
 {
     FILE *f = fopen("cameras.config", "w");
@@ -13,6 +34,9 @@ void saveKRT(Context *context)
         fprintf(f, "R\n%f %f %f\n", context->R[i][0][0], context->R[i][0][1], context->R[i][0][2]);
         fprintf(f, "%f %f %f\n", context->R[i][1][0], context->R[i][1][1], context->R[i][1][2]);
         fprintf(f, "%f %f %f\n", context->R[i][2][0], context->R[i][2][1], context->R[i][2][2]);
+        fprintf(f, "invR\n%f %f %f\n", context->invR[i][0][0], context->invR[i][0][1], context->invR[i][0][2]);
+        fprintf(f, "%f %f %f\n", context->invR[i][1][0], context->invR[i][1][1], context->invR[i][1][2]);
+        fprintf(f, "%f %f %f\n", context->invR[i][2][0], context->invR[i][2][1], context->invR[i][2][2]);
         fprintf(f, "T\n%f %f %f\n", context->T[i][0], context->T[i][1], context->T[i][2]);
     }
     fclose(f);

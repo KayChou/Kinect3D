@@ -1,6 +1,8 @@
 #pragma once
 #include "common.h"
 
+void inv_Matrix_3x3(std::vector<std::vector<float>> R, std::vector<std::vector<float>> &invR);
+
 void saveKRT(Context *context);
 
 void savePacket2Bin(framePacket *input, const char* filename);

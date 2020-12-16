@@ -1,5 +1,27 @@
 #include "Transform2world.h"
 
+
+void Transform2world::init(int idx, FIFO<framePacket>* input, FIFO<framePacket>* output, FIFO<framePacket>* output_qt) 
+{
+    this->idx = idx;
+    this->input = input;
+    this->output_qt = output_qt;
+    this->output = output;
+    
+    this->R.resize(3);
+
+	for (int i = 0; i < 3; i++) {
+		this->R[i].resize(3);
+		for (int j = 0; j < 3; j++) {
+			this->R[i][j] = 0;
+		}
+	}
+    this->T.resize(3);
+    this->T[0] = 0;
+    this->T[1] = 0;
+    this->T[2] = 0;
+}
+
 //=======================================================================================
 // main loop: get data from RGBD FIFO
 //      if calibrate button is clicked, perform calibration
@@ -25,6 +47,7 @@ void Transform2world::process(Context *context)
             context->R[idx][2][0] = R[2][0];
             context->R[idx][2][1] = R[2][1];
             context->R[idx][2][2] = R[2][2];
+            inv_Matrix_3x3(context->R[idx], context->invR[idx]);
         }
 
         if(context->b_hasBeenCalibrated) {
@@ -44,28 +67,6 @@ void Transform2world::process(Context *context)
         usleep(1000);
     }
     std::printf("Thread Transform2world quit \n", input->cnt); fflush(stdout);
-}
-
-
-void Transform2world::init(int idx, FIFO<framePacket>* input, FIFO<framePacket>* output, FIFO<framePacket>* output_qt) 
-{
-    this->idx = idx;
-    this->input = input;
-    this->output_qt = output_qt;
-    this->output = output;
-    
-    this->R.resize(3);
-
-	for (int i = 0; i < 3; i++) {
-		this->R[i].resize(3);
-		for (int j = 0; j < 3; j++) {
-			this->R[i][j] = 0;
-		}
-	}
-    this->T.resize(3);
-    this->T[0] = 0;
-    this->T[1] = 0;
-    this->T[2] = 0;
 }
 
 
