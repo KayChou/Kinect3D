@@ -78,14 +78,14 @@ int main(int argc, char *argv[])
     }
     
     kinects->init(capture_output, context);
-    overlap_remove->init(overlap_remove_input, overlap_remove_output);
+    overlap_remove->init(overlap_remove_input, overlap_remove_output, context);
     render->init(opengl_render_input, context);
 
     // ============================ start thread =======================================
     std::thread KinectsManager_Thread = std::thread(&KinectsManager::loop, std::ref(kinects));
     std::thread synchronize_Thread = std::thread(Synchronize, synchronize_input, synchronize_output);
     std::thread transform_Thread[numKinects];
-    std::thread overlap_remove_Thread = std::thread(&overlap_removal::loop, std::ref(overlap_remove), context);
+    std::thread overlap_remove_Thread = std::thread(&overlap_removal::loop, std::ref(overlap_remove));
     std::thread meshing_Thread[numKinects];
     std::thread opengl_Render_Thread = std::thread(&openglRender::loop, std::ref(render));
     std::thread ImageFIFOThread(&Widget::QtImageFIFOProcess, std::ref(w));

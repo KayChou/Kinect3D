@@ -17,7 +17,7 @@
 
 #define framemax 300
 #define FIFO_LEN 30
-#define numKinects 1
+#define numKinects 2
 #define typesDefault libfreenect2::Frame::Color | libfreenect2::Frame::Depth
 
 #define x_bbox_min -1
@@ -42,6 +42,8 @@ typedef struct Context {
 	int depth_h;
 
 	float Td;
+	float x_ratio; // super-resolution ratio: HR_width / 512
+	float y_ratio;
 	std::string DeviceSerialNumber[4];
 
 	Cam_K K[numKinects];
@@ -60,6 +62,8 @@ typedef struct Context {
 		this->depth_w = Width_depth_HR;
 		this->depth_h = Height_depth_HR;
 		this->Td = 0.025f;
+		this->x_ratio = (float)(512 - 1) / (float)Width_depth_HR;
+		this->y_ratio = (float)(424 - 1) / (float)Height_depth_HR;;
 
 		DeviceSerialNumber[0] = "021871240647";
 		DeviceSerialNumber[1] = "010845342847";

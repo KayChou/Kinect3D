@@ -78,6 +78,7 @@
         "*.ipp": "cpp",
         "*.cuh": "cpp",
         "__nullptr": "cpp",
-        "filesystem": "cpp"
+        "filesystem": "cpp",
+        "ios": "cpp"
     }
 }
