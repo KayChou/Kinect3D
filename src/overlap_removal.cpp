@@ -79,7 +79,6 @@ void twoViewRemoval::set_io(framePacket* left, framePacket* right, int idx)
 
 void twoViewRemoval::loop()
 {
-    printf("thread twoViewRemoval started\n");
     Point3f tempPoint;
     while(this->is_active) {
         if (!this->processable) {
@@ -100,7 +99,6 @@ void twoViewRemoval::loop()
 
         this->left->destroy();
         this->readable = true;
-        printf(" =========== remolval 1 ============== \n");
     }
 }
 
@@ -108,15 +106,15 @@ void twoViewRemoval::loop()
 // map world coordinate to camera coordinate
 void twoViewRemoval::backforward_mapping(Point3f &point, std::vector<std::vector<float>> &R, std::vector<float> &T)
 {
-	std::vector<float> res(3);
+    std::vector<float> res(3);
 
-	res[0] = point.X * R[0][0] + point.Y * R[0][1] + point.Z * R[0][2];
-	res[1] = point.X * R[1][0] + point.Y * R[1][1] + point.Z * R[1][2];
-	res[2] = point.X * R[2][0] + point.Y * R[2][1] + point.Z * R[2][2];
+    res[0] = point.X * R[0][0] + point.Y * R[0][1] + point.Z * R[0][2];
+    res[1] = point.X * R[1][0] + point.Y * R[1][1] + point.Z * R[1][2];
+    res[2] = point.X * R[2][0] + point.Y * R[2][1] + point.Z * R[2][2];
 
-	point.X = res[0] - T[0];
-	point.Y = res[1] - T[1];
-	point.Z = res[2] - T[2];
+    point.X = res[0] - T[0];
+    point.Y = res[1] - T[1];
+    point.Z = res[2] - T[2];
 }
 
 
