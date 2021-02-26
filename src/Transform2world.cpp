@@ -33,7 +33,7 @@ void Transform2world::process(Context *context)
         std::printf("Transform2world get one frame\n");
         
         if(context->b_Calibration){
-            context->b_hasBeenCalibrated = calibrate.performCalibration(packet, T, R);
+            context->b_hasBeenCalibrated[idx] = calibrate.performCalibration(packet, T, R);
 
             context->T[idx][0] = T[0];
             context->T[idx][1] = T[1];
@@ -50,7 +50,7 @@ void Transform2world::process(Context *context)
             inv_Matrix_3x3(context->R[idx], context->invR[idx]);
         }
 
-        if(context->b_hasBeenCalibrated) {
+        if(context->b_hasBeenCalibrated[idx]) {
             Transform((int)packet->width_d, (int)packet->height_d, packet, R, T);
         }
         

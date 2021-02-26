@@ -8,7 +8,7 @@ public:
     void set_io(framePacket* left, framePacket* right, int idx);
     void loop();
     void backforward_mapping(Point3f &point, std::vector<std::vector<float>> &R, std::vector<float> &T);
-    void map_to_pixel(Point3f &point, float fx, float fy, float cx, float cy);
+    void map_to_pixel(Point3f &point, float fx, float fy, float cx, float cy, int &cnt_removed);
 
 public:
     std::atomic<bool> processable; //unlocked if uyuv has been prepared

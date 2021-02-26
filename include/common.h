@@ -32,7 +32,7 @@ typedef struct Context {
 	bool b_save2Local;
 	bool b_start_Camera;
 	bool b_Calibration;
-	bool b_hasBeenCalibrated;
+	bool b_all_sensor_calibrated;
 	bool b_Refine;
 	bool b_enableRGB;
 	bool b_enableDepth;
@@ -46,6 +46,7 @@ typedef struct Context {
 	float y_ratio;
 	std::string DeviceSerialNumber[4];
 
+	bool b_hasBeenCalibrated[numKinects];
 	Cam_K K[numKinects];
 	std::vector<float> T[numKinects];
 	std::vector<std::vector<float>> R[numKinects];
@@ -55,7 +56,7 @@ typedef struct Context {
 		this->b_save2Local = false;
 		this->b_start_Camera = false;
 		this->b_Calibration = false;
-		this->b_hasBeenCalibrated = false;
+		this->b_all_sensor_calibrated = false;
 		this->b_cfg_saved = false;
 		this->b_enableRGB = true;
 		this->b_enableDepth = true;
@@ -69,6 +70,7 @@ typedef struct Context {
 		DeviceSerialNumber[1] = "010845342847";
 
 		for(int n=0; n<numKinects; n++) {
+			this->b_hasBeenCalibrated[n] = false;
 			this->R[n].resize(3);
 			this->invR[n].resize(3);
 
