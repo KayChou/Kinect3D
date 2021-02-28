@@ -1,5 +1,6 @@
 #pragma once
 #include "common.h"
+#include "utils.h"
 
 
 class twoViewRemoval {
@@ -8,7 +9,7 @@ public:
     void set_io(framePacket* left, framePacket* right, int idx);
     void loop();
     void backforward_mapping(Point3f &point, std::vector<std::vector<float>> &R, std::vector<float> &T);
-    void map_to_pixel(Point3f &point, float fx, float fy, float cx, float cy, int &cnt_removed);
+    bool map_to_pixel(Point3f &point, float fx, float fy, float cx, float cy, int &cnt_removed);
 
 public:
     std::atomic<bool> processable; //unlocked if uyuv has been prepared
@@ -19,6 +20,8 @@ public:
     framePacket* right; // right view's framePacket
     int idx;
     Context* context;
+
+    float res[3];
 };
 
 

@@ -9,8 +9,8 @@
 #include <stdio.h>
 #include "typedefs.h"
 
-#define Width_depth_HR 1024
-#define Height_depth_HR 828
+#define Width_depth_HR 512
+#define Height_depth_HR 424
 
 class framePacket{
 
