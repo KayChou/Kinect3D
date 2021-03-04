@@ -168,9 +168,12 @@ bool twoViewRemoval::map_to_pixel(Point3f &point, float fx, float fy, float cx, 
     int x = (int)(point.X * context->x_ratio / point.Z * fx + cx - 0.5);
     int y = (int)(point.Y * context->y_ratio / point.Z * fy + cy - 0.5);
 
-    if(x >= 0 && x < Width_depth_HR && y >= 0 && y < Height_depth_HR && this->right->data_d[y*Width_depth_HR + x] > point.Z) {
-        cnt_removed++;
-        return true;
-    }
+    // res[0] = this->right->vertices[y*Width_depth_HR + x].X;
+    //float dist = (res[0] - point.X) + (res[1] - point.Y) + (res[2] - point.Z);
+
+    // if(x >= 0 && x < Width_depth_HR && y >= 0 && y < Height_depth_HR && dist < 1) {
+    //     cnt_removed++;
+    //     return true;
+    // }
     return false;
 }

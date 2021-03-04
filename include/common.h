@@ -67,7 +67,8 @@ typedef struct Context {
 		this->y_ratio = (float)(424 - 1) / (float)Height_depth_HR;;
 
 		DeviceSerialNumber[0] = "021871240647";
-		DeviceSerialNumber[1] = "010845342847";
+		DeviceSerialNumber[1] = "036669543547";
+		//DeviceSerialNumber[1] = "010845342847";
 
 		for(int n=0; n<numKinects; n++) {
 			this->b_hasBeenCalibrated[n] = false;
