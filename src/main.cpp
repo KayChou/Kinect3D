@@ -52,6 +52,7 @@ int main(int argc, char *argv[])
     overlap_removal *overlap_remove = new overlap_removal();
     Meshing *meshing = new Meshing[numKinects];
     openglRender *render = new openglRender();
+    ICP *icp = new ICP();
     Ui::Widget *ui;
     QApplication a(argc, argv);
     Widget w(QtImageRender, context, ui);
@@ -80,6 +81,7 @@ int main(int argc, char *argv[])
     kinects->init(capture_output, context);
     overlap_remove->init(overlap_remove_input, overlap_remove_output, context);
     render->init(opengl_render_input, context);
+    icp->init(context);
 
     // ============================ start thread =======================================
     std::thread KinectsManager_Thread = std::thread(&KinectsManager::loop, std::ref(kinects));
@@ -89,6 +91,7 @@ int main(int argc, char *argv[])
     std::thread meshing_Thread[numKinects];
     std::thread opengl_Render_Thread = std::thread(&openglRender::loop, std::ref(render));
     std::thread ImageFIFOThread(&Widget::QtImageFIFOProcess, std::ref(w));
+    std::thread ICP_Thread = std::thread(&ICP::loop, std::ref(icp));
 
     for(int i=0; i<numKinects; i++){
         transform_Thread[i] = std::thread(&Transform2world::process, transform[i], context);
@@ -102,6 +105,7 @@ int main(int argc, char *argv[])
     overlap_remove_Thread.detach();
     opengl_Render_Thread.detach();
     ImageFIFOThread.detach();
+    ICP_Thread.detach();
 
     w.show();
     a.exec();

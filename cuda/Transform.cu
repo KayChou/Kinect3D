@@ -3,6 +3,9 @@
 
 __device__ void RotatePoint(float *point, float* R, float* T)
 {
+    if(point[0]==0 && point[1]==0 && point[2]==0) {
+        return;
+    }
 	float res[3];
 	point[0] += T[0];
 	point[1] += T[1];

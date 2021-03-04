@@ -27,7 +27,7 @@
 
 using namespace std;
 
-float ICP(Point3f *verts1, Point3f *verts2, int nVerts1, int nVerts2, float *R, float *t, int maxIter = 10);
+float ICP_p2p(Point3f *verts1, Point3f *verts2, int nVerts1, int nVerts2, float *R, float *t, int maxIter = 10);
 
 
 struct PointCloud
@@ -59,4 +59,16 @@ struct PointCloud
 	// Look at bb.size() to find out the expected dimensionality (e.g. 2 or 3 for point clouds)
 	template <class BBOX>
 	bool kdtree_get_bbox(BBOX& /*bb*/) const { return false; }
+};
+
+
+class ICP
+{
+public:
+	void init(Context *ctx);
+	void loop();
+
+public:
+	Context *ctx;
+
 };

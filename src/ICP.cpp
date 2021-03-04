@@ -22,8 +22,7 @@ void FindClosestPointForEach(PointCloud &sourceCloud, cv::Mat &destPoints, vecto
     tree.buildIndex();
 
 #pragma omp parallel for
-    for (int i = 0; i < nVerts2; i++)
-    {
+    for (int i = 0; i < nVerts2; i++) {
         nanoflann::KNNResultSet<float> resultSet(1);
         resultSet.init(&indices[i], &distances[i]);
         tree.findNeighbors(resultSet, (float*)destPoints.row(i).data, nanoflann::SearchParams());
@@ -34,16 +33,14 @@ void FindClosestPointForEach(PointCloud &sourceCloud, cv::Mat &destPoints, vecto
 float GetStandardDeviation(vector<float> &data)
 {
     float mean = 0;
-    for (size_t i = 0; i < data.size(); i++)
-    {
+    for (size_t i = 0; i < data.size(); i++) {
         mean += data[i];
     }
     mean /= data.size();
 
     float std = 0;
 
-    for (size_t i = 0; i < data.size(); i++)
-    {
+    for (size_t i = 0; i < data.size(); i++) {
         std += pow(data[i] - mean, 2);
     }
 
@@ -60,8 +57,7 @@ void RejectOutlierMatches(vector<Point3f> &matches1, vector<Point3f> &matches2, 
 
     vector<Point3f> filteredMatches1;
     vector<Point3f> filteredMatches2;
-    for (size_t i = 0; i < matches1.size(); i++)
-    {
+    for (size_t i = 0; i < matches1.size(); i++){
         if (matchDistances[i] > maxStdDev * distanceStandardDev)
             continue;
 
@@ -74,7 +70,7 @@ void RejectOutlierMatches(vector<Point3f> &matches1, vector<Point3f> &matches2, 
 }
 
 
-float ICP(Point3f *verts1, Point3f *verts2, int nVerts1, int nVerts2, float *R, float *t, int maxIter)
+float ICP_p2p(Point3f *verts1, Point3f *verts2, int nVerts1, int nVerts2, float *R, float *t, int maxIter)
 {
     PointCloud cloud1;
     cloud1.pts = vector<Point3f>(verts1, verts1 + nVerts1);
@@ -86,8 +82,7 @@ float ICP(Point3f *verts1, Point3f *verts2, int nVerts1, int nVerts2, float *R, 
 
     float error = 1;
 
-    for (int iter = 0; iter < maxIter; iter++)
-    {
+    for (int iter = 0; iter < maxIter; iter++) {
         vector<Point3f> matched1, matched2;
 
         vector<float> distances(nVerts2);
@@ -96,12 +91,10 @@ float ICP(Point3f *verts1, Point3f *verts2, int nVerts1, int nVerts2, float *R, 
 
         vector<float> matchDistances;
         vector<int> matchIdxs(nVerts1, -1);
-        for (int i = 0; i < nVerts2; i++)
-        {
+        for (int i = 0; i < nVerts2; i++) {
             int pos = matchIdxs[indices[i]];
 
-            if (pos != -1)
-            {
+            if (pos != -1) {
                 if (matchDistances[pos] < distances[i])
                     continue;
             }
@@ -111,8 +104,7 @@ float ICP(Point3f *verts1, Point3f *verts2, int nVerts1, int nVerts2, float *R, 
             temp.Y = verts2Mat.at<float>(i, 1);
             temp.Z = verts2Mat.at<float>(i, 2);
 
-            if (pos == -1)
-            {
+            if (pos == -1) {
                 matched1.push_back(verts1[indices[i]]);
                 matched2.push_back(temp);
 
@@ -120,8 +112,7 @@ float ICP(Point3f *verts1, Point3f *verts2, int nVerts1, int nVerts2, float *R, 
 
                 matchIdxs[indices[i]] = matched1.size() - 1;
             }
-            else
-            {
+            else {
                 matched2[pos] = temp;
                 matchDistances[pos] = distances[i];
             }
@@ -136,18 +127,17 @@ float ICP(Point3f *verts1, Point3f *verts2, int nVerts1, int nVerts2, float *R, 
         //}
         //error /= matchDistances.size();
         //cout << error << endl;
-
+        std::printf("\t ICP match: %d %d\n", matched1.size(), matched2.size());
+        std::printf("\t match data: %f %f %f\n", matched1.data()[0].X, matched1.data()[0].Y, matched1.data()[0].Z);
         cv::Mat matched1MatCv(matched1.size(), 3, CV_32F, matched1.data());
         cv::Mat matched2MatCv(matched2.size(), 3, CV_32F, matched2.data());
         cv::Mat tempT;
         cv::reduce(matched1MatCv - matched2MatCv, tempT, 0, CV_REDUCE_AVG);
 
-        for (int i = 0; i < verts2Mat.rows; i++)
-        {
+        for (int i = 0; i < verts2Mat.rows; i++) {
             verts2Mat.row(i) += tempT;
         }
-        for (int i = 0; i < matched2MatCv.rows; i++)
-        {
+        for (int i = 0; i < matched2MatCv.rows; i++) {
             matched2MatCv.row(i) += tempT;
         }
 
@@ -157,8 +147,7 @@ float ICP(Point3f *verts1, Point3f *verts2, int nVerts1, int nVerts2, float *R, 
         cv::Mat tempR = svd.u * svd.vt;
 
         double det = cv::determinant(tempR);
-        if (det < 0)
-        {
+        if (det < 0) {
             cv::Mat temp = cv::Mat::eye(3, 3, CV_32F);
             temp.at<float>(2, 2) = -1;
             tempR = svd.u * temp * svd.vt;
@@ -174,6 +163,81 @@ float ICP(Point3f *verts1, Point3f *verts2, int nVerts1, int nVerts2, float *R, 
 
     memcpy(R, matR.data, 9 * sizeof(float));
     memcpy(t, matT.data, 3 * sizeof(float));
+    printf("\t after ICP: %f %f %f\n", matR.data[0], matR.data[1], matR.data[2]); fflush(stdout);
 
     return error;
+}
+
+
+void ICP::init(Context *ctx) {
+    this->ctx = ctx;
+}
+
+
+void ICP::loop() {
+    bool data_ready = false;
+    int nVerts1 = 0, nVerts2 = 0;
+    Point3f *verts1 = new Point3f[ctx->depth_w * ctx->depth_h];
+    Point3f *verts2 = new Point3f[ctx->depth_w * ctx->depth_h * (numKinects - 1)];
+    Point3fRGB *vertices;
+
+    float *R = new float[9];
+    float *T = new float[3];
+
+    while(true) {
+        // if button "refine" not pressed 
+        if(!ctx->b_Refine) {
+            usleep(1000);
+            continue;
+        }
+        // if button "refine" is pressed but data not ready
+        data_ready = true;
+        for(int i=0; i<numKinects; i++) {
+            if(!ctx->b_refined_data_ready[i]) {
+                data_ready = false;
+            }
+        }
+        if(!data_ready) {
+            usleep(1000);
+            continue;
+        }
+        
+        for(int i=0; i<numKinects; i++) {
+            nVerts1 = 0;
+            nVerts2 = 0;
+
+            // get current camera's data
+            vertices = ctx->frame_to_be_refined[i].vertices;
+            for(int k=0; k<ctx->depth_w * ctx->depth_h; k++) {
+                if( vertices[k].X != 0 && vertices[k].Y != 0 && vertices[k].Z != 0) {
+                    verts1[nVerts1].X = vertices[k].X;
+                    verts1[nVerts1].Y = vertices[k].Y;
+                    verts1[nVerts1].Z = vertices[k].Z;
+                    nVerts1++;
+                }
+            }
+            // get other camera's data
+            for(int j=0; j<numKinects; j++) {
+                if(j != i) {
+                    vertices = ctx->frame_to_be_refined[j].vertices;
+                    for(int k=0; k<ctx->depth_w * ctx->depth_h; k++) {
+                        if( vertices[k].X != 0 && vertices[k].Y != 0 && vertices[k].Z != 0) {
+                            verts2[nVerts2].X = vertices[k].X;
+                            verts2[nVerts2].Y = vertices[k].Y;
+                            verts2[nVerts2].Z = vertices[k].Z;
+                            nVerts2++;
+                        }
+                    }
+                }
+            }
+            printf("\t begin ICP: %d %d\n", nVerts1, nVerts2); fflush(stdout);
+            printf("\t before ICP: %f %f %f\n", T[0], T[1], T[2]); fflush(stdout);
+            ICP_p2p(verts1, verts2, nVerts1, nVerts2, R, T, 10);
+        }
+        
+        ctx->b_Refine = false;
+        for(int i=0; i<numKinects; i++) {
+            ctx->b_refined_data_ready[i] = false;
+        }   
+    }
 }

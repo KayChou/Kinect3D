@@ -8,6 +8,7 @@
 #include "meshing.h"
 #include "openglRender.h"
 #include "utils.h"
+#include "ICP.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class Widget; }

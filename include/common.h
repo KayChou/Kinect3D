@@ -47,10 +47,12 @@ typedef struct Context {
 	std::string DeviceSerialNumber[4];
 
 	bool b_hasBeenCalibrated[numKinects];
+	bool b_refined_data_ready[numKinects];
 	Cam_K K[numKinects];
 	std::vector<float> T[numKinects];
 	std::vector<std::vector<float>> R[numKinects];
 	std::vector<std::vector<float>> invR[numKinects];
+	framePacket frame_to_be_refined[numKinects];
 
 	Context(){
 		this->b_save2Local = false;
@@ -59,6 +61,7 @@ typedef struct Context {
 		this->b_all_sensor_calibrated = false;
 		this->b_cfg_saved = false;
 		this->b_enableRGB = true;
+		this->b_Refine = false;
 		this->b_enableDepth = true;
 		this->depth_w = Width_depth_HR;
 		this->depth_h = Height_depth_HR;
@@ -72,6 +75,8 @@ typedef struct Context {
 
 		for(int n=0; n<numKinects; n++) {
 			this->b_hasBeenCalibrated[n] = false;
+			this->b_refined_data_ready[n] = false;
+			this->frame_to_be_refined[n].vertices = new Point3fRGB[Width_depth_HR * Height_depth_HR];
 			this->R[n].resize(3);
 			this->invR[n].resize(3);
 
@@ -92,6 +97,5 @@ typedef struct Context {
 			this->K[n].cx = 0;
 			this->K[n].cx = 0;
 		}
-		
 	}
 } Context;

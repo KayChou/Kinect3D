@@ -50,8 +50,14 @@ void Transform2world::process(Context *context)
             inv_Matrix_3x3(context->R[idx], context->invR[idx]);
         }
 
-        if(context->b_hasBeenCalibrated[idx]) {
+        if(context->b_hasBeenCalibrated[idx]) { // if current camera has been calibrated
             Transform((int)packet->width_d, (int)packet->height_d, packet, R, T);
+        }
+
+        if(context->b_Refine && !context->b_refined_data_ready[idx]) { // if refine is needed but data not ready
+            memcpy(context->frame_to_be_refined[idx].vertices, packet->vertices, sizeof(Point3fRGB) * packet->width_d * packet->height_d);
+            context->b_refined_data_ready[idx] = true;
+            std::printf("Transform2world prepare one frame for ICP\n"); fflush(stdout);
         }
         
         if(this->output_qt != NULL){ // FIFO for QT image render

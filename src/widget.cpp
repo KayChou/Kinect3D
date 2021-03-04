@@ -28,7 +28,10 @@ void Widget::on_pushButton_2_clicked()
 // Button: Refine
 void Widget::on_pushButton_3_clicked()
 {
-    context->b_Refine = context->b_Refine ? false : true;
+    // context->b_Refine = context->b_Refine ? false : true;
+    if(!context->b_Refine) {
+        context->b_Refine = true;
+    }
 }
 
 
