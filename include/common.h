@@ -88,6 +88,9 @@ typedef struct Context {
 					this->invR[n][i][j] = 0;
 				}
 			}
+			this->R[n][0][0] = 1;
+			this->R[n][1][1] = 1;
+			this->R[n][2][2] = 1;
 			this->T[n].resize(3);
 			this->T[n][0] = 0;
 			this->T[n][1] = 0;

@@ -25,7 +25,9 @@ void overlap_removal::loop()
     while(true) {
         if(numKinects == 1) { // if there is only one camera, no overlapping need to be removed
             frameList[0] = input[0]->get();
+#ifdef LOG
             std::printf("overlap_removal get one frame\n"); fflush(stdout);
+#endif
             output[0]->put(frameList[0]);
             continue;
         }
@@ -38,7 +40,9 @@ void overlap_removal::loop()
                 this->context->b_all_sensor_calibrated = false;
             }
         }
+#ifdef LOG
         std::printf("overlap_removal get one frame\n"); fflush(stdout);
+#endif
 
         if(this->context->b_all_sensor_calibrated) { // if has been calibrated, then perform overlapping removal
             for(int i=0; i<numKinects; i++) {
@@ -136,8 +140,9 @@ void twoViewRemoval::loop()
 
         gettimeofday(&t_end, NULL);
         time_diff = get_time_diff_ms(t_start, t_end);
-
+#ifdef LOG
         std::printf("\t remove %d points using %f ms time\n", cnt_removed, time_diff); fflush(stdout);
+#endif
         this->left->destroy();
         this->readable = true;
     }

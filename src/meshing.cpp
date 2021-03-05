@@ -23,7 +23,9 @@ void Meshing::Loop(Context *context)
 
     while(true) {
         framePacket *packet = input->get();
+#ifdef LOG
         std::printf("meshing get one frame\n");
+#endif
 
         Vn = 0;
         Fn = 0;
@@ -78,7 +80,9 @@ void Meshing::Loop(Context *context)
                 }
             }
         }
+#ifdef LOG
         std::printf("Vn: %d Fn %d\n", Vn, Fn); fflush(stdout);
+#endif
 
         if(this->output != NULL) {
             frameMesh *newMesh = new frameMesh();

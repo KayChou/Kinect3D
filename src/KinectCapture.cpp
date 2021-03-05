@@ -35,23 +35,30 @@ bool Kinect::getFrameLoop(){
     libfreenect2::Frame undistorted_LR(512, 424, 4);
     libfreenect2::Frame depth_HR(Width_depth_HR, Height_depth_HR, 4);
     libfreenect2::Frame registered(Width_depth_HR, Height_depth_HR, 4);
-    libfreenect2::Frame depth2rgb(Width_depth_HR, Height_depth_HR + 2, 4);
+    libfreenect2::Frame depth2rgb(1920, 1080 + 2, 4);
 
     while(true){
         if(!context->b_start_Camera && this->cameraStarted) { // if current camera is started and need to close:
             this->dev->stop();
             this->cameraStarted = false;
-            // delete this->registration;
+#if USE_RAW_DEPTH
+            delete this->registration;
+#else
             delete this->alignment;
+#endif
         }
 
         if(context->b_start_Camera) { // if camera need to start
 
             if(!this->cameraStarted) { // if not started, then start it 
                 this->dev->start();
-                // this->registration = new libfreenect2::Registration(this->dev->getIrCameraParams(), this->dev->getColorCameraParams());
-                libfreenect2::Freenect2Device::IrCameraParams CamParam = this->dev->getIrCameraParams();
+#if USE_RAW_DEPTH
+                this->registration = new libfreenect2::Registration(this->dev->getIrCameraParams(), this->dev->getColorCameraParams());
+#else
                 this->alignment = new libfreenect2::Alignment(this->dev->getIrCameraParams(), this->dev->getColorCameraParams());
+#endif
+
+                libfreenect2::Freenect2Device::IrCameraParams CamParam = this->dev->getIrCameraParams();
                 context->K[idx].fx = CamParam.fx;
                 context->K[idx].fy = CamParam.fy;
                 context->K[idx].cx = CamParam.cx;
@@ -65,15 +72,14 @@ bool Kinect::getFrameLoop(){
 
             this->color = frames[libfreenect2::Frame::Color];
             this->depth = frames[libfreenect2::Frame::Depth];
-
+#if USE_RAW_DEPTH
+            this->registration->apply(color, depth, &undistorted_LR, &registered, true, &depth2rgb);
+#else
             this->alignment->gen_undistorted_LR(this->depth, &undistorted_LR);
             this->alignment->bilinearSR((float *)undistorted_LR.data, (float *)depth_HR.data, Width_depth_HR, Height_depth_HR);
             this->alignment->apply(color, &depth_HR, &registered, false, &depth2rgb);
+#endif
 
-            // this->registration->apply(color, depth, &undistorted, &registered, true, &depth2rgb);
-            // this->alignment->apply(color, depth, &registered, true, &depth2rgb);
-
-            // this->alignment->bilinearSR(&undistorted, &depth_HR, Width_depth_HR, Height_depth_HR);
             // cv::Mat depthmat, registeredmat;
             // cv::Mat(Height_depth_HR, Width_depth_HR, CV_32FC1, depth_HR.data).copyTo(depthmat);
             // cv::imwrite("undistored_HR.png", depthmat);
@@ -86,8 +92,11 @@ bool Kinect::getFrameLoop(){
             Point3fRGB *vertices = new Point3fRGB[Width_depth_HR * Height_depth_HR];
             float rgb;
             for(int i=0; i < Width_depth_HR * Height_depth_HR; i++) {
-                // this->registration->getPointXYZRGB(&undistorted, &registered, i/512, i%512, vertices[i].X, vertices[i].Y, vertices[i].Z, rgb);
+#if USE_RAW_DEPTH
+                this->registration->getPointXYZRGB(&undistorted_LR, &registered, i/512, i%512, vertices[i].X, vertices[i].Y, vertices[i].Z, rgb);
+#else
                 this->alignment->getPointXYZRGB(&depth_HR, &registered, i/Width_depth_HR, i%Width_depth_HR, vertices[i].X, vertices[i].Y, vertices[i].Z, rgb);
+#endif
 
                 if(std::isnan(vertices[i].X) || std::isnan(vertices[i].Y) || std::isnan(vertices[i].Z)) {
                     vertices[i].X = 0;
@@ -101,9 +110,15 @@ bool Kinect::getFrameLoop(){
             }
 
             framePacket *packet = new framePacket();
+#if USE_RAW_DEPTH
+            packet->init(color, depth, vertices, 1920, 1080, 512, 424);
+#else
             packet->init(color, &depth_HR, vertices, 1920, 1080, Width_depth_HR, Height_depth_HR);
+#endif
             this->output->put(packet);
+#ifdef LOG
             std::printf("\ncapture get one frame\n");
+#endif
 
             listener->release(frames);
         }

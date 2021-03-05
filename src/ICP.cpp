@@ -145,11 +145,13 @@ float ICP_p2p(Point3f *verts1, Point3f *verts2, int nVerts1, int nVerts2, float 
         cv::Mat tempR = svd.u * svd.vt;
 
         double det = cv::determinant(tempR);
+        
         if (det < 0) {
             cv::Mat temp = cv::Mat::eye(3, 3, CV_32F);
             temp.at<float>(2, 2) = -1;
             tempR = svd.u * temp * svd.vt;
         }
+        
 
         verts2Mat = verts2Mat * tempR;
 
@@ -203,6 +205,19 @@ void ICP::loop() {
             nVerts1 = 0;
             nVerts2 = 0;
 
+            T[0] = ctx->T[i][0];
+            T[1] = ctx->T[i][1];
+            T[2] = ctx->T[i][2];
+            R[0] = ctx->R[i][0][0];
+            R[1] = ctx->R[i][0][1];
+            R[2] = ctx->R[i][0][2];
+            R[3] = ctx->R[i][1][0];
+            R[4] = ctx->R[i][1][1];
+            R[5] = ctx->R[i][1][2];
+            R[6] = ctx->R[i][2][0];
+            R[7] = ctx->R[i][2][1];
+            R[8] = ctx->R[i][2][2];
+
             // get current camera's data
             vertices = ctx->frame_to_be_refined[i].vertices;
             for(int k=0; k<ctx->depth_w * ctx->depth_h; k++) {
@@ -235,12 +250,24 @@ void ICP::loop() {
                     }
                 }
             }
-            printf("\t begin ICP: %d %d\n", nVerts1, nVerts2); fflush(stdout);
-            printf("\t before ICP: %f %f %f\n", T[0], T[1], T[2]); fflush(stdout);
-            savePlyFile("verts1.ply", verts1, nVerts1);
-            savePlyFile("verts2.ply", verts2, nVerts2);
-            ICP_p2p(verts1, verts2, nVerts1, nVerts2, R, T, 10);
-            printf("\t after ICP: %f %f %f\n", T[0], T[1], T[2]); fflush(stdout);
+            // savePlyFile("verts1.ply", verts1, nVerts1);
+            // savePlyFile("verts2.ply", verts2, nVerts2);
+
+            ICP_p2p(verts1, verts2, nVerts1, nVerts2, R, T, 5);
+
+            ctx->T[i][0] = T[0];
+            ctx->T[i][1] = T[1];
+            ctx->T[i][2] = T[2];
+            ctx->R[i][0][0] = R[0];
+            ctx->R[i][0][1] = R[1];
+            ctx->R[i][0][2] = R[2];
+            ctx->R[i][1][0] = R[3];
+            ctx->R[i][1][1] = R[4];
+            ctx->R[i][1][2] = R[5];
+            ctx->R[i][2][0] = R[6];
+            ctx->R[i][2][1] = R[7];
+            ctx->R[i][2][2] = R[8];
+            printf("\t context: %f %f %f\n", ctx->T[i][0], ctx->T[i][1], ctx->T[i][2]); fflush(stdout);
         }
         
         ctx->b_Refine = false;

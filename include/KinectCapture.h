@@ -10,6 +10,8 @@
 #include "alignment.h"
 #include "common.h"
 
+#define USE_RAW_DEPTH 1
+
 
 bool openAllKinect(FIFO<framePacket>** output);
 void destoryAllKinect();

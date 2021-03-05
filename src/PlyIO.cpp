@@ -406,7 +406,6 @@ void savePlyFile(const char* filename, float* vertices, int* faces, int Vn, int 
 
 
 void savePlyFile(const char* filename, Point3f* vertices, int Vn) {
-    std::printf(filename); fflush(stdout);
     FILE *f = fopen(filename, "w");
     fprintf(f, "ply\nformat ascii 1.0\n");
     fprintf(f, "element vertex %d\n", Vn);
