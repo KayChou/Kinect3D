@@ -127,8 +127,6 @@ float ICP_p2p(Point3f *verts1, Point3f *verts2, int nVerts1, int nVerts2, float 
         //}
         //error /= matchDistances.size();
         //cout << error << endl;
-        std::printf("\t ICP match: %d %d\n", matched1.size(), matched2.size());
-        std::printf("\t match data: %f %f %f\n", matched1.data()[0].X, matched1.data()[0].Y, matched1.data()[0].Z);
         cv::Mat matched1MatCv(matched1.size(), 3, CV_32F, matched1.data());
         cv::Mat matched2MatCv(matched2.size(), 3, CV_32F, matched2.data());
         cv::Mat tempT;
@@ -163,7 +161,6 @@ float ICP_p2p(Point3f *verts1, Point3f *verts2, int nVerts1, int nVerts2, float 
 
     memcpy(R, matR.data, 9 * sizeof(float));
     memcpy(t, matT.data, 3 * sizeof(float));
-    printf("\t after ICP: %f %f %f\n", matR.data[0], matR.data[1], matR.data[2]); fflush(stdout);
 
     return error;
 }
@@ -209,7 +206,11 @@ void ICP::loop() {
             // get current camera's data
             vertices = ctx->frame_to_be_refined[i].vertices;
             for(int k=0; k<ctx->depth_w * ctx->depth_h; k++) {
-                if( vertices[k].X != 0 && vertices[k].Y != 0 && vertices[k].Z != 0) {
+                if( vertices[k].X != 0 && vertices[k].Y != 0 && vertices[k].Z != 0 && 
+                    vertices[k].X > x_bbox_min && vertices[k].X < x_bbox_max && 
+                    vertices[k].Y > y_bbox_min && vertices[k].Y < y_bbox_max && 
+                    vertices[k].Z > z_bbox_min && vertices[k].Z < z_bbox_max)
+                {
                     verts1[nVerts1].X = vertices[k].X;
                     verts1[nVerts1].Y = vertices[k].Y;
                     verts1[nVerts1].Z = vertices[k].Z;
@@ -221,7 +222,11 @@ void ICP::loop() {
                 if(j != i) {
                     vertices = ctx->frame_to_be_refined[j].vertices;
                     for(int k=0; k<ctx->depth_w * ctx->depth_h; k++) {
-                        if( vertices[k].X != 0 && vertices[k].Y != 0 && vertices[k].Z != 0) {
+                        if( vertices[k].X != 0 && vertices[k].Y != 0 && vertices[k].Z != 0 && 
+                            vertices[k].X > x_bbox_min && vertices[k].X < x_bbox_max && 
+                            vertices[k].Y > y_bbox_min && vertices[k].Y < y_bbox_max && 
+                            vertices[k].Z > z_bbox_min && vertices[k].Z < z_bbox_max)
+                        {
                             verts2[nVerts2].X = vertices[k].X;
                             verts2[nVerts2].Y = vertices[k].Y;
                             verts2[nVerts2].Z = vertices[k].Z;
@@ -232,7 +237,10 @@ void ICP::loop() {
             }
             printf("\t begin ICP: %d %d\n", nVerts1, nVerts2); fflush(stdout);
             printf("\t before ICP: %f %f %f\n", T[0], T[1], T[2]); fflush(stdout);
+            savePlyFile("verts1.ply", verts1, nVerts1);
+            savePlyFile("verts2.ply", verts2, nVerts2);
             ICP_p2p(verts1, verts2, nVerts1, nVerts2, R, T, 10);
+            printf("\t after ICP: %f %f %f\n", T[0], T[1], T[2]); fflush(stdout);
         }
         
         ctx->b_Refine = false;

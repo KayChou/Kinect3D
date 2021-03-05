@@ -20,4 +20,6 @@ void savePlyFile(const char* filename, std::vector<Point3f> vertices, bool BINAR
 
 void savePlyFile(const char* filename, float* vertices, int* faces, int Vn, int Fn);
 
+void savePlyFile(const char* filename, Point3f* vertices, int Vn);
+
 #endif

@@ -376,12 +376,10 @@ void savePlyFile(const char* filename, std::vector<Point3f> vertices, bool BINAR
             }
             else{
                 fprintf(f, "%f %f %f\n", vertices[i].X, vertices[i].Y, vertices[i].Z);
-            }
-            
+            }       
         }
         fclose(f);
     }
-    
 }
 
 
@@ -402,6 +400,22 @@ void savePlyFile(const char* filename, float* vertices, int* faces, int Vn, int 
     }
     for(int i=0; i<Fn; i++){
         fprintf(f, "3 %d %d %d\n", faces[3*i], faces[3*i+1], faces[3*i+2]);
+    }
+    fclose(f);
+}
+
+
+void savePlyFile(const char* filename, Point3f* vertices, int Vn) {
+    std::printf(filename); fflush(stdout);
+    FILE *f = fopen(filename, "w");
+    fprintf(f, "ply\nformat ascii 1.0\n");
+    fprintf(f, "element vertex %d\n", Vn);
+    fprintf(f, "property float x\nproperty float y\nproperty float z\n");
+
+    fprintf(f, "end_header\n");
+
+    for (int i = 0; i < Vn; i++) {
+        fprintf(f, "%f %f %f\n", vertices[i].X, vertices[i].Y, vertices[i].Z);
     }
     fclose(f);
 }
