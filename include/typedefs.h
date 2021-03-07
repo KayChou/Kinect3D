@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <vector>
 
+#define numKinects 2
 
 typedef struct Cam_K {
 	float fx; ///< Focal length x (pixel)
