@@ -64,10 +64,11 @@ void openglRender::loop()
         }
 
         if(context->b_save2Local) { // save pointcloud to local
-            // std::printf("Begin to save one frame\n"); fflush(stdout);
-            // filename =  "../datas/mesh_" + std::to_string(cnt++) + ".ply";
-            // savePlyFile(filename.c_str(), vertices, faces, Vn, Fn);
-            // std::printf("Finish save one frame\n"); fflush(stdout);
+            std::printf("Begin to save one frame\n"); fflush(stdout);
+            filename =  "../datas/mesh_" + std::to_string(cnt++) + ".ply";
+            savePlyFile(filename.c_str(), vertices, faces, Vn, Fn);
+            std::printf("Finish save one frame\n"); fflush(stdout);
+            
             if(context->b_cfg_saved == false) {
                 saveKRT(this->context);
                 context->b_cfg_saved = true;
