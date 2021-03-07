@@ -3,3 +3,4 @@ build/
 datas/
 src/*
 !/src/*.*
+*.config

@@ -28,6 +28,14 @@ void Transform2world::init(int idx, FIFO<framePacket>* input, FIFO<framePacket>*
 //=======================================================================================
 void Transform2world::process(Context *context)
 {
+    // load camera posture
+    if(idx == 0) {
+        if(loadKRT(context)) {
+            for(int i=0; i<numKinects; i++) {
+                context->b_hasBeenCalibrated[i] = true;
+            }
+        }
+    }
     while(true){
         framePacket *packet = input->get();
 #ifdef LOG

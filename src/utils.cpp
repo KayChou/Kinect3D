@@ -23,7 +23,7 @@ void inv_Matrix_3x3(std::vector<std::vector<float>> R, std::vector<std::vector<f
 
 void saveKRT(Context *context)
 {
-    FILE *f = fopen("cameras.config", "w");
+    FILE *f = fopen("../cameras.config", "w");
     fprintf(f, "numKinects: %d\n", numKinects);
     for(int i=0; i<numKinects; i++) {
         fprintf(f, "camera %d\n", i);
@@ -43,23 +43,34 @@ void saveKRT(Context *context)
 }
 
 
-void loadKRT(Context *context)
+bool loadKRT(Context *context)
 {
     char str[100];
-    int n;
-    FILE *f = fopen ("cameras.config", "r");
+    int n, idx;
+    FILE *f = fopen("../cameras.config", "r");
+    if(f == NULL) {
+        return false;
+    }
     fscanf(f, "%s %d", str, &n);
     for(int i=0; i<n; i++) {
+        fscanf(f, "%s %d", str, &idx);
         fscanf(f, "%s %f", str, &context->K[i].fx);
         fscanf(f, "%s %f", str, &context->K[i].fy);
         fscanf(f, "%s %f", str, &context->K[i].cx);
         fscanf(f, "%s %f", str, &context->K[i].cy);
-        fscanf(f, "%s %f %f %f", str, &context->R[i][0][0], &context->R[i][0][1], &context->R[i][0][2]);
+        fscanf(f, "%s", str);
+        fscanf(f, "%f %f %f", &context->R[i][0][0], &context->R[i][0][1], &context->R[i][0][2]);
         fscanf(f, "%f %f %f", &context->R[i][1][0], &context->R[i][1][1], &context->R[i][1][2]);
         fscanf(f, "%f %f %f", &context->R[i][2][0], &context->R[i][2][1], &context->R[i][2][2]);
-        fscanf(f, "%s %f %f %f", str, &context->T[i][0], &context->T[i][1], &context->T[i][2]);
+        fscanf(f, "%s", str);
+        fscanf(f, "%f %f %f", &context->invR[i][0][0], &context->invR[i][0][1], &context->invR[i][0][2]);
+        fscanf(f, "%f %f %f", &context->invR[i][1][0], &context->invR[i][1][1], &context->invR[i][1][2]);
+        fscanf(f, "%f %f %f", &context->invR[i][2][0], &context->invR[i][2][1], &context->invR[i][2][2]);
+        fscanf(f, "%s", str);
+        fscanf(f, "%f %f %f", &context->T[i][0], &context->T[i][1], &context->T[i][2]);
     }
     fclose(f);
+    return true;
 }
 
 
