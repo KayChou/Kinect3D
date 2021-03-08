@@ -131,4 +131,24 @@ typedef struct Context {
 	}
 } Context;
 
+
+typedef struct Context_gpu {
+	float* R[numKinects];
+	float* T[numKinects];
+	float* invR[numKinects];
+
+	Cam_K K[numKinects];
+
+	int width;
+	int height;
+
+	float x_ratio;
+	float y_ratio;
+
+	Point3fRGB* vertices[numKinects];
+	Point3fRGB* vertices_shift[numKinects];
+	float *depth[numKinects];
+	float *depth_shift[numKinects];
+} Context_gpu;
+
 #endif

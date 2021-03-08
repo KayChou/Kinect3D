@@ -15,6 +15,7 @@ void overlap_removal::init(FIFO<framePacket>** input, FIFO<framePacket>** output
             Thread[i].detach();
         }
     }
+    this->ctx_gpu = create_context(context);
 }
 
 
@@ -22,6 +23,8 @@ void overlap_removal::loop()
 {
     framePacket* left;
     framePacket* right;
+    timeval t_start, t_end;
+
     while(true) {
         if(numKinects == 1) { // if there is only one camera, no overlapping need to be removed
             frameList[0] = input[0]->get();
@@ -45,6 +48,10 @@ void overlap_removal::loop()
 #endif
 
         if(this->context->b_all_sensor_calibrated) { // if has been calibrated, then perform overlapping removal
+            updata_context(ctx_gpu, context);
+            overlap_removal_cuda(ctx_gpu, frameList);
+
+#if 0
             for(int i=0; i<numKinects; i++) {
                 left = frameList[i];
                 right = frameList[(i+1) % numKinects];
@@ -59,11 +66,10 @@ void overlap_removal::loop()
                 this->removal[i].readable = true;
                 output[i]->put(frameList[i]);
             }
+#endif
         }
-        else {
-            for(int i=0; i<numKinects; i++) {
-                output[i]->put(frameList[i]);
-            }
+        for(int i=0; i<numKinects; i++) {
+            output[i]->put(frameList[i]);
         }
     }
 }

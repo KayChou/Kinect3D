@@ -5,7 +5,7 @@
 #include <mutex>
 
 template<class Data_pack> 
-class FIFO{
+class FIFO {
 public:
     int maximum_size;
     Data_pack ** buffer;

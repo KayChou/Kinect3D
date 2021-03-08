@@ -2,6 +2,12 @@
 #include "common.h"
 #include "utils.h"
 
+extern "C" Context_gpu* create_context(Context* ctx_cpu);
+
+extern "C" void updata_context(Context_gpu *ctx_gpu, Context *ctx_cpu);
+
+extern "C" void overlap_removal_cuda(Context_gpu* ctx_gpu, framePacket** frameList);
+
 
 class twoViewRemoval {
 public:
@@ -37,6 +43,7 @@ private:
 
 public:
     Context* context;
+    Context_gpu* ctx_gpu;
     framePacket** frameList;
     FIFO<framePacket>** input;
     FIFO<framePacket>** output;
