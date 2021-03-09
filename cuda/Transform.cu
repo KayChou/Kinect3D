@@ -34,6 +34,7 @@ __global__ void Transform_Kernel(int width_d, int height_d, Point3fRGB *vertices
     tempPoint[2] = vertices[ptr_idx].Z;
 
     RotatePoint(tempPoint, R, T);
+
     vertices[ptr_idx].X = tempPoint[0];
     vertices[ptr_idx].Y = tempPoint[1];
     vertices[ptr_idx].Z = tempPoint[2];
@@ -42,6 +43,14 @@ __global__ void Transform_Kernel(int width_d, int height_d, Point3fRGB *vertices
 
 void Transform(int width_d, int height_d, framePacket *packet, std::vector<std::vector<float>> &R, std::vector<float> &T)
 {
+#if 0
+    cudaEvent_t start, end;
+    cudaEventCreate(&start);
+    cudaEventCreate(&end);
+
+    cudaEventRecord(start);
+#endif
+
     Point3fRGB *dev_vertices;
     float *dev_R;
     float *dev_T;
@@ -80,4 +89,11 @@ void Transform(int width_d, int height_d, framePacket *packet, std::vector<std::
     cudaFree(dev_vertices);
     cudaFree(dev_R);
     cudaFree(dev_T);
+#if 0
+    cudaEventRecord(end);
+    cudaEventSynchronize(end);
+    float millisecond = 0;
+    cudaEventElapsedTime(&millisecond, start, end);
+    printf("\t transform time = %f ms\n", millisecond);
+#endif
 }

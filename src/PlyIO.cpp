@@ -418,3 +418,20 @@ void savePlyFile(const char* filename, Point3f* vertices, int Vn) {
     }
     fclose(f);
 }
+
+
+void savePlyFile(const char* filename, Point3fRGB* vertices, int Vn) {
+    FILE *f = fopen(filename, "w");
+    fprintf(f, "ply\nformat ascii 1.0\n");
+    fprintf(f, "element vertex %d\n", Vn);
+    fprintf(f, "property float x\nproperty float y\nproperty float z\n");
+    fprintf(f, "property uchar red\nproperty uchar green\nproperty uchar blue\n");
+
+    fprintf(f, "end_header\n");
+
+    for (int i = 0; i < Vn; i++) {
+        fprintf(f, "%f %f %f %d %d %d\n", vertices[i].X, vertices[i].Y, vertices[i].Z, 
+                                          vertices[i].R, vertices[i].G, vertices[i].B);
+    }
+    fclose(f);
+}

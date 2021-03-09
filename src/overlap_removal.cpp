@@ -16,6 +16,7 @@ void overlap_removal::init(FIFO<framePacket>** input, FIFO<framePacket>** output
         }
     }
     this->ctx_gpu = create_context(context);
+    this->cnt = 0;
 }
 
 
@@ -49,7 +50,26 @@ void overlap_removal::loop()
 
         if(this->context->b_all_sensor_calibrated) { // if has been calibrated, then perform overlapping removal
             updata_context(ctx_gpu, context);
+
+            if(cnt < 1) {
+                std::printf("Begin to save one frame\n"); fflush(stdout);
+                filename =  "../datas/mesh_world_left_" + std::to_string(cnt) + ".ply";
+                savePlyFile(filename.c_str(), frameList[0]->vertices, Width_depth_HR * Height_depth_HR);
+                filename =  "../datas/mesh_world_right_" + std::to_string(cnt) + ".ply";
+                savePlyFile(filename.c_str(), frameList[1]->vertices, Width_depth_HR * Height_depth_HR);
+            }
+
             overlap_removal_cuda(ctx_gpu, frameList);
+
+
+            if(cnt < 1) {
+                filename =  "../datas/mesh_camera_left_" + std::to_string(cnt) + ".ply";
+                savePlyFile(filename.c_str(), frameList[0]->vertices, Width_depth_HR * Height_depth_HR);
+                filename =  "../datas/mesh_camera_right_" + std::to_string(cnt++) + ".ply";
+                savePlyFile(filename.c_str(), frameList[1]->vertices, Width_depth_HR * Height_depth_HR);
+                std::printf("Finish save one frame\n"); fflush(stdout);
+            }
+
 
 #if 0
             for(int i=0; i<numKinects; i++) {

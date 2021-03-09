@@ -51,4 +51,6 @@ public:
 public:
     twoViewRemoval removal[numKinects];
     std::thread Thread[numKinects];
+    std::string filename;
+    int cnt;
 };

@@ -22,4 +22,6 @@ void savePlyFile(const char* filename, float* vertices, int* faces, int Vn, int 
 
 void savePlyFile(const char* filename, Point3f* vertices, int Vn);
 
+void savePlyFile(const char* filename, Point3fRGB* vertices, int Vn);
+
 #endif

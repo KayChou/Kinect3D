@@ -52,6 +52,7 @@ bool loadKRT(Context *context)
         return false;
     }
     fscanf(f, "%s %d", str, &n);
+    n = (n < numKinects) ? n : numKinects;
     for(int i=0; i<n; i++) {
         fscanf(f, "%s %d", str, &idx);
         fscanf(f, "%s %f", str, &context->K[i].fx);
