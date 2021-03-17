@@ -153,9 +153,8 @@ typedef struct Context_gpu {
 	float y_ratio;
 
 	Point3fRGB* vertices[numKinects];
-	Point3fRGB* vertices_shift[numKinects];
 	float *depth[numKinects];
-	float *depth_shift[numKinects];
+	float *depth_out;
 } Context_gpu;
 
 #endif

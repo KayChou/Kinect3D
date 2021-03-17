@@ -18,6 +18,8 @@ void overlap_removal::loop()
     framePacket* right;
     timeval t_start, t_end;
 
+    float *depth_out = new float[512 * 424];
+
     while(true) {
         if(numKinects == 1) { // if there is only one camera, no overlapping need to be removed
             frameList[0] = input[0]->get();
@@ -42,7 +44,15 @@ void overlap_removal::loop()
 
         if(this->context->b_all_sensor_calibrated) { // if has been calibrated, then perform overlapping removal
             updata_context(ctx_gpu, context);
-            overlap_removal_cuda(ctx_gpu, frameList);
+            overlap_removal_cuda(ctx_gpu, frameList, depth_out);
+
+            // cv::Mat depthmat;
+            // cv::Mat(424, 512, CV_32FC1, depth_out).copyTo(depthmat);
+            // cv::imwrite("depth_proj.png", depthmat);
+            // cv::Mat(424, 512, CV_32FC1, frameList[0]->data_d).copyTo(depthmat);
+            // cv::imwrite("depth_0.png", depthmat);
+            // cv::Mat(424, 512, CV_32FC1, frameList[1]->data_d).copyTo(depthmat);
+            // cv::imwrite("depth_1.png", depthmat);
         }
 
         for(int i=0; i<numKinects; i++) {
