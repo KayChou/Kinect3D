@@ -183,6 +183,9 @@ void ICP::loop() {
     float *R = new float[9];
     float *T = new float[3];
 
+    float *tempR = new float[9];
+    float *tempT = new float[3];
+
     while(true) {
         // if button "refine" not pressed 
         if(!ctx->b_Refine) {
@@ -205,18 +208,31 @@ void ICP::loop() {
             nVerts1 = 0;
             nVerts2 = 0;
 
-            T[0] = ctx->T[i][0];
-            T[1] = ctx->T[i][1];
-            T[2] = ctx->T[i][2];
-            R[0] = ctx->R[i][0][0];
-            R[1] = ctx->R[i][0][1];
-            R[2] = ctx->R[i][0][2];
-            R[3] = ctx->R[i][1][0];
-            R[4] = ctx->R[i][1][1];
-            R[5] = ctx->R[i][1][2];
-            R[6] = ctx->R[i][2][0];
-            R[7] = ctx->R[i][2][1];
-            R[8] = ctx->R[i][2][2];
+            T[0] = 0;
+            T[1] = 0;
+            T[2] = 0;
+            R[0] = 1;
+            R[1] = 0;
+            R[2] = 0;
+            R[3] = 0;
+            R[4] = 1;
+            R[5] = 0;
+            R[6] = 0;
+            R[7] = 0;
+            R[8] = 1;
+
+            // T[0] = ctx->T[i][0];
+            // T[1] = ctx->T[i][1];
+            // T[2] = ctx->T[i][2];
+            // R[0] = ctx->R[i][0][0];
+            // R[1] = ctx->R[i][0][1];
+            // R[2] = ctx->R[i][0][2];
+            // R[3] = ctx->R[i][1][0];
+            // R[4] = ctx->R[i][1][1];
+            // R[5] = ctx->R[i][1][2];
+            // R[6] = ctx->R[i][2][0];
+            // R[7] = ctx->R[i][2][1];
+            // R[8] = ctx->R[i][2][2];
 
             // get current camera's data
             vertices = ctx->frame_to_be_refined[i].vertices;
@@ -255,19 +271,35 @@ void ICP::loop() {
 
             ICP_p2p(verts1, verts2, nVerts1, nVerts2, R, T, 5);
 
-            ctx->T[i][0] = T[0];
-            ctx->T[i][1] = T[1];
-            ctx->T[i][2] = T[2];
-            ctx->R[i][0][0] = R[0];
-            ctx->R[i][0][1] = R[1];
-            ctx->R[i][0][2] = R[2];
-            ctx->R[i][1][0] = R[3];
-            ctx->R[i][1][1] = R[4];
-            ctx->R[i][1][2] = R[5];
-            ctx->R[i][2][0] = R[6];
-            ctx->R[i][2][1] = R[7];
-            ctx->R[i][2][2] = R[8];
-            printf("\t context: %f %f %f\n", ctx->T[i][0], ctx->T[i][1], ctx->T[i][2]); fflush(stdout);
+            // tempT[0] = ctx->R[i][0][0] * ctx->T[i][0] + ctx->R[i][1][0] * ctx->T[i][1] + ctx->R[i][2][0] * ctx->T[i][2] + T[0];
+            // tempT[1] = ctx->R[i][0][1] * ctx->T[i][0] + ctx->R[i][1][1] * ctx->T[i][1] + ctx->R[i][2][1] * ctx->T[i][2] + T[1];
+            // tempT[3] = ctx->R[i][0][2] * ctx->T[i][0] + ctx->R[i][1][2] * ctx->T[i][1] + ctx->R[i][2][2] * ctx->T[i][2] + T[2];
+            tempT[0] = ctx->R[i][0][0] * T[0] + ctx->R[i][1][0] * T[1] + ctx->R[i][2][0] * T[2];
+            tempT[1] = ctx->R[i][0][1] * T[0] + ctx->R[i][1][1] * T[1] + ctx->R[i][2][1] * T[2];
+            tempT[3] = ctx->R[i][0][2] * T[0] + ctx->R[i][1][2] * T[1] + ctx->R[i][2][2] * T[2];
+
+            ctx->T[i][0] = ctx->T[i][0] - tempT[0];
+            ctx->T[i][1] = ctx->T[i][1] - tempT[1];
+            ctx->T[i][2] = ctx->T[i][2] - tempT[2];
+            // tempR[0] = R[0] * ctx->R[i][0][0] + R[3] * ctx->R[i][1][0] + R[6] * ctx->R[i][2][0];
+            // tempR[1] = R[0] * ctx->R[i][0][1] + R[3] * ctx->R[i][1][1] + R[6] * ctx->R[i][2][1];
+            // tempR[2] = R[0] * ctx->R[i][0][2] + R[3] * ctx->R[i][1][2] + R[6] * ctx->R[i][2][2];
+            // tempR[3] = R[1] * ctx->R[i][0][0] + R[4] * ctx->R[i][1][0] + R[7] * ctx->R[i][2][0];
+            // tempR[4] = R[1] * ctx->R[i][0][1] + R[4] * ctx->R[i][1][1] + R[7] * ctx->R[i][2][1];
+            // tempR[5] = R[1] * ctx->R[i][0][2] + R[4] * ctx->R[i][1][2] + R[7] * ctx->R[i][2][2];
+            // tempR[6] = R[2] * ctx->R[i][0][0] + R[5] * ctx->R[i][1][0] + R[8] * ctx->R[i][2][0];
+            // tempR[7] = R[2] * ctx->R[i][0][1] + R[5] * ctx->R[i][1][1] + R[8] * ctx->R[i][2][1];
+            // tempR[8] = R[2] * ctx->R[i][0][2] + R[5] * ctx->R[i][1][2] + R[8] * ctx->R[i][2][2];
+            // ctx->R[i][0][0] = tempR[0];
+            // ctx->R[i][0][1] = tempR[1];
+            // ctx->R[i][0][2] = tempR[2];
+            // ctx->R[i][1][0] = tempR[3];
+            // ctx->R[i][1][1] = tempR[4];
+            // ctx->R[i][1][2] = tempR[5];
+            // ctx->R[i][2][0] = tempR[6];
+            // ctx->R[i][2][1] = tempR[7];
+            // ctx->R[i][2][2] = tempR[8];
+            printf("\t context: %f %f %f\n", tempT[0], tempT[1], tempT[2]); fflush(stdout);
         }
         
         ctx->b_Refine = false;
