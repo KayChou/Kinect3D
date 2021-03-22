@@ -20,7 +20,7 @@ void destoryAllKinect();
 class Kinect
 {
 public:
-    bool init(int idx, std::string serial, FIFO<framePacket>* output, Context *context);
+    bool init(int idx, std::string serial, FIFO<framePacket>* output, float colorExposure, Context *context);
     bool getFrameLoop();
     void setStartFlag(bool flag);
     bool getFinishFlag();
@@ -46,6 +46,7 @@ public:
 
     Context *context;
     bool cameraStarted;
+    float colorExposure;
 };
 
 
@@ -58,6 +59,7 @@ public:
     libfreenect2::Freenect2 freenect2;
     std::string serials[numKinects];
     Kinect cameras[numKinects];
+    float colorExposure[numKinects];
 
     std::thread capture_thread[numKinects];
 

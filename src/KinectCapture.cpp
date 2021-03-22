@@ -3,7 +3,7 @@
 //=======================================================================================
 // init one kinect
 //=======================================================================================
-bool Kinect::init(int idx, std::string serial, FIFO<framePacket>* output, Context *context)
+bool Kinect::init(int idx, std::string serial, FIFO<framePacket>* output, float colorExposure, Context *context)
 {
     this->idx = idx;
     this->serial = serial;
@@ -20,9 +20,10 @@ bool Kinect::init(int idx, std::string serial, FIFO<framePacket>* output, Contex
     this->config.EnableBilateralFilter = true;
     this->config.EnableEdgeAwareFilter = true;
     this->config.MinDepth = 0.3f;
-    this->config.MaxDepth = 12.0f;
+    this->config.MaxDepth = 4.5f;
     this->dev->setConfiguration(this->config);
     this->cameraStarted = false;
+    this->colorExposure = colorExposure;
     return true;
 }
 
@@ -52,6 +53,8 @@ bool Kinect::getFrameLoop(){
 
             if(!this->cameraStarted) { // if not started, then start it 
                 this->dev->start();
+                this->dev->setColorAutoExposure(colorExposure);
+                // this->dev->setColorManualExposure(30, 3);
 #if USE_RAW_DEPTH
                 this->registration = new libfreenect2::Registration(this->dev->getIrCameraParams(), this->dev->getColorCameraParams());
 #else
@@ -152,8 +155,9 @@ bool KinectsManager::init_Kinect()
     for(int i=0; i<numKinects; i++) {
         // serials[i] = freenect2.getDeviceSerialNumber(i);
         serials[i] = this->context->DeviceSerialNumber[i];
+        colorExposure[i] = this->context->colorExposure[i];
         printf("Device serial number: %s\n", serials[i].c_str());
-        cameras[i].init(i, serials[i], output[i], context);
+        cameras[i].init(i, serials[i], output[i], colorExposure[i], context);
     }
 
     for(int i=0; i<numKinects; i++) {

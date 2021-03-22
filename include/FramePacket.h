@@ -88,6 +88,7 @@ typedef struct Context {
 	std::vector<std::vector<float>> R[numKinects];
 	std::vector<std::vector<float>> invR[numKinects];
 	framePacket frame_to_be_refined[numKinects];
+	float colorExposure[numKinects];
 
 	Context(){
 		this->b_save2Local = false;
@@ -107,6 +108,9 @@ typedef struct Context {
 		DeviceSerialNumber[0] = "021871240647";
 		DeviceSerialNumber[1] = "036669543547";
 		//DeviceSerialNumber[1] = "010845342847";
+
+		colorExposure[0] = 0.0;
+		colorExposure[1] = 0.0;
 
 		for(int n=0; n<numKinects; n++) {
 			this->b_hasBeenCalibrated[n] = false;
