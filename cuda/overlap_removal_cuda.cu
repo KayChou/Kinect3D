@@ -1,6 +1,6 @@
 #include "cuda.cuh"
 
-#define patch_size 4
+#define patch_size 8
 
 Context_gpu* create_context(Context* ctx_cpu) {
     cudaSetDevice(0);
