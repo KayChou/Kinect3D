@@ -122,13 +122,12 @@ bool Kinect::getFrameLoop(){
 #else
             packet->init(color, &depth_HR, vertices, 1920, 1080, Width_depth_HR, Height_depth_HR);
 #endif
-            this->output->put(packet);
             gettimeofday(&t_end, NULL);
 #ifdef LOG
             t_delay = get_time_diff_ms(t_start, t_end);
             std::printf("\ncapture get one frame: %f ms\n", t_delay);
 #endif
-
+            this->output->put(packet);
             listener->release(frames);
         }
     }

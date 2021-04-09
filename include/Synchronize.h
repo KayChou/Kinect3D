@@ -18,11 +18,17 @@ void Synchronize(FIFO<framePacket> **input, FIFO<framePacket> **output){
 
     int frameCnt = 0;
 
-    while(true){
+    timeval t_start, t_end;
+    float t_delay;
+
+    while(true) {
+        gettimeofday(&t_start, NULL);
         if(numKinects == 1) {
             framePacket *packet = input[0]->get();
+            gettimeofday(&t_end, NULL);
+            t_delay = get_time_diff_ms(t_start, t_end);
 #ifdef LOG
-            std::printf("synchronize get one frame\n"); fflush(stdout);
+            std::printf("synchronize get one frame: %f\n", t_delay); fflush(stdout);
 #endif
             output[0]->put(packet);
         }
@@ -61,9 +67,6 @@ void Synchronize(FIFO<framePacket> **input, FIFO<framePacket> **output){
                     }
                     //std::printf("%d ", timeStamp[i]); fflush(stdout);
                 }
-#ifdef LOG
-                std::printf("synchronize get one frame\n"); fflush(stdout);
-#endif
                 //std::printf("\n"); fflush(stdout);
 
                 uint32_t max = *max_element(timeStamp, timeStamp + numKinects);
@@ -78,6 +81,11 @@ void Synchronize(FIFO<framePacket> **input, FIFO<framePacket> **output){
                     }
                     output[i]->put(packetList[i]);
                 }
+                gettimeofday(&t_end, NULL);
+                t_delay = get_time_diff_ms(t_start, t_end);
+#ifdef LOG
+                std::printf("synchronize get one frame: %f\n", t_delay); fflush(stdout);
+#endif
             }
         }
         usleep(2000);
