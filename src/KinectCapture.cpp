@@ -38,7 +38,11 @@ bool Kinect::getFrameLoop(){
     libfreenect2::Frame registered(Width_depth_HR, Height_depth_HR, 4);
     libfreenect2::Frame depth2rgb(1920, 1080 + 2, 4);
 
-    while(true){
+    timeval t_start, t_end;
+    float t_delay;
+
+    while(true) {
+        gettimeofday(&t_start, NULL);
         if(!context->b_start_Camera && this->cameraStarted) { // if current camera is started and need to close:
             this->dev->stop();
             this->cameraStarted = false;
@@ -119,8 +123,10 @@ bool Kinect::getFrameLoop(){
             packet->init(color, &depth_HR, vertices, 1920, 1080, Width_depth_HR, Height_depth_HR);
 #endif
             this->output->put(packet);
+            gettimeofday(&t_end, NULL);
 #ifdef LOG
-            std::printf("\ncapture get one frame\n");
+            t_delay = get_time_diff_ms(t_start, t_end);
+            std::printf("\ncapture get one frame: %f ms\n", t_delay);
 #endif
 
             listener->release(frames);

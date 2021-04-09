@@ -9,6 +9,7 @@
 #include <libfreenect2/config.h>
 #include "alignment.h"
 #include "common.h"
+#include "utils.h"
 
 #define USE_RAW_DEPTH 1
 
