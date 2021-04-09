@@ -22,9 +22,9 @@ void Synchronize(FIFO<framePacket> **input, FIFO<framePacket> **output){
     float t_delay;
 
     while(true) {
-        gettimeofday(&t_start, NULL);
         if(numKinects == 1) {
             framePacket *packet = input[0]->get();
+            gettimeofday(&t_start, NULL);
             gettimeofday(&t_end, NULL);
             t_delay = get_time_diff_ms(t_start, t_end);
 #ifdef LOG
@@ -32,7 +32,7 @@ void Synchronize(FIFO<framePacket> **input, FIFO<framePacket> **output){
 #endif
             output[0]->put(packet);
         }
-        else{
+        else {
             if(!stampClearFlag) {
                 for(int i=0; i<numKinects; i++) {
                     cnt[i] = input[i]->cnt;
@@ -59,7 +59,7 @@ void Synchronize(FIFO<framePacket> **input, FIFO<framePacket> **output){
             }
 
             // synchronize
-            else{
+            else {
                 for(int i=0; i<numKinects; i++) {
                     packetList[i] = input[i]->get();
                     if(packetList[i]) {
@@ -67,6 +67,7 @@ void Synchronize(FIFO<framePacket> **input, FIFO<framePacket> **output){
                     }
                     //std::printf("%d ", timeStamp[i]); fflush(stdout);
                 }
+                gettimeofday(&t_start, NULL);
                 //std::printf("\n"); fflush(stdout);
 
                 uint32_t max = *max_element(timeStamp, timeStamp + numKinects);

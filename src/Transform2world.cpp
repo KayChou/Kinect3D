@@ -36,13 +36,15 @@ void Transform2world::process(Context *context)
             }
         }
     }
-    while(true){
+
+    timeval t_start, t_end;
+    float t_delay;
+
+    while(true) {
         framePacket *packet = input->get();
-#ifdef LOG
-        std::printf("Transform2world get one frame\n");
-#endif
+        gettimeofday(&t_start, NULL);
         
-        if(context->b_Calibration){
+        if(context->b_Calibration) {
             context->b_hasBeenCalibrated[idx] = calibrate.performCalibration(packet, T, R);
 
             context->T[idx][0] = T[0];
@@ -62,6 +64,11 @@ void Transform2world::process(Context *context)
 
         if(context->b_hasBeenCalibrated[idx]) { // if current camera has been calibrated
             Transform((int)packet->width_d, (int)packet->height_d, packet, context->R[idx], context->T[idx]);
+            gettimeofday(&t_end, NULL);
+            t_delay = get_time_diff_ms(t_start, t_end);
+#ifdef LOG
+        std::printf("Transform2world get one frame: %f\n", t_delay);
+#endif
         }
 
         if(context->b_Refine && !context->b_refined_data_ready[idx]) { // if refine is needed but data not ready

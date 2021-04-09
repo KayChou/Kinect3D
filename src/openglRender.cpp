@@ -34,9 +34,13 @@ void openglRender::loop()
     int cnt = 0;
     std::string filename;
 
+    timeval t_start, t_end;
+    float t_delay;
+
     glInit();
 
     while(!glfwWindowShouldClose(window)) {
+        gettimeofday(&t_start, NULL);
         Vn = 0;
         Fn = 0;
         for(int i=0; i<numKinects; i++) {
@@ -117,6 +121,12 @@ void openglRender::loop()
 
         glfwSwapBuffers(window);
         glfwPollEvents();
+
+        gettimeofday(&t_end, NULL);
+        t_delay = get_time_diff_ms(t_start, t_end);
+#ifdef LOG
+        std::printf("opengl render one frame: %f\n", t_delay); fflush(stdout);
+#endif
 
         usleep(20000);
     }

@@ -6,7 +6,7 @@ void Meshing::init(FIFO<framePacket>* input, FIFO<frameMesh>* output)
     this->input = input;
     this->output = output;
 }
-    
+
 
 void Meshing::Loop(Context *context)
 {
@@ -20,12 +20,15 @@ void Meshing::Loop(Context *context)
     int *mask = new int[context->depth_w * context->depth_h]; // revcord valid point index
 
     Point3fRGB *verts;
+    timeval t_start, t_end;
+    float t_delay;
 
     while(true) {
         framePacket *packet = input->get();
 #ifdef LOG
         std::printf("meshing get one frame\n");
 #endif
+        gettimeofday(&t_start, NULL);
 
         Vn = 0;
         Fn = 0;
@@ -80,8 +83,10 @@ void Meshing::Loop(Context *context)
                 }
             }
         }
+        gettimeofday(&t_end, NULL);
+        t_delay = get_time_diff_ms(t_start, t_end);
 #ifdef LOG
-        std::printf("Vn: %d Fn %d\n", Vn, Fn); fflush(stdout);
+        std::printf("meshing one frame: %f\n", t_delay); fflush(stdout);
 #endif
 
         if(this->output != NULL) {

@@ -16,7 +16,9 @@ void overlap_removal::loop()
 {
     framePacket* left;
     framePacket* right;
+    
     timeval t_start, t_end;
+    float t_delay;
 
     float *depth_out = new float[512 * 424];
 
@@ -38,13 +40,17 @@ void overlap_removal::loop()
                 this->context->b_all_sensor_calibrated = false;
             }
         }
-#ifdef LOG
-        std::printf("overlap_removal get one frame\n"); fflush(stdout);
-#endif
+        gettimeofday(&t_start, NULL);
 
         if(this->context->b_all_sensor_calibrated) { // if has been calibrated, then perform overlapping removal
             updata_context(ctx_gpu, context);
             overlap_removal_cuda(ctx_gpu, frameList, depth_out);
+
+#ifdef LOG
+            gettimeofday(&t_end, NULL);
+            t_delay = get_time_diff_ms(t_start, t_end);
+            std::printf("overlap_removal get one frame: %f\n", t_delay); fflush(stdout);
+#endif
 
             // cv::Mat depthmat;
             // cv::Mat(424, 512, CV_32FC1, depth_out).copyTo(depthmat);
