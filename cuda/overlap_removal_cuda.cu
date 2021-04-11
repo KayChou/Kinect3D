@@ -1,6 +1,8 @@
 #include "cuda.cuh"
 
-#define patch_size 8
+#define patch_size 2
+#define removal_det_region 30
+#define removal_det_K removal_det_region * removal_det_region * 3 / 4
 
 Context_gpu* create_context(Context* ctx_cpu) {
     cudaSetDevice(0);
@@ -15,6 +17,7 @@ Context_gpu* create_context(Context* ctx_cpu) {
         cudaMallocManaged((void**)&ctx_gpu->invR[i], sizeof(float) * 9);
         cudaMalloc((void**)&ctx_gpu->vertices[i], sizeof(Point3fRGB) * Width_depth_HR * Height_depth_HR);
         cudaMalloc((void**)&ctx_gpu->depth[i], sizeof(float) * Width_depth_HR * Height_depth_HR);
+        cudaMalloc((void**)&ctx_gpu->mask, sizeof(float) * Width_depth_HR * Height_depth_HR);
     }
     ctx_gpu->width = Width_depth_HR;
     ctx_gpu->height = Height_depth_HR;
@@ -74,6 +77,7 @@ __global__ void overlap_removal_kernel(Context_gpu* ctx_gpu, Point3fRGB* left, f
     int y_idx = threadIdx.y + blockIdx.y * blockDim.y;
     int pix_idx = x_idx + y_idx * blockDim.x * gridDim.x;
     depth_out[pix_idx] = 128;
+    ctx_gpu->mask[pix_idx] = 0;
 
     float tempPoint[3];
     tempPoint[0] = left[pix_idx].X;
@@ -104,12 +108,48 @@ __global__ void overlap_removal_kernel(Context_gpu* ctx_gpu, Point3fRGB* left, f
     }
 
     if(b_overlap) {
-        left[pix_idx].X = 0;
-        left[pix_idx].Y = 0;
-        left[pix_idx].Z = 0;
-        depth_left[pix_idx] = 0;
+        ctx_gpu->mask[pix_idx] = 1;
     }
+
+    // if(b_overlap) {
+    //     left[pix_idx].X = 0;
+    //     left[pix_idx].Y = 0;
+    //     left[pix_idx].Z = 0;
+    //     depth_left[pix_idx] = 0;
+    // }
+    return;
 }
+
+
+__global__ void patch_based_removal_kernel(int *mask, Point3fRGB* verts, float *depth) {
+    int x = threadIdx.x + blockIdx.x * blockDim.x;
+    int y = threadIdx.y + blockIdx.y * blockDim.y;
+
+    int pix_idx = x + y * blockDim.x * gridDim.x;
+    int index;
+    int cnt = 0;
+
+    for(int i=0; i<removal_det_region; i++) {
+        for(int j=0; j<removal_det_region; j++) {
+            index = ((y - patch_size/2) + i) * Width_depth_HR + (x - patch_size/2) + j;
+            if(mask[index] == 1) {
+                cnt++;
+            }
+        }
+    }
+
+    if(cnt > removal_det_K) {
+        // verts[pix_idx].X = 0;
+        // verts[pix_idx].Y = 0;
+        // verts[pix_idx].Z = 0;
+        verts[pix_idx].R = 255;
+        verts[pix_idx].G = 0;
+        verts[pix_idx].B = 0;
+        // depth[pix_idx] = 0;
+    }
+    return;
+}
+
 
 
 void overlap_removal_cuda(Context_gpu* ctx_gpu, framePacket** frameList, float* dpeth_out) {
@@ -130,9 +170,10 @@ void overlap_removal_cuda(Context_gpu* ctx_gpu, framePacket** frameList, float* 
 
     int idx;
 
-    for(int i=0; i<numKinects; i++) {
+    for(int i=0; i<numKinects - 1; i++) {
         idx = (i + 1) % numKinects;
         overlap_removal_kernel<<<blocks, threads>>>(ctx_gpu, ctx_gpu->vertices[i], ctx_gpu->depth[i], ctx_gpu->vertices[idx], ctx_gpu->depth[idx], idx, ctx_gpu->depth_out);
+        patch_based_removal_kernel<<<blocks, threads>>>(ctx_gpu->mask, ctx_gpu->vertices[i], ctx_gpu->depth[i]);
     }
 
     for(int i=0; i<numKinects; i++) {

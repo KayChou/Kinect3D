@@ -113,11 +113,11 @@ void openglRender::loop()
         shaderModel->setMat4("model", glm::mat4(1.0f));
 
         glBindVertexArray(VAO);
-        // glPointSize(2.0);
-        // glDrawArrays(GL_POINTS, 0, Vn);
+        glPointSize(2.0);
+        glDrawArrays(GL_POINTS, 0, Vn);
 
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-        glDrawElements(GL_TRIANGLES, 3 * Fn, GL_UNSIGNED_INT, 0);
+        // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+        // glDrawElements(GL_TRIANGLES, 3 * Fn, GL_UNSIGNED_INT, 0);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
