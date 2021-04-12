@@ -237,9 +237,9 @@ void openglRender::processInput()
         cameraPos -= glm::vec3(0.0f, 0.0f, translationSpeed);
         cameraTar -= glm::vec3(0.0f, 0.0f, translationSpeed);
     }
-    std::cout << "Target: " << glm::to_string(cameraTar) << std::endl;
-    std::cout << "Position: " << glm::to_string(cameraPos) << std::endl;
-    std::cout << "Up: " << glm::to_string(cameraUp) << std::endl;
+    // std::cout << "Target: " << glm::to_string(cameraTar) << std::endl;
+    // std::cout << "Position: " << glm::to_string(cameraPos) << std::endl;
+    // std::cout << "Up: " << glm::to_string(cameraUp) << std::endl;
 }
 
 

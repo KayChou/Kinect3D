@@ -16,3 +16,5 @@ bool saveRGBDFIFO2PLY(FIFO<framePacket> **input, int numOfKinects);
 std::vector<float> RotatePoint(Point3f &point, std::vector<std::vector<float>> &R, std::vector<float> &T);
 
 float get_time_diff_ms(timeval start, timeval end);
+
+void output_time_diff_to_csv(FIFO<framePacket> *input, FIFO<framePacket> *output, char* filename);

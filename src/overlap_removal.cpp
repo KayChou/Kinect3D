@@ -18,9 +18,12 @@ void overlap_removal::loop()
     framePacket* right;
     
     timeval t_start, t_end;
+    timeval t_start_filter, t_end_filter;
     float t_delay;
 
     float *depth_out = new float[512 * 424];
+    int frame_cnt = 0;
+    FILE *f = fopen("overlap_removal.csv", "w");
 
     while(true) {
         if(numKinects == 1) { // if there is only one camera, no overlapping need to be removed
@@ -49,6 +52,14 @@ void overlap_removal::loop()
 #ifdef LOG
             gettimeofday(&t_end, NULL);
             t_delay = get_time_diff_ms(t_start, t_end);
+            if(frame_cnt < MAX_FRAME_NUM) {
+                fprintf(f, "%f\n", t_delay);
+                frame_cnt++;
+            }
+            else if(frame_cnt == MAX_FRAME_NUM) {
+                frame_cnt++;
+                fclose(f);
+            }
             std::printf("overlap_removal get one frame: %f\n", t_delay); fflush(stdout);
 #endif
 
@@ -64,5 +75,6 @@ void overlap_removal::loop()
         for(int i=0; i<numKinects; i++) {
             output[i]->put(frameList[i]);
         }
+        
     }
 }

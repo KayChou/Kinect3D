@@ -16,10 +16,11 @@ void Synchronize(FIFO<framePacket> **input, FIFO<framePacket> **output){
     uint32_t timeStampMean = 0;
     std::printf("Thread Synchronize started \n"); fflush(stdout);
 
-    int frameCnt = 0;
+    int frame_cnt = 0;
 
     timeval t_start, t_end;
     float t_delay;
+    FILE *f = fopen("synchronize.csv", "w");
 
     while(true) {
         if(numKinects == 1) {
@@ -83,8 +84,16 @@ void Synchronize(FIFO<framePacket> **input, FIFO<framePacket> **output){
                     output[i]->put(packetList[i]);
                 }
                 gettimeofday(&t_end, NULL);
-                t_delay = get_time_diff_ms(t_start, t_end);
 #ifdef LOG
+                t_delay = get_time_diff_ms(t_start, t_end);
+                if(frame_cnt < MAX_FRAME_NUM) {
+                    fprintf(f, "%f\n", t_delay);
+                    frame_cnt++;
+                }
+                else if (frame_cnt == MAX_FRAME_NUM) {
+                    fclose(f);
+                    frame_cnt++;
+                }
                 std::printf("synchronize get one frame: %f\n", t_delay); fflush(stdout);
 #endif
             }

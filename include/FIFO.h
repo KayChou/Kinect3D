@@ -1,8 +1,11 @@
 #ifndef FIFO_H
 
 #include "FramePacket.h"
+#include <sys/time.h>
 #include <unistd.h>
 #include <mutex>
+
+#define MAX_FRAME_NUM 1000
 
 template<class Data_pack> 
 class FIFO {
@@ -13,6 +16,12 @@ public:
     int tail;
     int cnt;
     int timeoutCnt;
+    timeval * create_time;
+    timeval * pushed_time;
+    timeval * popped_time;
+    timeval * destroy_time;
+    int p_create_time, p_pushed_time, p_popped_time, p_destroy_time;
+
 public:
     std::timed_mutex mut;
 public:
@@ -27,6 +36,16 @@ public:
         this->buffer = new Data_pack * [this->maximum_size];
         this->cnt = 0;
         this->timeoutCnt = 0;
+        if (MAX_FRAME_NUM > 0) {
+            this->create_time = new timeval[MAX_FRAME_NUM];
+            this->pushed_time = new timeval[MAX_FRAME_NUM];
+            this->popped_time = new timeval[MAX_FRAME_NUM];
+            this->destroy_time = new timeval[MAX_FRAME_NUM];
+        }
+        this->p_create_time = 0;
+        this->p_pushed_time = 0;
+        this->p_popped_time = 0;
+        this->p_destroy_time = 0;
     }
 
 
@@ -45,6 +64,12 @@ public:
             printf("WARNING: FIFO not empty!");
         }
         delete [] this->buffer;
+        if (this->packet_cnt > 0) {
+            delete [] this->create_time;
+            delete [] this->pushed_time;
+            delete [] this->popped_time;
+            delete [] this->destroy_time;
+        }
     }
 
     void put(Data_pack * item){
@@ -63,6 +88,9 @@ public:
                     break;
                 }
             }
+        }
+        if(this->p_pushed_time++ < MAX_FRAME_NUM) {
+            gettimeofday(&this->pushed_time[this->p_pushed_time++], NULL);
         }
         this->buffer[this->tail] = item;
         this->add_one(this->tail);
@@ -89,6 +117,9 @@ public:
                     break;
                 }
             }
+        }
+        if(this->p_popped_time++ < MAX_FRAME_NUM) {
+            gettimeofday(&this->popped_time[this->p_popped_time], NULL);
         }
         Data_pack * ret = this->buffer[this->head];
         this->add_one(this->head);

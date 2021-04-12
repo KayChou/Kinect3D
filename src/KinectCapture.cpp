@@ -40,6 +40,11 @@ bool Kinect::getFrameLoop(){
 
     timeval t_start, t_end;
     float t_delay;
+    int frame_cnt = 0;
+    FILE *f;
+    if(idx == 0) {
+        f = fopen("capture.csv", "w");
+    }
 
     while(true) {
         gettimeofday(&t_start, NULL);
@@ -123,12 +128,21 @@ bool Kinect::getFrameLoop(){
             packet->init(color, &depth_HR, vertices, 1920, 1080, Width_depth_HR, Height_depth_HR);
 #endif
             gettimeofday(&t_end, NULL);
-#ifdef LOG
-            t_delay = get_time_diff_ms(t_start, t_end);
-            std::printf("\ncapture get one frame: %f ms\n", t_delay);
-#endif
             this->output->put(packet);
             listener->release(frames);
+#ifdef LOG
+            t_delay = get_time_diff_ms(t_start, t_end);
+            if(frame_cnt < MAX_FRAME_NUM && idx == 0) {
+                fprintf(f, "%f\n", t_delay);
+                frame_cnt++;
+            }
+            else if (frame_cnt == MAX_FRAME_NUM) {
+                fclose(f);
+                frame_cnt++;
+            }
+            
+            std::printf("\ncapture get one frame: %f ms\n", t_delay);
+#endif
         }
     }
     if(this->cameraStarted) dev->stop();

@@ -209,3 +209,13 @@ float get_time_diff_ms(timeval start, timeval end)
     long time_ms_start =  (start.tv_sec * 1000000 + start.tv_usec);
     return float(time_ms_end - time_ms_start) / 1000;
 }
+
+
+void output_time_diff_to_csv(FIFO<framePacket> *input, FIFO<framePacket> *output, char* filename) {
+    FILE* f = fopen(filename, "w");
+    fprintf(f, "idx,pop_time,push_time,delay\n");
+    for(int i=0; i<MAX_FRAME_NUM; i++) {
+        fprintf(f, "%d %f\n", i, get_time_diff_ms(input->popped_time[i], output->pushed_time[i]));
+    }
+    fclose(f);
+}
