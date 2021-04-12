@@ -9,9 +9,9 @@ void openglRender::init(FIFO<frameMesh>** input, Context *context)
     this->input = input;
     this->context = context;
 
-    this->cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
-    this->cameraTar = glm::vec3(0.0f, 0.0f, 0.0f);
-    this->cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
+    this->cameraTar = glm::vec3(0.000000, -0.300000, -0.300000);
+    this->cameraPos = glm::vec3(-0.772169, -0.946579, -0.873113);
+    this->cameraUp = glm::vec3(0.542452, 0.092309, -0.835000);
     this->fov =  45.0f;
 
     // timing
@@ -237,6 +237,9 @@ void openglRender::processInput()
         cameraPos -= glm::vec3(0.0f, 0.0f, translationSpeed);
         cameraTar -= glm::vec3(0.0f, 0.0f, translationSpeed);
     }
+    std::cout << "Target: " << glm::to_string(cameraTar) << std::endl;
+    std::cout << "Position: " << glm::to_string(cameraPos) << std::endl;
+    std::cout << "Up: " << glm::to_string(cameraUp) << std::endl;
 }
 
 

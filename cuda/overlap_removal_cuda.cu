@@ -139,13 +139,13 @@ __global__ void patch_based_removal_kernel(int *mask, Point3fRGB* verts, float *
     }
 
     if(cnt > removal_det_K) {
-        // verts[pix_idx].X = 0;
-        // verts[pix_idx].Y = 0;
-        // verts[pix_idx].Z = 0;
-        verts[pix_idx].R = 255;
-        verts[pix_idx].G = 0;
-        verts[pix_idx].B = 0;
-        // depth[pix_idx] = 0;
+        verts[pix_idx].X = 0;
+        verts[pix_idx].Y = 0;
+        verts[pix_idx].Z = 0;
+        // verts[pix_idx].R = 255;
+        // verts[pix_idx].G = 0;
+        // verts[pix_idx].B = 0;
+        depth[pix_idx] = 0;
     }
     return;
 }
