@@ -151,6 +151,44 @@ __global__ void patch_based_removal_kernel(int *mask, Point3fRGB* verts, float *
 }
 
 
+__global__ void SDC_filter(Context_gpu *ctx_gpu, Point3fRGB* verts, float *depth) {
+    int x = threadIdx.x + blockIdx.x * blockDim.x;
+    int y = threadIdx.y + blockIdx.y * blockDim.y;
+    int pix_idx = x + y * blockDim.x * gridDim.x;
+
+    if(verts[pix_idx].Z <= z_bbox_min || verts[pix_idx].Z >= z_bbox_max ||
+       verts[pix_idx].X <= x_bbox_min || verts[pix_idx].X >= x_bbox_max ||
+       verts[pix_idx].Y <= y_bbox_min || verts[pix_idx].Y >= y_bbox_max) {
+        return;
+    }
+
+    if(x == 0 || y == 0 || x == ctx_gpu->width - 1 || y == ctx_gpu->height - 1) {
+        return;
+    }
+
+    int c = pix_idx; // center
+    int l = pix_idx - 1; // left
+    int r = pix_idx + 1; // right
+    int t = pix_idx - ctx_gpu->width; // top
+    int d = pix_idx + ctx_gpu->width; // down
+
+    if(abs(verts[c].X - verts[l].X) + abs(verts[c].Y - verts[l].Y) + abs(verts[c].Z - verts[l].Z) < 0.015f && 
+       abs(verts[c].X - verts[r].X) + abs(verts[c].Y - verts[r].Y) + abs(verts[c].Z - verts[r].Z) < 0.015f && 
+       abs(verts[c].X - verts[t].X) + abs(verts[c].Y - verts[t].Y) + abs(verts[c].Z - verts[t].Z) < 0.015f && 
+       abs(verts[c].X - verts[d].X) + abs(verts[c].Y - verts[d].Y) + abs(verts[c].Z - verts[d].Z) < 0.015f ) {
+    }
+    else {
+        verts[pix_idx].X = 0;
+        verts[pix_idx].Y = 0;
+        verts[pix_idx].Z = 0;
+        verts[pix_idx].R = 0;
+        verts[pix_idx].G = 0;
+        verts[pix_idx].B = 0;
+        depth[pix_idx] = 0;
+    }
+}
+
+
 
 void overlap_removal_cuda(Context_gpu* ctx_gpu, framePacket** frameList, float* dpeth_out) {
 #if 0
@@ -160,13 +198,14 @@ void overlap_removal_cuda(Context_gpu* ctx_gpu, framePacket** frameList, float* 
 
     cudaEventRecord(start);
 #endif
+    dim3 blocks(Width_depth_HR / 32, Height_depth_HR / 8);
+    dim3 threads(32, 8);
+
     for(int i=0; i<numKinects; i++) {
         cudaMemcpy(ctx_gpu->vertices[i], frameList[i]->vertices, sizeof(Point3fRGB) * Width_depth_HR * Height_depth_HR, cudaMemcpyHostToDevice);
         cudaMemcpy(ctx_gpu->depth[i], frameList[i]->data_d, sizeof(float) * Width_depth_HR * Height_depth_HR, cudaMemcpyHostToDevice);
+        SDC_filter<<<blocks, threads>>>(ctx_gpu, ctx_gpu->vertices[i], ctx_gpu->depth[i]);
     }
-
-    dim3 blocks(Width_depth_HR / 32, Height_depth_HR / 8);
-    dim3 threads(32, 8);
 
     int idx;
 
