@@ -41,7 +41,18 @@ __global__ void Transform_Kernel(int width_d, int height_d, Point3fRGB *vertices
 }
 
 
-void Transform(int width_d, int height_d, framePacket *packet, std::vector<std::vector<float>> &R, std::vector<float> &T)
+TransformStruct* Transform_gpu_init()
+{
+    TransformStruct *transformStruct;
+    cudaMallocManaged((void**)&transformStruct, sizeof(TransformStruct));
+    cudaMalloc((void**)&transformStruct->dev_vertices, sizeof(Point3fRGB) * Width_depth_HR * Height_depth_HR);
+    cudaMalloc((void**)&transformStruct->dev_R, sizeof(float) * 9);
+    cudaMalloc((void**)&transformStruct->dev_T, sizeof(float) * 3);
+    return transformStruct;
+}
+
+
+void Transform(int width_d, int height_d, framePacket *packet, std::vector<std::vector<float>> &R, std::vector<float> &T, TransformStruct *transformStruct)
 {
 #if 0
     cudaEvent_t start, end;
@@ -50,15 +61,7 @@ void Transform(int width_d, int height_d, framePacket *packet, std::vector<std::
 
     cudaEventRecord(start);
 #endif
-
-    Point3fRGB *dev_vertices;
-    float *dev_R;
-    float *dev_T;
-
-    cudaMalloc((void**)&dev_R, 9 * sizeof(float));
-    cudaMalloc((void**)&dev_T, 3 * sizeof(float));
-    cudaMalloc((void**)&dev_vertices, width_d * height_d * sizeof(Point3fRGB));
-    cudaMemcpy(dev_vertices, packet->vertices, width_d * height_d * sizeof(Point3fRGB), cudaMemcpyHostToDevice );
+    cudaMemcpy(transformStruct->dev_vertices, packet->vertices, width_d * height_d * sizeof(Point3fRGB), cudaMemcpyHostToDevice );
 
     float host_R[9];
     float host_T[3];
@@ -76,19 +79,16 @@ void Transform(int width_d, int height_d, framePacket *packet, std::vector<std::
     host_T[1] = T[1];
     host_T[2] = T[2];
 
-    cudaMemcpy(dev_R, host_R, 9 * sizeof(float), cudaMemcpyHostToDevice);
-    cudaMemcpy(dev_T, host_T, 3 * sizeof(float), cudaMemcpyHostToDevice);
+    cudaMemcpy(transformStruct->dev_R, host_R, 9 * sizeof(float), cudaMemcpyHostToDevice);
+    cudaMemcpy(transformStruct->dev_T, host_T, 3 * sizeof(float), cudaMemcpyHostToDevice);
 
     dim3 blocks(width_d / 8, height_d / 8);
     dim3 threads(8, 8);
 
-    Transform_Kernel<<<blocks, threads>>>(width_d, height_d, dev_vertices, dev_R, dev_T);
+    Transform_Kernel<<<blocks, threads>>>(width_d, height_d, transformStruct->dev_vertices, transformStruct->dev_R, transformStruct->dev_T);
 
-    cudaMemcpy(packet->vertices, dev_vertices, width_d * height_d * sizeof(Point3fRGB), cudaMemcpyDeviceToHost );
+    cudaMemcpy(packet->vertices, transformStruct->dev_vertices, width_d * height_d * sizeof(Point3fRGB), cudaMemcpyDeviceToHost);
 
-    cudaFree(dev_vertices);
-    cudaFree(dev_R);
-    cudaFree(dev_T);
 #if 0
     cudaEventRecord(end);
     cudaEventSynchronize(end);

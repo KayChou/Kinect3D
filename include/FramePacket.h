@@ -107,7 +107,7 @@ typedef struct Context {
 
 		DeviceSerialNumber[0] = "021871240647";
 		DeviceSerialNumber[1] = "036669543547";
-		DeviceSerialNumber[2] = "010845342847";
+		DeviceSerialNumber[2] = "005275250347";
 		//DeviceSerialNumber[1] = "010845342847";
 
 		colorExposure[0] = 0.0;

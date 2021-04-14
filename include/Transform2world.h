@@ -3,7 +3,9 @@
 #include "calibration.h"
 #include "utils.h"
 
-extern "C" void Transform(int width_d, int height_d, framePacket *packet, std::vector<std::vector<float>> &R, std::vector<float> &T);
+extern "C" void Transform(int width_d, int height_d, framePacket *packet, std::vector<std::vector<float>> &R, std::vector<float> &T, TransformStruct *transformStruct);
+
+extern "C" TransformStruct *Transform_gpu_init();
 
 class Transform2world{
 public:
@@ -18,6 +20,7 @@ private:
     Calibration calibrate;
     std::vector<float> T;
 	std::vector<std::vector<float>> R;
+    TransformStruct *transformStruct;
 
 public:
     cv::Mat color;

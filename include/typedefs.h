@@ -2,7 +2,7 @@
 #include <stdint.h>
 #include <vector>
 
-#define numKinects 1
+#define numKinects 3
 
 typedef struct Cam_K {
 	float fx; ///< Focal length x (pixel)
@@ -107,3 +107,11 @@ typedef struct MarkerStruct
 		this->points = points;
 	}
 } MarkerInfo;
+
+
+typedef struct TransformStruct
+{
+	Point3fRGB *dev_vertices;
+    float *dev_R;
+    float *dev_T;
+} TransformStruct;

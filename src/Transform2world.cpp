@@ -7,7 +7,6 @@ void Transform2world::init(int idx, FIFO<framePacket>* input, FIFO<framePacket>*
     this->input = input;
     this->output_qt = output_qt;
     this->output = output;
-    
     this->R.resize(3);
 
 	for (int i = 0; i < 3; i++) {
@@ -20,6 +19,7 @@ void Transform2world::init(int idx, FIFO<framePacket>* input, FIFO<framePacket>*
     this->T[0] = 0;
     this->T[1] = 0;
     this->T[2] = 0;
+    this->transformStruct = Transform_gpu_init();
 }
 
 //=======================================================================================
@@ -68,7 +68,7 @@ void Transform2world::process(Context *context)
         }
 
         if(context->b_hasBeenCalibrated[idx]) { // if current camera has been calibrated
-            Transform((int)packet->width_d, (int)packet->height_d, packet, context->R[idx], context->T[idx]);
+            Transform((int)packet->width_d, (int)packet->height_d, packet, context->R[idx], context->T[idx], this->transformStruct);
         }
         
         if(this->output_qt != NULL){ // FIFO for QT image render
