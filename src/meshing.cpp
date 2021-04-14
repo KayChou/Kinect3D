@@ -48,38 +48,7 @@ void Meshing::Loop(Context *context)
                 if(tempPoint.Z > z_bbox_min && tempPoint.Z < z_bbox_max &&
                     tempPoint.X > x_bbox_min && tempPoint.X < x_bbox_max &&
                     tempPoint.Y > y_bbox_min && tempPoint.Y < y_bbox_max) {
-                    mask[ptr_idx] = Vn;
                     points[Vn++] = packet->vertices[ptr_idx];
-                }
-                else{
-                    mask[ptr_idx] = 0;
-                }
-
-                if(i > 0 && j > 0){
-                    int c = ptr_idx; // center
-                    int l = ptr_idx - 1; // left
-                    int t = ptr_idx - packet->width_d; // top
-                    int lt = ptr_idx - 1 - packet->width_d; // left top
-
-                    if(abs(verts[c].X - verts[l].X) + abs(verts[c].Y - verts[l].Y) + abs(verts[c].Z - verts[l].Z) < context->Td && 
-                        abs(verts[t].X - verts[l].X) + abs(verts[t].Y - verts[l].Y) + abs(verts[t].Z - verts[l].Z) < context->Td && 
-                        abs(verts[c].X - verts[t].X) + abs(verts[c].Y - verts[t].Y) + abs(verts[c].Z - verts[t].Z) < context->Td && 
-                        mask[c] && mask[l] && mask[t]) {
-                        tempTri.v1 = mask[l];
-                        tempTri.v2 = mask[c];
-                        tempTri.v3 = mask[t];
-                        triangles[Fn++] = tempTri;
-                    }
-
-                    if(abs(verts[lt].X - verts[l].X) + abs(verts[lt].Y - verts[l].Y) + abs(verts[lt].Z - verts[l].Z) < context->Td && 
-                        abs(verts[t].X - verts[l].X) + abs(verts[t].Y - verts[l].Y) + abs(verts[t].Z - verts[l].Z) < context->Td && 
-                        abs(verts[lt].X - verts[t].X) + abs(verts[lt].Y - verts[t].Y) + abs(verts[lt].Z - verts[t].Z) < context->Td &&
-                        mask[l] && mask[lt] && mask[t]) {
-                        tempTri.v1 = mask[l];
-                        tempTri.v2 = mask[lt];
-                        tempTri.v3 = mask[t];
-                        triangles[Fn++] = tempTri;
-                    }
                 }
             }
         }
