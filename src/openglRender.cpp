@@ -34,8 +34,13 @@ void openglRender::loop()
     int cnt = 0;
     std::string filename;
 
-    timeval t_start, t_end;
+    int frame_cnt = 0;
     float t_delay;
+    timeval t_start, t_end;
+    timeval t_0, t_1000;
+    FILE *f = fopen("openglRender.csv", "w");
+
+    bool t_0_record_flag = false;
 
     glInit();
 
@@ -45,6 +50,10 @@ void openglRender::loop()
         Fn = 0;
         for(int i=0; i<numKinects; i++) {
             frameMesh *packet = input[i]->get();
+            if(!t_0_record_flag) {
+                gettimeofday(&t_0, NULL);
+                t_0_record_flag = true;
+            }
 
             for(int i=0; i<packet->Fn; i++) {
                 faces[3 * Fn + 0] = packet->triangles[i].v1 + Vn;
@@ -125,9 +134,20 @@ void openglRender::loop()
         gettimeofday(&t_end, NULL);
         t_delay = get_time_diff_ms(t_start, t_end);
 #ifdef LOG
+        t_delay = get_time_diff_ms(t_start, t_end);
+        if(frame_cnt < MAX_FRAME_NUM) {
+            fprintf(f, "%f\n", t_delay);
+            frame_cnt++;
+        }
+        else if (frame_cnt == MAX_FRAME_NUM) {
+            gettimeofday(&t_1000, NULL);
+            t_delay = get_time_diff_ms(t_0, t_1000);
+            fprintf(f, "average fps: %f\n", 1000 * MAX_FRAME_NUM / t_delay);
+            fclose(f);
+            frame_cnt++;
+        }
         std::printf("opengl render one frame: %f\n", t_delay); fflush(stdout);
 #endif
-
         usleep(20000);
     }
 
