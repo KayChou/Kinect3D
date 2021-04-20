@@ -14,6 +14,59 @@
 //    }
 #include "ICP.h"
 
+
+const float param_13 = 1.0f / 3.0f;
+const float param_16116 = 16.0f / 116.0f;
+const float Xn = 0.950456f;
+const float Yn = 1.0f;
+const float Zn = 1.088754f;
+ 
+float gamma(float x)
+{
+    return x>0.04045?powf((x+0.055f)/1.055f,2.4f):(x/12.92);
+};
+
+
+ void RGB2XYZ(uint8_t R, uint8_t G, uint8_t B, float *X, float *Y, float *Z)  
+{  
+    float RR = gamma(R/255.0);
+    float GG = gamma(G/255.0);
+    float BB = gamma(B/255.0);
+
+    *X = 0.4124564f * RR + 0.3575761f * GG + 0.1804375f * BB;  
+    *Y = 0.2126729f * RR + 0.7151522f * GG + 0.0721750f * BB;  
+    *Z = 0.0193339f * RR + 0.1191920f * GG + 0.9503041f * BB;  
+}
+
+
+void XYZ2Lab(float X, float Y, float Z, float *L, float *a, float *b)  
+{  
+    float fX, fY, fZ;  
+    
+    X /= (Xn);  
+    Y /= (Yn);  
+    Z /= (Zn);  
+    
+    if (Y > 0.008856f) fY = pow(Y, param_13);  	
+    else fY = 7.787f * Y + param_16116;  
+
+    if (X > 0.008856f)  
+        fX = pow(X, param_13);  
+    else  
+        fX = 7.787f * X + param_16116;  
+    
+    if (Z > 0.008856)  
+        fZ = pow(Z, param_13);  
+    else  
+        fZ = 7.787f * Z + param_16116;  
+
+    *L = 116.0f * fY - 16.0f;
+    *L = *L > 0.0f ? *L : 0.0f;   
+    *a = 500.0f * (fX - fY);  
+    *b = 200.0f * (fY - fZ);  
+}
+
+
 void FindClosestPointForEach(PointCloud &sourceCloud, cv::Mat &destPoints, vector<float> &distances, vector<size_t> &indices)
 {
     int nVerts2 = destPoints.rows;
@@ -57,6 +110,25 @@ void RejectOutlierMatches(vector<Point3f> &matches1, vector<Point3f> &matches2, 
 
     vector<Point3f> filteredMatches1;
     vector<Point3f> filteredMatches2;
+    for (size_t i = 0; i < matches1.size(); i++){
+        if (matchDistances[i] > maxStdDev * distanceStandardDev)
+            continue;
+
+        filteredMatches1.push_back(matches1[i]);
+        filteredMatches2.push_back(matches2[i]);
+    }
+
+    matches1 = filteredMatches1;
+    matches2 = filteredMatches2;
+}
+
+
+void RejectOutlierMatches(vector<Point3fRGB> &matches1, vector<Point3fRGB> &matches2, vector<float> &matchDistances, float maxStdDev)
+{
+    float distanceStandardDev = GetStandardDeviation(matchDistances);
+
+    vector<Point3fRGB> filteredMatches1;
+    vector<Point3fRGB> filteredMatches2;
     for (size_t i = 0; i < matches1.size(); i++){
         if (matchDistances[i] > maxStdDev * distanceStandardDev)
             continue;
@@ -168,6 +240,137 @@ float ICP_p2p(Point3f *verts1, Point3f *verts2, int nVerts1, int nVerts2, float 
 }
 
 
+
+void get_matched_points(Point3fRGB *verts1_RGB, Point3fRGB *verts2_RGB) 
+{
+    std::printf("try to get matched points\n");
+    Point3f *verts1 = new Point3f[Width_depth_HR * Height_depth_HR];
+    Point3f *verts2 = new Point3f[Width_depth_HR * Height_depth_HR];
+    Point3fRGB *verts1_rgb = new Point3fRGB[Width_depth_HR * Height_depth_HR];
+    Point3fRGB *verts2_rgb = new Point3fRGB[Width_depth_HR * Height_depth_HR];
+    int nVerts1 = 0;
+    int nVerts2 = 0;
+
+    float l, a, b, X, Y, Z;
+
+    for(int k=0; k<Width_depth_HR * Height_depth_HR; k++) {
+        if( verts1_RGB[k].X != 0 && verts1_RGB[k].Y != 0 && verts1_RGB[k].Z != 0 && 
+            verts1_RGB[k].X > x_bbox_min && verts1_RGB[k].X < x_bbox_max && 
+            verts1_RGB[k].Y > y_bbox_min && verts1_RGB[k].Y < y_bbox_max && 
+            verts1_RGB[k].Z > z_bbox_min && verts1_RGB[k].Z < z_bbox_max) {
+            verts1[nVerts1].X = verts1_RGB[k].X;
+            verts1[nVerts1].Y = verts1_RGB[k].Y;
+            verts1[nVerts1].Z = verts1_RGB[k].Z;
+            verts1_rgb[nVerts1].X = verts1_RGB[k].X;
+            verts1_rgb[nVerts1].Y = verts1_RGB[k].Y;
+            verts1_rgb[nVerts1].Z = verts1_RGB[k].Z;
+            verts1_rgb[nVerts1].R = verts1_RGB[k].R;
+            verts1_rgb[nVerts1].G = verts1_RGB[k].G;
+            verts1_rgb[nVerts1].B = verts1_RGB[k].B;
+            nVerts1++;
+        }
+        if( verts2_RGB[k].X != 0 && verts2_RGB[k].Y != 0 && verts2_RGB[k].Z != 0 && 
+            verts2_RGB[k].X > x_bbox_min && verts2_RGB[k].X < x_bbox_max && 
+            verts2_RGB[k].Y > y_bbox_min && verts2_RGB[k].Y < y_bbox_max && 
+            verts2_RGB[k].Z > z_bbox_min && verts2_RGB[k].Z < z_bbox_max) {
+            verts2[nVerts2].X = verts2_RGB[k].X;
+            verts2[nVerts2].Y = verts2_RGB[k].Y;
+            verts2[nVerts2].Z = verts2_RGB[k].Z;
+            verts2_rgb[nVerts2].X = verts2_RGB[k].X;
+            verts2_rgb[nVerts2].Y = verts2_RGB[k].Y;
+            verts2_rgb[nVerts2].Z = verts2_RGB[k].Z;
+            verts2_rgb[nVerts2].R = verts2_RGB[k].R;
+            verts2_rgb[nVerts2].G = verts2_RGB[k].G;
+            verts2_rgb[nVerts2].B = verts2_RGB[k].B;
+            nVerts2++;
+        }
+    }
+
+    PointCloud cloud1;
+    cloud1.pts = vector<Point3f>(verts1, verts1 + nVerts1);
+
+    cv::Mat verts2Mat(nVerts2, 3, CV_32F, (float*)verts2);
+
+    float error = 1;
+
+    vector<Point3f> matched1, matched2;
+    vector<Point3fRGB> matched1_rgb, matched2_rgb;
+    vector<Point3f> matched1_lab, matched2_lab;
+
+    vector<float> distances(nVerts2);
+    vector<size_t> indices(nVerts2);
+    FindClosestPointForEach(cloud1, verts2Mat, distances, indices);
+
+    vector<float> matchDistances;
+    vector<int> matchIdxs(nVerts1, -1);
+    for (int i = 0; i < nVerts2; i++) {
+        int pos = matchIdxs[indices[i]];
+
+        if (pos != -1) {
+            if (matchDistances[pos] < distances[i])
+                continue;
+        }
+
+        Point3f temp;
+        Point3f temp_lab;
+        temp.X = verts2Mat.at<float>(i, 0);
+        temp.Y = verts2Mat.at<float>(i, 1);
+        temp.Z = verts2Mat.at<float>(i, 2);
+
+        if (pos == -1) {
+            matched1.push_back(verts1[indices[i]]);
+            matched2.push_back(temp);
+            matched1_rgb.push_back(verts1_rgb[indices[i]]);
+            matched2_rgb.push_back(verts2_rgb[i]);
+
+            RGB2XYZ(verts1_rgb[indices[i]].R, verts1_rgb[indices[i]].G, verts1_rgb[indices[i]].B, &X, &Y, &Z);
+            XYZ2Lab(X, Y, Z, &temp_lab.X, &temp_lab.Y, &temp_lab.Z);
+            matched1_lab.push_back(temp_lab);
+
+            RGB2XYZ(verts2_rgb[i].R, verts2_rgb[i].G, verts2_rgb[i].B, &X, &Y, &Z);
+            XYZ2Lab(X, Y, Z, &temp_lab.X, &temp_lab.Y, &temp_lab.Z);
+            matched2_lab.push_back(temp_lab);
+
+            matchDistances.push_back(distances[i]);
+
+            matchIdxs[indices[i]] = matched1.size() - 1;
+        }
+        else {
+            matched2[pos] = temp;
+            matchDistances[pos] = distances[i];
+        }
+    }
+
+    RejectOutlierMatches(matched1_rgb, matched2_rgb, matchDistances, 0.0002);
+
+    std::printf("save to local file\n");
+    FILE *f = fopen("matched_points_rgb.csv", "w");
+    FILE *f0 = fopen("matched_points.csv", "w");
+    FILE *f_lab = fopen("matched_points_lab.csv", "w");
+    for(int i = 0; i < matched1_rgb.size(); i++) {
+        fprintf(f0, "%0.5f,%0.5f,%0.5f,%u,%u,%u,%0.5f,%0.5f,%0.5f,%u,%u,%u\n", 
+                matched1_rgb[i].X, matched1_rgb[i].Y, matched1_rgb[i].Z, matched1_rgb[i].R, matched1_rgb[i].G, matched1_rgb[i].B,
+                matched2_rgb[i].X, matched2_rgb[i].Y, matched2_rgb[i].Z, matched2_rgb[i].R, matched2_rgb[i].G, matched2_rgb[i].B);
+        if(matched2_rgb[i].R !=0 && matched2_rgb[i].G != 0 && matched2_rgb[i].B != 0 && matched1_rgb[i].R !=0 && matched1_rgb[i].G != 0 && matched1_rgb[i].B != 0) {
+            fprintf(f, "%u,%u,%u,%u,%u,%u\n", 
+                   matched1_rgb[i].R, matched1_rgb[i].G, matched1_rgb[i].B, 
+                   matched2_rgb[i].R, matched2_rgb[i].G, matched2_rgb[i].B);
+        }
+
+        if(matched1_lab[i].X > 0 && matched1_lab[i].X <100 && matched2_lab[i].X > 0 && matched2_lab[i].X <100 &&
+           matched1_lab[i].Y > -128 && matched1_lab[i].Y <128 && matched2_lab[i].Y > -128 && matched2_lab[i].Y <128 &&
+           matched1_lab[i].Z > -128 && matched1_lab[i].Z <128 && matched2_lab[i].Z > -128 && matched2_lab[i].Z <128 ) {
+            fprintf(f_lab, "%f,%f,%f,%f,%f,%f\n", matched1_lab[i].X, matched1_lab[i].Y, matched1_lab[i].Z, matched2_lab[i].X, matched2_lab[i].Y, matched2_lab[i].Z);
+        }
+    }
+    fclose(f);
+    fclose(f0);
+    fclose(f_lab);
+    std::printf("save finish\n");
+
+}
+
+
 void ICP::init(Context *ctx) {
     this->ctx = ctx;
 }
@@ -250,7 +453,7 @@ void ICP::loop() {
             }
             // savePlyFile("verts1.ply", verts1, nVerts1);
             // savePlyFile("verts2.ply", verts2, nVerts2);
-
+            get_matched_points(ctx->frame_to_be_refined[0].vertices, ctx->frame_to_be_refined[1].vertices);
             ICP_p2p(verts1, verts2, nVerts1, nVerts2, R, T, 5);
             
             tempT[0] = ctx->R[i][0][0] * T[0] + ctx->R[i][1][0] * T[1] + ctx->R[i][2][0] * T[2];

@@ -12,7 +12,7 @@
 #define Width_depth_HR 512
 #define Height_depth_HR 424
 
-#if 1
+#if 0
 #define x_bbox_min -0.5
 #define x_bbox_max 0.5
 #define y_bbox_min -0.5
@@ -30,7 +30,7 @@
 #define z_bbox_max 0.75
 #endif
 
-#if 0
+#if 1
 #define x_bbox_min -1
 #define x_bbox_max 1
 #define y_bbox_min -1
