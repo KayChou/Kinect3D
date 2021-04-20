@@ -42,7 +42,7 @@ void Transform2world::process(Context *context)
     FILE *f;
     int frame_cnt = 0;
     if(idx == 0) {
-        f = fopen("calibration.csv", "w");
+        f = fopen("alignment.csv", "w");
     }
 
     while(true) {

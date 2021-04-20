@@ -62,14 +62,6 @@ void overlap_removal::loop()
             }
             std::printf("overlap_removal get one frame: %f\n", t_delay); fflush(stdout);
 #endif
-
-            // cv::Mat depthmat;
-            // cv::Mat(424, 512, CV_32FC1, depth_out).copyTo(depthmat);
-            // cv::imwrite("depth_proj.png", depthmat);
-            // cv::Mat(424, 512, CV_32FC1, frameList[0]->data_d).copyTo(depthmat);
-            // cv::imwrite("depth_0.png", depthmat);
-            // cv::Mat(424, 512, CV_32FC1, frameList[1]->data_d).copyTo(depthmat);
-            // cv::imwrite("depth_1.png", depthmat);
         }
 
         for(int i=0; i<numKinects; i++) {
