@@ -21,7 +21,7 @@
 #define z_bbox_max 0.5
 #endif
 
-#if 0
+#if 1
 #define x_bbox_min -0.75
 #define x_bbox_max 0.75
 #define y_bbox_min -0.75
@@ -30,7 +30,7 @@
 #define z_bbox_max 0.75
 #endif
 
-#if 1
+#if 0
 #define x_bbox_min -1
 #define x_bbox_max 1
 #define y_bbox_min -1

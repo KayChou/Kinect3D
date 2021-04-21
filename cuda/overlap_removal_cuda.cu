@@ -209,7 +209,7 @@ void overlap_removal_cuda(Context_gpu* ctx_gpu, framePacket** frameList, float* 
 
     int idx;
 
-    for(int i=0; i<numKinects - 1; i++) {
+    for(int i=0; i<numKinects; i++) {
         idx = (i + 1) % numKinects;
         overlap_removal_kernel<<<blocks, threads>>>(ctx_gpu, ctx_gpu->vertices[i], ctx_gpu->depth[i], ctx_gpu->vertices[idx], ctx_gpu->depth[idx], idx, ctx_gpu->depth_out);
         patch_based_removal_kernel<<<blocks, threads>>>(ctx_gpu->mask, ctx_gpu->vertices[i], ctx_gpu->depth[i]);

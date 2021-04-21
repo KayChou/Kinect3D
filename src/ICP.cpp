@@ -341,7 +341,7 @@ void get_matched_points(Point3fRGB *verts1_RGB, Point3fRGB *verts2_RGB)
         }
     }
 
-    RejectOutlierMatches(matched1_rgb, matched2_rgb, matchDistances, 0.0002);
+    RejectOutlierMatches(matched1_rgb, matched2_rgb, matchDistances, 0.001);
 
     std::printf("save to local file\n");
     FILE *f = fopen("matched_points_rgb.csv", "w");
@@ -366,6 +366,12 @@ void get_matched_points(Point3fRGB *verts1_RGB, Point3fRGB *verts2_RGB)
     fclose(f);
     fclose(f0);
     fclose(f_lab);
+
+    delete [] verts1;
+    delete [] verts2;
+    delete [] verts1_rgb;
+    delete [] verts2_rgb;
+    
     std::printf("save finish\n");
 
 }
