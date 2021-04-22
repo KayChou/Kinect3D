@@ -30,6 +30,8 @@ using namespace std;
 
 float ICP_p2p(Point3f *verts1, Point3f *verts2, int nVerts1, int nVerts2, float *R, float *t, int maxIter = 10);
 
+extern "C" void get_matched_points_cuda(Context_gpu* ctx_gpu, Point3fRGB *verts1, Point3fRGB *verts2, float *depth_right, int idx);
+
 
 struct PointCloud
 {

@@ -137,6 +137,7 @@ typedef struct Context {
 			this->b_hasBeenCalibrated[n] = false;
 			this->b_refined_data_ready[n] = false;
 			this->frame_to_be_refined[n].vertices = new Point3fRGB[Width_depth_HR * Height_depth_HR];
+			this->frame_to_be_refined[n].data_d = new float[Width_depth_HR * Height_depth_HR];
 			this->R[n].resize(3);
 			this->invR[n].resize(3);
 
@@ -177,13 +178,16 @@ typedef struct Context_gpu {
 	float x_ratio;
 	float y_ratio;
 
-	bool temp_flag;
-
 	Point3fRGB* vertices[numKinects];
 	float *depth[numKinects];
 	float *depth_out;
 	int *mask;
+
+	// datas using for coloe correction
 	int *matched_idx;
+	Point3fRGB *verts1_match;
+	Point3fRGB *verts2_match;
+	float *depth_match;
 } Context_gpu;
 
 #endif

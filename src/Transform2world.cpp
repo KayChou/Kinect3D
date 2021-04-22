@@ -96,6 +96,7 @@ void Transform2world::process(Context *context)
         
         if(context->b_Refine && !context->b_refined_data_ready[idx]) { // if refine is needed but data not ready
             memcpy(context->frame_to_be_refined[idx].vertices, packet->vertices, sizeof(Point3fRGB) * packet->width_d * packet->height_d);
+            memcpy(context->frame_to_be_refined[idx].data_d, packet->data_d, sizeof(float) * packet->width_d * packet->height_d);
             context->b_refined_data_ready[idx] = true;
             std::printf("Transform2world prepare one frame for ICP\n"); fflush(stdout);
         }
