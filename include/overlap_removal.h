@@ -12,7 +12,7 @@ extern "C" void overlap_removal_cuda(Context_gpu* ctx_gpu, framePacket** frameLi
 class overlap_removal {
 public:
 
-    void init(FIFO<framePacket>** input, FIFO<framePacket>** output, Context *context);
+    void init(FIFO<framePacket>** input, FIFO<framePacket>** output, Context *context, Context_gpu *ctx_gpu);
     void loop();
 
 private:

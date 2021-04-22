@@ -323,8 +323,9 @@ void get_matched_points(Point3fRGB *verts1_RGB, Point3fRGB *verts2_RGB)
 }
 
 
-void ICP::init(Context *ctx) {
+void ICP::init(Context *ctx, Context_gpu *ctx_gpu) {
     this->ctx = ctx;
+    this->ctx_gpu = ctx_gpu;
 }
 
 

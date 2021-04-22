@@ -1,13 +1,13 @@
 #include "overlap_removal.h"
 
 
-void overlap_removal::init(FIFO<framePacket>** input, FIFO<framePacket>** output, Context *context)
+void overlap_removal::init(FIFO<framePacket>** input, FIFO<framePacket>** output, Context *context, Context_gpu* ctx_gpu)
 {
     this->input = input;
     this->output = output;
     this->context = context;
     frameList = new framePacket*[numKinects];
-    this->ctx_gpu = create_context(context);
+    this->ctx_gpu = ctx_gpu;
     this->cnt = 0;
 }
 

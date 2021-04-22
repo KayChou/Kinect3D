@@ -66,10 +66,10 @@ struct PointCloud
 class ICP
 {
 public:
-	void init(Context *ctx);
+	void init(Context *ctx, Context_gpu *ctx_gpu);
 	void loop();
 
 public:
 	Context *ctx;
-
+	Context_gpu *ctx_gpu;
 };

@@ -5,6 +5,7 @@
 int main(int argc, char *argv[])
 {
     Context* context = new Context();
+    Context_gpu *ctx_gpu = create_context(context);
 
     // ============================ FIFO init =======================================
     FIFO<framePacket> **RGBD_Capture = new FIFO<framePacket>*[numKinects];
@@ -79,9 +80,9 @@ int main(int argc, char *argv[])
     }
     
     kinects->init(capture_output, context);
-    overlap_remove->init(overlap_remove_input, overlap_remove_output, context);
+    overlap_remove->init(overlap_remove_input, overlap_remove_output, context, ctx_gpu);
     render->init(opengl_render_input, context);
-    icp->init(context);
+    icp->init(context, ctx_gpu);
 
     // ============================ start thread =======================================
     std::thread KinectsManager_Thread = std::thread(&KinectsManager::loop, std::ref(kinects));
