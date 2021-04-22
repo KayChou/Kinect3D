@@ -12,6 +12,8 @@
 //        title={LiveScan3D: A Fast and Inexpensive 3D Data Acquisition System for Multiple Kinect v2 Sensors},
 //        year={2015},
 //    }
+#ifndef __ICP_H__
+#define __ICP_H__
 #include <stdio.h>
 #include <vector>
 
@@ -30,7 +32,8 @@ using namespace std;
 
 float ICP_p2p(Point3f *verts1, Point3f *verts2, int nVerts1, int nVerts2, float *R, float *t, int maxIter = 10);
 
-extern "C" void get_matched_points_cuda(Context_gpu* ctx_gpu, Point3fRGB *verts1, Point3fRGB *verts2, float *depth_right, int idx);
+extern "C" void get_matched_points_cuda(Context_gpu* ctx_gpu, Point3fRGB *verts1, Point3fRGB *verts2, float *depth_right, int idx, 
+										std::vector<Point> &data_r, std::vector<Point> &data_g, std::vector<Point> &data_b);
 
 
 struct PointCloud
@@ -75,3 +78,4 @@ public:
 	Context *ctx;
 	Context_gpu *ctx_gpu;
 };
+#endif

@@ -90,6 +90,18 @@ typedef struct Point2f
 } Point2f;
 
 
+class Point
+{
+public:
+    Point() : x(0), y(0) { }
+
+    Point(float _x, float _y) : x(_x), y(_y) { }
+
+    friend std::ostream& operator<<(std::ostream& out, const Point& p) { return out << p.x << ", " << p.y; }
+
+    float x, y;
+};
+
 typedef struct MarkerStruct
 {
 	int id;

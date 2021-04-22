@@ -11,6 +11,8 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+set(CMAKE_CXX_FLAGS "  ${CMAKE_CXX_FLAGS} -std=c++11 -O3 -fopenmp")
+
 add_definitions(-DCMAKE)
 # add_definitions(-DLOG)
 
@@ -26,6 +28,7 @@ INCLUDE_DIRECTORIES("include")
 INCLUDE_DIRECTORIES("include/opengl")
 INCLUDE_DIRECTORIES("include/opengl/glad/include")
 INCLUDE_DIRECTORIES("/usr/include/libusb-1.0/")
+INCLUDE_DIRECTORIES("include/rtl")
 
 set(OpenGL_GL_PREFERENCE LEGACY)
 find_package(OpenGL REQUIRED)

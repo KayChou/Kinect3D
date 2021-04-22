@@ -50,7 +50,9 @@ __global__ void get_matched_points_kernel(Context_gpu* ctx_gpu, Point3fRGB* left
 }
 
 
-void get_matched_points_cuda(Context_gpu* ctx_gpu, Point3fRGB *verts1, Point3fRGB *verts2, float *depth_right, int cam_idx) {
+void get_matched_points_cuda(Context_gpu* ctx_gpu, Point3fRGB *verts1, Point3fRGB *verts2, float *depth_right, int cam_idx, 
+                             std::vector<Point> &data_r, std::vector<Point> &data_g, std::vector<Point> &data_b) 
+{
     cudaMemcpy(ctx_gpu->verts1_match, verts1, sizeof(Point3fRGB) * Width_depth_HR * Height_depth_HR, cudaMemcpyHostToDevice);
     cudaMemcpy(ctx_gpu->verts2_match, verts2, sizeof(Point3fRGB) * Width_depth_HR * Height_depth_HR, cudaMemcpyHostToDevice);
     cudaMemcpy(ctx_gpu->depth_match, depth_right, sizeof(float) * Width_depth_HR * Height_depth_HR, cudaMemcpyHostToDevice);
@@ -62,14 +64,32 @@ void get_matched_points_cuda(Context_gpu* ctx_gpu, Point3fRGB *verts1, Point3fRG
 
     int idx = 0;
     FILE *f = fopen("match_points_warp.csv", "w");
+
+    Point temp_R, temp_G, temp_B;
     for(int j=0; j<Width_depth_HR * Height_depth_HR; j++) {
         idx = ctx_gpu->matched_idx[j];
         if(idx > 0 && idx < Width_depth_HR * Height_depth_HR) {
-            fprintf(f, "%f,%f,%f,%f,%f,%f,%u,%u,%u,%u,%u,%u\n", ctx_gpu->verts1_match[j].X, ctx_gpu->verts1_match[j].Y, ctx_gpu->verts1_match[j].Z, 
-                                                                ctx_gpu->verts2_match[idx].X, ctx_gpu->verts2_match[idx].Y, ctx_gpu->verts2_match[idx].Z,
-                                                                ctx_gpu->verts1_match[j].R, ctx_gpu->verts1_match[j].G, ctx_gpu->verts1_match[j].B, 
-                                                                ctx_gpu->verts2_match[idx].R, ctx_gpu->verts2_match[idx].G, ctx_gpu->verts2_match[idx].B);
+            temp_R.x = (float)ctx_gpu->verts1_match[j].R;
+            temp_R.y = (float)ctx_gpu->verts2_match[idx].R;
+            temp_G.x = (float)ctx_gpu->verts1_match[j].G;
+            temp_G.y = (float)ctx_gpu->verts2_match[idx].G;
+            temp_B.x = (float)ctx_gpu->verts1_match[j].B;
+            temp_B.y = (float)ctx_gpu->verts2_match[idx].B;
+
+            if(temp_R.x > 0 && temp_R.x < 255 && temp_R.y > 0 && temp_R.y < 255 && 
+               temp_G.x > 0 && temp_G.x < 255 && temp_G.y > 0 && temp_G.y < 255 && 
+               temp_B.x > 0 && temp_B.x < 255 && temp_B.y > 0 && temp_B.y < 255 &&
+               abs(temp_R.x - temp_R.y) < 100  && abs(temp_G.x - temp_G.y) < 100  && abs(temp_B.x - temp_B.y) < 100) 
+            {
+                fprintf(f, "%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f\n", ctx_gpu->verts1_match[j].X, ctx_gpu->verts1_match[j].Y, ctx_gpu->verts1_match[j].Z, 
+                                                            ctx_gpu->verts2_match[idx].X, ctx_gpu->verts2_match[idx].Y, ctx_gpu->verts2_match[idx].Z,
+                                                            temp_R.x, temp_G.x, temp_B.x, temp_R.y, temp_G.y, temp_B.y);
+                data_r.push_back(temp_R);
+                data_g.push_back(temp_G);
+                data_b.push_back(temp_B);
+            }
         }
     }
     fclose(f);
+
 }

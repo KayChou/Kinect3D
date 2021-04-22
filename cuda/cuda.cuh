@@ -18,4 +18,5 @@ extern "C" void overlap_removal_cuda(Context_gpu* ctx_gpu, framePacket** frameLi
 
 extern "C" TransformStruct *Transform_gpu_init();
 
-extern "C" void get_matched_points_cuda(Context_gpu* ctx_gpu, Point3fRGB *verts1, Point3fRGB *verts2, float *depth_right, int idx);
+extern "C" void get_matched_points_cuda(Context_gpu* ctx_gpu, Point3fRGB *verts1, Point3fRGB *verts2, float *depth_right, int cam_idx, 
+                                        std::vector<Point> &data_r, std::vector<Point> &data_g, std::vector<Point> &data_b);
