@@ -18,3 +18,7 @@ std::vector<float> RotatePoint(Point3f &point, std::vector<std::vector<float>> &
 float get_time_diff_ms(timeval start, timeval end);
 
 void output_time_diff_to_csv(FIFO<framePacket> *input, FIFO<framePacket> *output, char* filename);
+
+void Lab2RGB(float L, float a, float b, uint8_t *R, uint8_t *G, uint8_t *B);
+
+void RGB2Lab(uint8_t R, uint8_t G, uint8_t B, float *L, float *a, float *b);

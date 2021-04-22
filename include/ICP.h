@@ -17,6 +17,7 @@
 
 #include "nanoflann.h"
 #include "common.h"
+#include "utils.h"
 
 #if defined(ICP_DLL_EXPORTS) // inside DLL
 #   define ICP_API   __declspec(dllexport)

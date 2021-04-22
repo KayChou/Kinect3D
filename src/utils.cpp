@@ -1,6 +1,12 @@
 #include "utils.h"
 
 
+const float param_13 = 1.0f / 3.0f;
+const float param_16116 = 16.0f / 116.0f;
+const float Xn = 0.950456f;
+const float Yn = 1.0f;
+const float Zn = 1.088754f;
+
 // compute inverse rotation matrix
 // actually invR is transpose R
 void inv_Matrix_3x3(std::vector<std::vector<float>> R, std::vector<std::vector<float>> &invR)
@@ -218,4 +224,111 @@ void output_time_diff_to_csv(FIFO<framePacket> *input, FIFO<framePacket> *output
         fprintf(f, "%d %f\n", i, get_time_diff_ms(input->popped_time[i], output->pushed_time[i]));
     }
     fclose(f);
+}
+
+
+float gamma(float x)
+{
+    return x>0.04045?powf((x+0.055f)/1.055f,2.4f):(x/12.92);
+};
+
+
+float CLIP255(float x) {
+    if( x >= 0 && x <= 255) {
+        return x;
+    }
+    else if( x < 0) {
+        return 0;
+    }
+    else{
+        return 255;
+    }
+}
+
+
+float gamma_XYZ2RGB(float x) {
+    return x>0.0031308?(1.055f*powf(x,(1/2.4f))-0.055):(x*12.92);
+};
+
+
+void RGB2Lab(uint8_t R, uint8_t G, uint8_t B, float *L, float *a, float *b)  
+{  
+    float X, Y, Z;
+    float RR = gamma(R/255.0);
+    float GG = gamma(G/255.0);
+    float BB = gamma(B/255.0);
+
+    X = 0.4124564f * RR + 0.3575761f * GG + 0.1804375f * BB;  
+    Y = 0.2126729f * RR + 0.7151522f * GG + 0.0721750f * BB;  
+    Z = 0.0193339f * RR + 0.1191920f * GG + 0.9503041f * BB;  
+
+    float fX, fY, fZ;  
+    
+    X /= (Xn);  
+    Y /= (Yn);  
+    Z /= (Zn);  
+    
+    if (Y > 0.008856f) fY = pow(Y, param_13);  	
+    else fY = 7.787f * Y + param_16116;  
+
+    if (X > 0.008856f)  
+        fX = pow(X, param_13);  
+    else  
+        fX = 7.787f * X + param_16116;  
+    
+    if (Z > 0.008856)  
+        fZ = pow(Z, param_13);  
+    else  
+        fZ = 7.787f * Z + param_16116;  
+
+    *L = 116.0f * fY - 16.0f;
+    *L = *L > 0.0f ? *L : 0.0f;   
+    *a = 500.0f * (fX - fY);  
+    *b = 200.0f * (fY - fZ);  
+}
+
+
+void Lab2RGB(float L, float a, float b, uint8_t *R, uint8_t *G, uint8_t *B) {
+    float fX, fY, fZ;
+    float X, Y, Z;
+      
+    fY = (L + 16.0f) / 116.0; 
+	fX = a / 500.0f + fY;
+	fZ = fY - b / 200.0f; 
+ 
+	if(powf(fY,3.0)>0.008856)
+	    Y =powf(fY,3.0);
+	else
+	    Y = (fY-param_16116)/7.787f;
+		
+    if (powf(fX,3) > 0.008856)  
+        X = fX * fX * fX;  
+    else  
+        X = (fX - param_16116) / 7.787f;  
+    
+    if (powf(fZ,3.0) > 0.008856)  
+        Z = fZ * fZ * fZ;  
+    else  
+        Z = (fZ - param_16116) / 7.787f;
+    
+    X *= Xn;  
+    Y *= Yn;  
+    Z *= Zn;
+
+    float RR , GG, BB ;
+    RR =  3.2404542f * X - 1.5371385f * Y - 0.4985314f * Z;  
+    GG = -0.9692660f * X + 1.8760108f * Y + 0.0415560f * Z;  
+    BB =  0.0556434f * X - 0.2040259f * Y + 1.0572252f * Z;  
+ 
+	RR = gamma_XYZ2RGB(RR);
+	GG = gamma_XYZ2RGB(GG);
+	BB = gamma_XYZ2RGB(BB);
+ 
+    RR = CLIP255(RR * 255.0 + 0.5);
+    GG = CLIP255(GG * 255.0 + 0.5);
+    BB = CLIP255(BB * 255.0 + 0.5);
+
+    *R = (uint8_t)RR;  
+    *G = (uint8_t)GG;  
+    *B = (uint8_t)BB;
 }

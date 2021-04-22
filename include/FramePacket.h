@@ -177,10 +177,13 @@ typedef struct Context_gpu {
 	float x_ratio;
 	float y_ratio;
 
+	bool temp_flag;
+
 	Point3fRGB* vertices[numKinects];
 	float *depth[numKinects];
 	float *depth_out;
 	int *mask;
+	int *matched_idx;
 } Context_gpu;
 
 #endif

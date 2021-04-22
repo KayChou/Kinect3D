@@ -15,58 +15,6 @@
 #include "ICP.h"
 
 
-const float param_13 = 1.0f / 3.0f;
-const float param_16116 = 16.0f / 116.0f;
-const float Xn = 0.950456f;
-const float Yn = 1.0f;
-const float Zn = 1.088754f;
- 
-float gamma(float x)
-{
-    return x>0.04045?powf((x+0.055f)/1.055f,2.4f):(x/12.92);
-};
-
-
- void RGB2XYZ(uint8_t R, uint8_t G, uint8_t B, float *X, float *Y, float *Z)  
-{  
-    float RR = gamma(R/255.0);
-    float GG = gamma(G/255.0);
-    float BB = gamma(B/255.0);
-
-    *X = 0.4124564f * RR + 0.3575761f * GG + 0.1804375f * BB;  
-    *Y = 0.2126729f * RR + 0.7151522f * GG + 0.0721750f * BB;  
-    *Z = 0.0193339f * RR + 0.1191920f * GG + 0.9503041f * BB;  
-}
-
-
-void XYZ2Lab(float X, float Y, float Z, float *L, float *a, float *b)  
-{  
-    float fX, fY, fZ;  
-    
-    X /= (Xn);  
-    Y /= (Yn);  
-    Z /= (Zn);  
-    
-    if (Y > 0.008856f) fY = pow(Y, param_13);  	
-    else fY = 7.787f * Y + param_16116;  
-
-    if (X > 0.008856f)  
-        fX = pow(X, param_13);  
-    else  
-        fX = 7.787f * X + param_16116;  
-    
-    if (Z > 0.008856)  
-        fZ = pow(Z, param_13);  
-    else  
-        fZ = 7.787f * Z + param_16116;  
-
-    *L = 116.0f * fY - 16.0f;
-    *L = *L > 0.0f ? *L : 0.0f;   
-    *a = 500.0f * (fX - fY);  
-    *b = 200.0f * (fY - fZ);  
-}
-
-
 void FindClosestPointForEach(PointCloud &sourceCloud, cv::Mat &destPoints, vector<float> &distances, vector<size_t> &indices)
 {
     int nVerts2 = destPoints.rows;
@@ -323,12 +271,10 @@ void get_matched_points(Point3fRGB *verts1_RGB, Point3fRGB *verts2_RGB)
             matched1_rgb.push_back(verts1_rgb[indices[i]]);
             matched2_rgb.push_back(verts2_rgb[i]);
 
-            RGB2XYZ(verts1_rgb[indices[i]].R, verts1_rgb[indices[i]].G, verts1_rgb[indices[i]].B, &X, &Y, &Z);
-            XYZ2Lab(X, Y, Z, &temp_lab.X, &temp_lab.Y, &temp_lab.Z);
+            RGB2Lab(verts1_rgb[indices[i]].R, verts1_rgb[indices[i]].G, verts1_rgb[indices[i]].B, &temp_lab.X, &temp_lab.Y, &temp_lab.Z);
             matched1_lab.push_back(temp_lab);
 
-            RGB2XYZ(verts2_rgb[i].R, verts2_rgb[i].G, verts2_rgb[i].B, &X, &Y, &Z);
-            XYZ2Lab(X, Y, Z, &temp_lab.X, &temp_lab.Y, &temp_lab.Z);
+            RGB2Lab(verts2_rgb[indices[i]].R, verts2_rgb[indices[i]].G, verts2_rgb[indices[i]].B, &temp_lab.X, &temp_lab.Y, &temp_lab.Z);
             matched2_lab.push_back(temp_lab);
 
             matchDistances.push_back(distances[i]);
@@ -341,7 +287,7 @@ void get_matched_points(Point3fRGB *verts1_RGB, Point3fRGB *verts2_RGB)
         }
     }
 
-    RejectOutlierMatches(matched1_rgb, matched2_rgb, matchDistances, 0.001);
+    RejectOutlierMatches(matched1_rgb, matched2_rgb, matchDistances, 0.002);
 
     std::printf("save to local file\n");
     FILE *f = fopen("matched_points_rgb.csv", "w");
