@@ -90,6 +90,27 @@ typedef struct Point2f
 } Point2f;
 
 
+typedef struct color_correct_params
+{
+	color_correct_params()
+	{
+		this->Ar = 1;
+		this->Br = 0;
+		this->Ag = 1;
+		this->Bg = 0;
+		this->Ab = 1;
+		this->Bb = 0;
+	}
+	// y = A * x + B
+	float Ar;
+	float Br;
+	float Ag;
+	float Bg;
+	float Ab;
+	float Bb;
+} color_correct_params;
+
+
 class Point
 {
 public:

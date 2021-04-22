@@ -4,8 +4,8 @@
 #include "FIFO.h"
 
 #define patch_size 2
-#define removal_det_region 30
-#define removal_det_K removal_det_region * removal_det_region * 3 / 4
+#define removal_det_region 20
+#define removal_det_K removal_det_region * removal_det_region * 4 / 5
 
 
 extern "C" void Transform(int width_d, int height_d, framePacket *packet, std::vector<std::vector<float>> &R, std::vector<float> &T, TransformStruct *transformStruct);

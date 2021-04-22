@@ -188,6 +188,8 @@ typedef struct Context_gpu {
 	Point3fRGB *verts1_match;
 	Point3fRGB *verts2_match;
 	float *depth_match;
+
+	color_correct_params color_params[numKinects];
 } Context_gpu;
 
 #endif

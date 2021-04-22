@@ -79,7 +79,7 @@ void get_matched_points_cuda(Context_gpu* ctx_gpu, Point3fRGB *verts1, Point3fRG
             if(temp_R.x > 0 && temp_R.x < 255 && temp_R.y > 0 && temp_R.y < 255 && 
                temp_G.x > 0 && temp_G.x < 255 && temp_G.y > 0 && temp_G.y < 255 && 
                temp_B.x > 0 && temp_B.x < 255 && temp_B.y > 0 && temp_B.y < 255 &&
-               abs(temp_R.x - temp_R.y) < 100  && abs(temp_G.x - temp_G.y) < 100  && abs(temp_B.x - temp_B.y) < 100) 
+               abs(temp_R.x - temp_R.y) < 20  && abs(temp_G.x - temp_G.y) < 20  && abs(temp_B.x - temp_B.y) < 20) 
             {
                 fprintf(f, "%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f\n", ctx_gpu->verts1_match[j].X, ctx_gpu->verts1_match[j].Y, ctx_gpu->verts1_match[j].Z, 
                                                             ctx_gpu->verts2_match[idx].X, ctx_gpu->verts2_match[idx].Y, ctx_gpu->verts2_match[idx].Z,

@@ -15,6 +15,9 @@
 #include "ICP.h"
 #include "RTL.h"
 
+#define MAX_SLOPE 1.5
+#define MAX_INTERCEPT 100
+
 
 void FindClosestPointForEach(PointCloud &sourceCloud, cv::Mat &destPoints, vector<float> &distances, vector<size_t> &indices)
 {
@@ -219,7 +222,6 @@ void ICP::loop() {
     std::vector<Point> data_b;
     float loss;
 
-
     while(true) {
         // if button "refine" not pressed 
         if(!ctx->b_Refine) {
@@ -238,25 +240,43 @@ void ICP::loop() {
             continue;
         }
 
-        // RANSAC to do color correction
-        data_r.clear();
-        data_g.clear();
-        data_b.clear();
-        get_matched_points_cuda(ctx_gpu, ctx->frame_to_be_refined[0].vertices, ctx->frame_to_be_refined[1].vertices, ctx->frame_to_be_refined[1].data_d, 1,
-                                data_r, data_g, data_b);
+        for(int i = 1; i < numKinects; i++) {
+            // RANSAC to do color correction
+            data_r.clear();
+            data_g.clear();
+            data_b.clear();
+            get_matched_points_cuda(ctx_gpu, 
+                                    ctx->frame_to_be_refined[i-1].vertices, 
+                                    ctx->frame_to_be_refined[i].vertices, 
+                                    ctx->frame_to_be_refined[i].data_d, i,
+                                    data_r, data_g, data_b);
+            
+            if(data_r.size() > 0) {
+                loss = ransac.FindBest(model, data_r, data_r.size(), 2);
+                cout << "- Found Model: " << model << " size: " << data_r.size() << " (Loss: " << loss << ")" << endl;
+                if(abs(model.b / model.a) < MAX_SLOPE && abs(model.c / model.a) < MAX_INTERCEPT) {
+                    ctx_gpu->color_params[i].Ar = (-1) * model.b / model.a;
+                    ctx_gpu->color_params[i].Br = (-1) * model.c / model.a;
+                }
+            }
+            if(data_g.size() > 0) {
+                loss = ransac.FindBest(model, data_g, data_g.size(), 2);
+                cout << "- Found Model: " << model << " size: " << data_g.size() << " (Loss: " << loss << ")" << endl;
+                if(abs(model.b / model.a) < MAX_SLOPE && abs(model.c / model.a) < MAX_INTERCEPT) {
+                    ctx_gpu->color_params[i].Ag = (-1) * model.b / model.a;
+                    ctx_gpu->color_params[i].Bg = (-1) * model.c / model.a;
+                }
+            }
+            if(data_b.size() > 0) {
+                loss = ransac.FindBest(model, data_b, data_b.size(), 2);
+                cout << "- Found Model: " << model << " size: " << data_b.size() << " (Loss: " << loss << ")" << endl;
+                if(abs(model.b / model.a) < MAX_SLOPE && abs(model.c / model.a) < MAX_INTERCEPT) {
+                    ctx_gpu->color_params[i].Ab = (-1) * model.b / model.a;
+                    ctx_gpu->color_params[i].Bb = (-1) * model.c / model.a;
+                }
+            }
+        }
         
-        if(data_r.size() > 0) {
-            loss = ransac.FindBest(model, data_r, data_r.size(), 2);
-            cout << "- Found Model: " << model << " size: " << data_r.size() << " (Loss: " << loss << ")" << endl;
-        }
-        if(data_g.size() > 0) {
-            loss = ransac.FindBest(model, data_g, data_g.size(), 2);
-            cout << "- Found Model: " << model << " size: " << data_g.size() << " (Loss: " << loss << ")" << endl;
-        }
-        if(data_b.size() > 0) {
-            loss = ransac.FindBest(model, data_b, data_b.size(), 2);
-            cout << "- Found Model: " << model << " size: " << data_b.size() << " (Loss: " << loss << ")" << endl;
-        }
         
         // begin ICP
         for(int i=0; i<numKinects; i++) {
