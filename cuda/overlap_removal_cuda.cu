@@ -215,10 +215,6 @@ void overlap_removal_cuda(Context_gpu* ctx_gpu, framePacket** frameList, float* 
     for(int i=0; i<numKinects; i++) {
         cudaMemcpy(ctx_gpu->vertices[i], frameList[i]->vertices, sizeof(Point3fRGB) * Width_depth_HR * Height_depth_HR, cudaMemcpyHostToDevice);
         cudaMemcpy(ctx_gpu->depth[i], frameList[i]->data_d, sizeof(float) * Width_depth_HR * Height_depth_HR, cudaMemcpyHostToDevice);
-    }
-
-    for(int i=0; i<numKinects; i++) {
-        color_correction<<<blocks, threads>>>(ctx_gpu, ctx_gpu->vertices[i], i);
         SDC_filter<<<blocks, threads>>>(ctx_gpu, ctx_gpu->vertices[i], ctx_gpu->depth[i]);
     }
 

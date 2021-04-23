@@ -19,7 +19,7 @@ bool Kinect::init(int idx, std::string serial, FIFO<framePacket>* output, float 
 
     this->config.EnableBilateralFilter = true;
     this->config.EnableEdgeAwareFilter = true;
-    this->config.MinDepth = 0.3f;
+    this->config.MinDepth = 0.2f;
     this->config.MaxDepth = 4.5f;
     this->dev->setConfiguration(this->config);
     this->cameraStarted = false;
@@ -62,8 +62,8 @@ bool Kinect::getFrameLoop(){
 
             if(!this->cameraStarted) { // if not started, then start it 
                 this->dev->start();
-                this->dev->setColorAutoExposure(colorExposure);
-                // this->dev->setColorManualExposure(30, 3);
+                // this->dev->setColorAutoExposure(colorExposure);
+                this->dev->setColorManualExposure(30, 3);
 #if USE_RAW_DEPTH
                 this->registration = new libfreenect2::Registration(this->dev->getIrCameraParams(), this->dev->getColorCameraParams());
 #else

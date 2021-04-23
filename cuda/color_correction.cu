@@ -14,6 +14,31 @@ extern __device__ void backforward_map(float *point, float *R, float *T)
 }
 
 
+__device__ void rgb2yuv(uint8_t r, uint8_t g, uint8_t b, uint8_t &y, uint8_t &u, uint8_t &v) {
+
+    float Y, U, V;
+    Y = ((66 * r + 129 * g + 25 * b + 128) >> 8) + 16;
+	U = ((-38 * r - 74 * g + 112 * b + 128) >> 8) + 128;
+	V = ((112 * r - 94 * g - 18 * b + 128) >> 8) + 128;
+
+    y = (Y >= 0) ? ((Y <= 255) ? Y : 255) : 0;
+    u = (U >= 0) ? ((U <= 255) ? U : 255) : 0;
+    v = (V >= 0) ? ((V <= 255) ? V : 255) : 0;
+}
+
+
+__device__ void yuv2rgb(uint8_t y, uint8_t u, uint8_t v, uint8_t &r, uint8_t &g, uint8_t &b) {
+    float R, G, B;
+    B = (298 * (y - 16) + 516 * (u - 128)) >> 8;
+    G = (298 * (y - 16) - 208 * (v - 128) - 100 * (u - 128)) >> 8;
+    R = (298 * (y - 16) + 408 * (v - 128)) >> 8;
+
+    r = (R >= 0) ? ((R <= 255) ? R : 255) : 0;
+    g = (G >= 0) ? ((G <= 255) ? G : 255) : 0;
+    b = (B >= 0) ? ((B <= 255) ? B : 255) : 0;
+}
+
+
 __global__ void get_matched_points_kernel(Context_gpu* ctx_gpu, Point3fRGB* left, Point3fRGB* right, float *depth_right, int idx) {
     int x_idx = threadIdx.x + blockIdx.x * blockDim.x;
     int y_idx = threadIdx.y + blockIdx.y * blockDim.y;
@@ -78,8 +103,8 @@ void get_matched_points_cuda(Context_gpu* ctx_gpu, Point3fRGB *verts1, Point3fRG
 
             if(temp_R.x > 0 && temp_R.x < 255 && temp_R.y > 0 && temp_R.y < 255 && 
                temp_G.x > 0 && temp_G.x < 255 && temp_G.y > 0 && temp_G.y < 255 && 
-               temp_B.x > 0 && temp_B.x < 255 && temp_B.y > 0 && temp_B.y < 255 &&
-               abs(temp_R.x - temp_R.y) < 20  && abs(temp_G.x - temp_G.y) < 20  && abs(temp_B.x - temp_B.y) < 20) 
+               temp_B.x > 0 && temp_B.x < 255 && temp_B.y > 0 && temp_B.y < 255)// &&
+            //    abs(temp_R.x - temp_R.y) < 50  && abs(temp_G.x - temp_G.y) < 50  && abs(temp_B.x - temp_B.y) < 50) 
             {
                 fprintf(f, "%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f\n", ctx_gpu->verts1_match[j].X, ctx_gpu->verts1_match[j].Y, ctx_gpu->verts1_match[j].Z, 
                                                             ctx_gpu->verts2_match[idx].X, ctx_gpu->verts2_match[idx].Y, ctx_gpu->verts2_match[idx].Z,
