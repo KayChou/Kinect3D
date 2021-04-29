@@ -21,7 +21,8 @@ void Widget::on_pushButton_clicked()
 void Widget::on_pushButton_2_clicked()
 {
     context->b_Calibration = context->b_Calibration ? false : true;
-    ui->pushButton_2->setText(context->b_Calibration ? "Calibrating" : "Calibrate");
+    context->calibration_idx = (context->calibration_idx + 1) % (numKinects + 1);
+    ui->pushButton_2->setText(context->calibration_idx ? "Calibrating" : "Calibrate");
 }
 
 

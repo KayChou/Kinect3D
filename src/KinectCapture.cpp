@@ -42,6 +42,7 @@ bool Kinect::getFrameLoop(){
     float t_delay;
     int frame_cnt = 0;
     FILE *f;
+    bool imsave_flag = false;
     if(idx == 0) {
         f = fopen("capture.csv", "w");
     }
@@ -63,7 +64,7 @@ bool Kinect::getFrameLoop(){
             if(!this->cameraStarted) { // if not started, then start it 
                 this->dev->start();
                 // this->dev->setColorAutoExposure(colorExposure);
-                this->dev->setColorManualExposure(30, 3);
+                this->dev->setColorManualExposure(30, 2);
 #if USE_RAW_DEPTH
                 this->registration = new libfreenect2::Registration(this->dev->getIrCameraParams(), this->dev->getColorCameraParams());
 #else
@@ -100,6 +101,13 @@ bool Kinect::getFrameLoop(){
 
             // cv::Mat(Height_depth_HR, Width_depth_HR, CV_8UC4, registered.data).copyTo(registeredmat);
             // cv::imwrite("registered.png", registeredmat);
+            if(idx == 0 && imsave_flag == false) {
+                cv::Mat img;
+                cv::Mat(1080, 1920, CV_8UC4, (unsigned int*)color->data).copyTo(img);
+                cv::imwrite("color.png", img);
+                imsave_flag = true;
+            }
+            
 
             Point3fRGB *vertices = new Point3fRGB[Width_depth_HR * Height_depth_HR];
             float rgb;

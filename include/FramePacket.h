@@ -92,9 +92,11 @@ typedef struct Context {
 	bool b_enableRGB;
 	bool b_enableDepth;
 	bool b_cfg_saved;
+	bool b_SDC_filter;
 
 	int depth_w;
 	int depth_h;
+	int calibration_idx;
 
 	float Td;
 	float x_ratio; // super-resolution ratio: HR_width / 512
@@ -119,19 +121,21 @@ typedef struct Context {
 		this->b_enableRGB = true;
 		this->b_Refine = false;
 		this->b_enableDepth = true;
+		this->b_SDC_filter = false;
 		this->depth_w = Width_depth_HR;
 		this->depth_h = Height_depth_HR;
 		this->Td = 0.025f;
 		this->x_ratio = (float)(512 - 1) / (float)Width_depth_HR;
 		this->y_ratio = (float)(424 - 1) / (float)Height_depth_HR;;
 
-		DeviceSerialNumber[0] = "021871240647";
-		DeviceSerialNumber[1] = "036669543547";
+		DeviceSerialNumber[0] = "036669543547";
+		DeviceSerialNumber[1] = "021871240647";
 		DeviceSerialNumber[2] = "005275250347";
 		//DeviceSerialNumber[1] = "010845342847";
 
 		colorExposure[0] = 0.0;
 		colorExposure[1] = 0.0;
+		calibration_idx = 0;
 
 		for(int n=0; n<numKinects; n++) {
 			this->b_hasBeenCalibrated[n] = false;
@@ -188,6 +192,8 @@ typedef struct Context_gpu {
 	Point3fRGB *verts1_match;
 	Point3fRGB *verts2_match;
 	float *depth_match;
+
+	bool *overlap_removal;
 
 	color_correct_params color_params[numKinects];
 } Context_gpu;

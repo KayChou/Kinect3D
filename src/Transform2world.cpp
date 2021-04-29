@@ -49,22 +49,23 @@ void Transform2world::process(Context *context)
         framePacket *packet = input->get();
         gettimeofday(&t_start, NULL);
         
-        if(context->b_Calibration) {
+        if(context->calibration_idx == idx + 1) {
             context->b_hasBeenCalibrated[idx] = calibrate.performCalibration(packet, T, R);
-
-            context->T[idx][0] = T[0];
-            context->T[idx][1] = T[1];
-            context->T[idx][2] = T[2];
-            context->R[idx][0][0] = R[0][0];
-            context->R[idx][0][1] = R[0][1];
-            context->R[idx][0][2] = R[0][2];
-            context->R[idx][1][0] = R[1][0];
-            context->R[idx][1][1] = R[1][1];
-            context->R[idx][1][2] = R[1][2];
-            context->R[idx][2][0] = R[2][0];
-            context->R[idx][2][1] = R[2][1];
-            context->R[idx][2][2] = R[2][2];
-            inv_Matrix_3x3(context->R[idx], context->invR[idx]);
+            if(context->b_hasBeenCalibrated[idx]) {
+                context->T[idx][0] = T[0];
+                context->T[idx][1] = T[1];
+                context->T[idx][2] = T[2];
+                context->R[idx][0][0] = R[0][0];
+                context->R[idx][0][1] = R[0][1];
+                context->R[idx][0][2] = R[0][2];
+                context->R[idx][1][0] = R[1][0];
+                context->R[idx][1][1] = R[1][1];
+                context->R[idx][1][2] = R[1][2];
+                context->R[idx][2][0] = R[2][0];
+                context->R[idx][2][1] = R[2][1];
+                context->R[idx][2][2] = R[2][2];
+                inv_Matrix_3x3(context->R[idx], context->invR[idx]);
+            } 
         }
 
         if(context->b_hasBeenCalibrated[idx]) { // if current camera has been calibrated

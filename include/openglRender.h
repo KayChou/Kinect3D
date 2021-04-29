@@ -45,6 +45,8 @@ private:
     float *vertices;
     int *faces;
 
+    int filter_anti_shake_cnt;
+
 public:
     void init(FIFO<frameMesh>** input, Context *context);
     void loop();

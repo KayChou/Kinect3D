@@ -47,7 +47,7 @@ void overlap_removal::loop()
 
         if(this->context->b_all_sensor_calibrated) { // if has been calibrated, then perform overlapping removal
             updata_context(ctx_gpu, context);
-            overlap_removal_cuda(ctx_gpu, frameList, depth_out);
+            overlap_removal_cuda(ctx_gpu, frameList, depth_out, context);
 
 #ifdef LOG
             gettimeofday(&t_end, NULL);

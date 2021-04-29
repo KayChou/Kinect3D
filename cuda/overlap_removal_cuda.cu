@@ -173,10 +173,10 @@ __global__ void SDC_filter(Context_gpu *ctx_gpu, Point3fRGB* verts, float *depth
     int t = pix_idx - ctx_gpu->width; // top
     int d = pix_idx + ctx_gpu->width; // down
 
-    if(abs(verts[c].X - verts[l].X) + abs(verts[c].Y - verts[l].Y) + abs(verts[c].Z - verts[l].Z) < 0.015f && 
-       abs(verts[c].X - verts[r].X) + abs(verts[c].Y - verts[r].Y) + abs(verts[c].Z - verts[r].Z) < 0.015f && 
-       abs(verts[c].X - verts[t].X) + abs(verts[c].Y - verts[t].Y) + abs(verts[c].Z - verts[t].Z) < 0.015f && 
-       abs(verts[c].X - verts[d].X) + abs(verts[c].Y - verts[d].Y) + abs(verts[c].Z - verts[d].Z) < 0.015f ) {
+    if(abs(verts[c].X - verts[l].X) + abs(verts[c].Y - verts[l].Y) + abs(verts[c].Z - verts[l].Z) < SDC_filter_threashold && 
+       abs(verts[c].X - verts[r].X) + abs(verts[c].Y - verts[r].Y) + abs(verts[c].Z - verts[r].Z) < SDC_filter_threashold && 
+       abs(verts[c].X - verts[t].X) + abs(verts[c].Y - verts[t].Y) + abs(verts[c].Z - verts[t].Z) < SDC_filter_threashold && 
+       abs(verts[c].X - verts[d].X) + abs(verts[c].Y - verts[d].Y) + abs(verts[c].Z - verts[d].Z) < SDC_filter_threashold ) {
     }
     else {
         verts[pix_idx].X = 0;
@@ -201,7 +201,7 @@ __global__ void color_correction(Context_gpu *ctx_gpu, Point3fRGB* verts, int id
 } 
 
 
-void overlap_removal_cuda(Context_gpu* ctx_gpu, framePacket** frameList, float* dpeth_out) {
+void overlap_removal_cuda(Context_gpu* ctx_gpu, framePacket** frameList, float* dpeth_out, Context *ctx_cpu) {
 #if 0
     cudaEvent_t start, end;
     cudaEventCreate(&start);
@@ -215,17 +215,20 @@ void overlap_removal_cuda(Context_gpu* ctx_gpu, framePacket** frameList, float* 
     for(int i=0; i<numKinects; i++) {
         cudaMemcpy(ctx_gpu->vertices[i], frameList[i]->vertices, sizeof(Point3fRGB) * Width_depth_HR * Height_depth_HR, cudaMemcpyHostToDevice);
         cudaMemcpy(ctx_gpu->depth[i], frameList[i]->data_d, sizeof(float) * Width_depth_HR * Height_depth_HR, cudaMemcpyHostToDevice);
-        SDC_filter<<<blocks, threads>>>(ctx_gpu, ctx_gpu->vertices[i], ctx_gpu->depth[i]);
+    }
+
+    if(ctx_cpu->b_SDC_filter) {
+        for(int i=0; i<numKinects; i++) {
+            SDC_filter<<<blocks, threads>>>(ctx_gpu, ctx_gpu->vertices[i], ctx_gpu->depth[i]);
+        }
     }
 
     int idx;
-
     for(int i=0; i<numKinects; i++) {
         idx = (i + 1) % numKinects;
         overlap_removal_kernel<<<blocks, threads>>>(ctx_gpu, ctx_gpu->vertices[i], ctx_gpu->depth[i], ctx_gpu->vertices[idx], ctx_gpu->depth[idx], idx, ctx_gpu->depth_out);
         patch_based_removal_kernel<<<blocks, threads>>>(ctx_gpu->mask, ctx_gpu->vertices[i], ctx_gpu->depth[i]);
     }
-
     for(int i=0; i<numKinects; i++) {
         cudaMemcpy(frameList[i]->vertices, ctx_gpu->vertices[i], sizeof(Point3fRGB) * Width_depth_HR * Height_depth_HR, cudaMemcpyDeviceToHost);
     }

@@ -9,9 +9,9 @@ void openglRender::init(FIFO<frameMesh>** input, Context *context)
     this->input = input;
     this->context = context;
 
-    this->cameraTar = glm::vec3(0.000000, -0.300000, -0.300000);
-    this->cameraPos = glm::vec3(-0.772169, -0.946579, -0.873113);
-    this->cameraUp = glm::vec3(0.542452, 0.092309, -0.835000);
+    this->cameraTar = glm::vec3(-0.100000, 0.100000, -0.200000);
+    this->cameraPos = glm::vec3(-1.256615, -0.042713, -0.197935);
+    this->cameraUp = glm::vec3(-0.022503, 0.168114, -0.985511);
     this->fov =  45.0f;
 
     // timing
@@ -122,7 +122,7 @@ void openglRender::loop()
         shaderModel->setMat4("model", glm::mat4(1.0f));
 
         glBindVertexArray(VAO);
-        glPointSize(2.0);
+        glPointSize(2.5);
         glDrawArrays(GL_POINTS, 0, Vn);
 
         // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
@@ -256,6 +256,12 @@ void openglRender::processInput()
     if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS){ // translate z -
         cameraPos -= glm::vec3(0.0f, 0.0f, translationSpeed);
         cameraTar -= glm::vec3(0.0f, 0.0f, translationSpeed);
+    }
+    if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS){ // SDC_filter
+        filter_anti_shake_cnt = (filter_anti_shake_cnt ++ ) % 20;
+        if(filter_anti_shake_cnt == 0) {
+            context->b_SDC_filter = (context->b_SDC_filter) ? false : true;
+        }
     }
     // std::cout << "Target: " << glm::to_string(cameraTar) << std::endl;
     // std::cout << "Position: " << glm::to_string(cameraPos) << std::endl;

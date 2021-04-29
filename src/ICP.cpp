@@ -239,7 +239,7 @@ void ICP::loop() {
             usleep(1000);
             continue;
         }
-
+#if 0
         for(int i = 1; i < numKinects; i++) {
             // RANSAC to do color correction
             data_r.clear();
@@ -276,7 +276,7 @@ void ICP::loop() {
                 }
             }
         }
-        
+#endif     
         
         // begin ICP
         for(int i=0; i<numKinects; i++) {
@@ -324,34 +324,41 @@ void ICP::loop() {
                 }
             }
             // savePlyFile("verts1.ply", verts1, nVerts1);
-            // savePlyFile("verts2.ply", verts2, nVerts2);         
-            ICP_p2p(verts1, verts2, nVerts1, nVerts2, R, T, 5);
+            // savePlyFile("verts2.ply", verts2, nVerts2);
+            if(nVerts1 > 0 && nVerts2 > 0) {
+                ICP_p2p(verts1, verts2, nVerts1, nVerts2, R, T, 5);
             
-            tempT[0] = ctx->R[i][0][0] * T[0] + ctx->R[i][1][0] * T[1] + ctx->R[i][2][0] * T[2];
-            tempT[1] = ctx->R[i][0][1] * T[0] + ctx->R[i][1][1] * T[1] + ctx->R[i][2][1] * T[2];
-            tempT[2] = ctx->R[i][0][2] * T[0] + ctx->R[i][1][2] * T[1] + ctx->R[i][2][2] * T[2];
-            ctx->T[i][0] -= tempT[0];
-            ctx->T[i][1] -= tempT[1];
-            ctx->T[i][2] -= tempT[2];
+                tempT[0] = ctx->R[i][0][0] * T[0] + ctx->R[i][1][0] * T[1] + ctx->R[i][2][0] * T[2];
+                tempT[1] = ctx->R[i][0][1] * T[0] + ctx->R[i][1][1] * T[1] + ctx->R[i][2][1] * T[2];
+                tempT[2] = ctx->R[i][0][2] * T[0] + ctx->R[i][1][2] * T[1] + ctx->R[i][2][2] * T[2];
+                ctx->T[i][0] -= tempT[0];
+                ctx->T[i][1] -= tempT[1];
+                ctx->T[i][2] -= tempT[2];
 
-            tempR[0] = ctx->R[i][0][0] * R[0] + ctx->R[i][1][0] * R[1] + ctx->R[i][2][0] * R[2];
-            tempR[1] = ctx->R[i][0][0] * R[3] + ctx->R[i][1][0] * R[4] + ctx->R[i][2][0] * R[5];
-            tempR[2] = ctx->R[i][0][0] * R[6] + ctx->R[i][1][0] * R[7] + ctx->R[i][2][0] * R[8];
-            tempR[3] = ctx->R[i][0][1] * R[0] + ctx->R[i][1][1] * R[1] + ctx->R[i][2][1] * R[2];
-            tempR[4] = ctx->R[i][0][1] * R[3] + ctx->R[i][1][1] * R[4] + ctx->R[i][2][1] * R[5];
-            tempR[5] = ctx->R[i][0][1] * R[6] + ctx->R[i][1][1] * R[7] + ctx->R[i][2][1] * R[8];
-            tempR[6] = ctx->R[i][0][2] * R[0] + ctx->R[i][1][2] * R[1] + ctx->R[i][2][2] * R[2];
-            tempR[7] = ctx->R[i][0][2] * R[3] + ctx->R[i][1][2] * R[4] + ctx->R[i][2][2] * R[5];
-            tempR[8] = ctx->R[i][0][2] * R[6] + ctx->R[i][1][2] * R[7] + ctx->R[i][2][2] * R[8];
-            ctx->R[i][0][0] = tempR[0];
-            ctx->R[i][1][0] = tempR[1];
-            ctx->R[i][2][0] = tempR[2];
-            ctx->R[i][0][1] = tempR[3];
-            ctx->R[i][1][1] = tempR[4];
-            ctx->R[i][2][1] = tempR[5];
-            ctx->R[i][0][2] = tempR[6];
-            ctx->R[i][1][2] = tempR[7];
-            ctx->R[i][2][2] = tempR[8];
+                tempR[0] = ctx->R[i][0][0] * R[0] + ctx->R[i][1][0] * R[1] + ctx->R[i][2][0] * R[2];
+                tempR[1] = ctx->R[i][0][0] * R[3] + ctx->R[i][1][0] * R[4] + ctx->R[i][2][0] * R[5];
+                tempR[2] = ctx->R[i][0][0] * R[6] + ctx->R[i][1][0] * R[7] + ctx->R[i][2][0] * R[8];
+                tempR[3] = ctx->R[i][0][1] * R[0] + ctx->R[i][1][1] * R[1] + ctx->R[i][2][1] * R[2];
+                tempR[4] = ctx->R[i][0][1] * R[3] + ctx->R[i][1][1] * R[4] + ctx->R[i][2][1] * R[5];
+                tempR[5] = ctx->R[i][0][1] * R[6] + ctx->R[i][1][1] * R[7] + ctx->R[i][2][1] * R[8];
+                tempR[6] = ctx->R[i][0][2] * R[0] + ctx->R[i][1][2] * R[1] + ctx->R[i][2][2] * R[2];
+                tempR[7] = ctx->R[i][0][2] * R[3] + ctx->R[i][1][2] * R[4] + ctx->R[i][2][2] * R[5];
+                tempR[8] = ctx->R[i][0][2] * R[6] + ctx->R[i][1][2] * R[7] + ctx->R[i][2][2] * R[8];
+                ctx->R[i][0][0] = tempR[0];
+                ctx->R[i][1][0] = tempR[1];
+                ctx->R[i][2][0] = tempR[2];
+                ctx->R[i][0][1] = tempR[3];
+                ctx->R[i][1][1] = tempR[4];
+                ctx->R[i][2][1] = tempR[5];
+                ctx->R[i][0][2] = tempR[6];
+                ctx->R[i][1][2] = tempR[7];
+                ctx->R[i][2][2] = tempR[8];
+                std::printf("Success to refine one camera\n");
+            }  
+        else {
+            std::printf("Failed to refine one camera\n");
+        }  
+            
         }
         
         ctx->b_Refine = false;

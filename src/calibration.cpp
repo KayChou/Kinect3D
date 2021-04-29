@@ -14,7 +14,7 @@ bool Calibration::performCalibration(framePacket *packet, std::vector<float> &T,
 	GetMarker(registered);
 	std::vector<Point3f> featurePoints;
 	Point3f temp;
-	if(marker.id > 0) {
+	if(marker.id == 1) {
 		for(int i=0; i<5; i++) {
 			temp.X = packet->vertices[(int)(marker.corners[i].Y * packet->width_d + marker.corners[i].X)].X;
 			temp.Y = packet->vertices[(int)(marker.corners[i].Y * packet->width_d + marker.corners[i].X)].Y;
