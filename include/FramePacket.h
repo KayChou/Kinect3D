@@ -93,6 +93,7 @@ typedef struct Context {
 	bool b_enableDepth;
 	bool b_cfg_saved;
 	bool b_SDC_filter;
+	bool b_isolate_filter;
 
 	int depth_w;
 	int depth_h;
@@ -122,6 +123,7 @@ typedef struct Context {
 		this->b_Refine = false;
 		this->b_enableDepth = true;
 		this->b_SDC_filter = false;
+		this->b_isolate_filter = false;
 		this->depth_w = Width_depth_HR;
 		this->depth_h = Height_depth_HR;
 		this->Td = 0.025f;

@@ -257,10 +257,17 @@ void openglRender::processInput()
         cameraPos -= glm::vec3(0.0f, 0.0f, translationSpeed);
         cameraTar -= glm::vec3(0.0f, 0.0f, translationSpeed);
     }
+
     if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS){ // SDC_filter
-        filter_anti_shake_cnt = (filter_anti_shake_cnt ++ ) % 20;
+        filter_anti_shake_cnt = (filter_anti_shake_cnt + 1) % 5;
         if(filter_anti_shake_cnt == 0) {
             context->b_SDC_filter = (context->b_SDC_filter) ? false : true;
+        }
+    }
+    if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS){ // isolate_filter
+        filter_anti_shake_cnt = (filter_anti_shake_cnt + 1) % 5;
+        if(filter_anti_shake_cnt == 0) {
+            context->b_isolate_filter = (context->b_isolate_filter) ? false : true;
         }
     }
     // std::cout << "Target: " << glm::to_string(cameraTar) << std::endl;

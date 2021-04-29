@@ -190,6 +190,42 @@ __global__ void SDC_filter(Context_gpu *ctx_gpu, Point3fRGB* verts, float *depth
 }
 
 
+__global__ void isolate_points_filter(Context_gpu *ctx_gpu, Point3fRGB* verts, float *depth) {
+    int x = threadIdx.x + blockIdx.x * blockDim.x;
+    int y = threadIdx.y + blockIdx.y * blockDim.y;
+    int pix_idx = x + y * blockDim.x * gridDim.x;
+
+    if(verts[pix_idx].Z <= z_bbox_min || verts[pix_idx].Z >= z_bbox_max ||
+       verts[pix_idx].X <= x_bbox_min || verts[pix_idx].X >= x_bbox_max ||
+       verts[pix_idx].Y <= y_bbox_min || verts[pix_idx].Y >= y_bbox_max) {
+        return;
+    }
+
+    int index;
+    int cnt = 0;
+    for(int i=0; i<3; i++) {
+        for(int j=0; j<3; j++) {
+            index = ((y - 1) + i) * Width_depth_HR + (x - 1) + j;
+            if(index > 0 && index < Width_depth_HR * Height_depth_HR) {
+                if(depth[index] == 0) {
+                    cnt ++;
+                }
+            }
+        }
+    }
+
+    if(cnt >= 3) {
+        verts[pix_idx].X = 0;
+        verts[pix_idx].Y = 0;
+        verts[pix_idx].Z = 0;
+        verts[pix_idx].R = 0;
+        verts[pix_idx].G = 0;
+        verts[pix_idx].B = 0;
+        depth[pix_idx] = 0;
+    }
+}
+
+
 __global__ void color_correction(Context_gpu *ctx_gpu, Point3fRGB* verts, int idx) {
     int x = threadIdx.x + blockIdx.x * blockDim.x;
     int y = threadIdx.y + blockIdx.y * blockDim.y;
@@ -220,6 +256,12 @@ void overlap_removal_cuda(Context_gpu* ctx_gpu, framePacket** frameList, float* 
     if(ctx_cpu->b_SDC_filter) {
         for(int i=0; i<numKinects; i++) {
             SDC_filter<<<blocks, threads>>>(ctx_gpu, ctx_gpu->vertices[i], ctx_gpu->depth[i]);
+        }
+    }
+
+    if(ctx_cpu->b_isolate_filter) {
+        for(int i=0; i<numKinects; i++) {
+            isolate_points_filter<<<blocks, threads>>>(ctx_gpu, ctx_gpu->vertices[i], ctx_gpu->depth[i]);
         }
     }
 
