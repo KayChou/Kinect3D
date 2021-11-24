@@ -26,14 +26,14 @@ void overlap_removal::loop()
     FILE *f = fopen("overlap_removal.csv", "w");
 
     while(true) {
-        if(numKinects == 1) { // if there is only one camera, no overlapping need to be removed
-            frameList[0] = input[0]->get();
-#ifdef LOG
-            std::printf("overlap_removal get one frame\n"); fflush(stdout);
-#endif
-            output[0]->put(frameList[0]);
-            continue;
-        }
+//         if(numKinects == 1) { // if there is only one camera, no overlapping need to be removed
+//             frameList[0] = input[0]->get();
+// #ifdef LOG
+//             std::printf("overlap_removal get one frame\n"); fflush(stdout);
+// #endif
+//             output[0]->put(frameList[0]);
+//             continue;
+//         }
 
         //get all frames from FIFO
         for(int i=0; i<numKinects; i++) {

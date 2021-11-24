@@ -122,8 +122,8 @@ typedef struct Context {
 		this->b_enableRGB = true;
 		this->b_Refine = false;
 		this->b_enableDepth = true;
-		this->b_SDC_filter = false;
-		this->b_isolate_filter = false;
+		this->b_SDC_filter = true;
+		this->b_isolate_filter = true;
 		this->depth_w = Width_depth_HR;
 		this->depth_h = Height_depth_HR;
 		this->Td = 0.025f;
