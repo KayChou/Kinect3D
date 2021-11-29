@@ -1,5 +1,12 @@
 #include "KinectCapture.h"
 
+float get_time_diff_ms(timeval start, timeval end)
+{
+    long time_ms_end =  (end.tv_sec * 1000000 + end.tv_usec);
+    long time_ms_start =  (start.tv_sec * 1000000 + start.tv_usec);
+    return float(time_ms_end - time_ms_start) / 1000;
+}
+
 //=======================================================================================
 // init one kinect
 //=======================================================================================
@@ -24,17 +31,17 @@ bool Kinect::init(int idx, std::string serial, float colorExposure)
     this->colorExposure = colorExposure;
 
     sprintf(dataset_path, "%s/%s", dataset_root, this->serial.c_str());
-    mkdir(dataset_path, 0x0777);
+    mkdir(dataset_path, S_IRWXU | S_IRWXG | S_IRWXO);
 
     char path_tmp[256];
     sprintf(path_tmp, "%s/color", dataset_path, this->serial.c_str());
-    mkdir(path_tmp, 0x0777);
+    mkdir(path_tmp, S_IRWXU | S_IRWXG | S_IRWXO);
 
     sprintf(path_tmp, "%s/depth", dataset_path, this->serial.c_str());
-    mkdir(path_tmp, 0x0777);
+    mkdir(path_tmp, S_IRWXU | S_IRWXG | S_IRWXO);
 
     sprintf(path_tmp, "%s/RGBD", dataset_path, this->serial.c_str());
-    mkdir(path_tmp, 0x0777);
+    mkdir(path_tmp, S_IRWXU | S_IRWXG | S_IRWXO);
 
     return true;
 }
@@ -43,7 +50,7 @@ bool Kinect::init(int idx, std::string serial, float colorExposure)
 //=======================================================================================
 // get frame and put data to FIFO
 //=======================================================================================
-bool Kinect::getFrameLoop(){
+bool Kinect::getFrameLoop(int *stop_flag){
     std::cout << "Thread get frame from camera started" << std::endl;
     libfreenect2::Frame undistorted(512, 424, 4);
     libfreenect2::Frame depth_HR(512, 424, 4);
@@ -66,7 +73,7 @@ bool Kinect::getFrameLoop(){
     sprintf(img_filename, "%s/rgbd.bin", dataset_path);
     fp_rgbd.open(img_filename, std::ios::out |  std::ios::trunc | std::ios::binary);
 
-    while(true) {
+    while(!*stop_flag) {
         gettimeofday(&t_start, NULL);
 
         if(!this->cameraStarted) { // if not started, then start it 
@@ -91,43 +98,46 @@ bool Kinect::getFrameLoop(){
         this->depth = frames[libfreenect2::Frame::Depth];
         this->registration->apply(color, depth, &undistorted, &registered, true, &depth2rgb);
 
-        cv::Mat img;
-        cv::Mat(1080, 1920, CV_8UC4, (unsigned int*)color->data).copyTo(img);
-        sprintf(img_filename, "%s/color/%d.png", dataset_path, frame_cnt);
-        cv::imwrite(img_filename, img);
+        // cv::Mat img;
+        // cv::Mat(1080, 1920, CV_8UC4, (unsigned int*)color->data).copyTo(img);
+        // sprintf(img_filename, "%s/color/%d.png", dataset_path, frame_cnt);
+        // cv::imwrite(img_filename, img);
 
-        cv::Mat(424, 512, CV_8UC4, undistorted.data).copyTo(img);
-        sprintf(img_filename, "%s/depth/%d.png", dataset_path, frame_cnt);
-        cv::imwrite(img_filename, img);
+        // cv::Mat(424, 512, CV_8UC4, undistorted.data).copyTo(img);
+        // sprintf(img_filename, "%s/depth/%d.png", dataset_path, frame_cnt);
+        // cv::imwrite(img_filename, img);
 
-        cv::Mat(424, 512, CV_8UC4, registered.data).copyTo(img);
-        sprintf(img_filename, "%s/RGBD/%d.png", dataset_path, frame_cnt);
-        cv::imwrite(img_filename, img);
+        // cv::Mat(424, 512, CV_8UC4, registered.data).copyTo(img);
+        // sprintf(img_filename, "%s/RGBD/%d.png", dataset_path, frame_cnt);
+        // cv::imwrite(img_filename, img);
 
         fp_color.write(reinterpret_cast<const char*>(color->data), 1920 * 1080 * sizeof(float));
         fp_depth.write(reinterpret_cast<const char*>(undistorted.data), 512 * 424 * sizeof(float));
         fp_rgbd.write(reinterpret_cast<const char*>(registered.data), 512 * 424 * sizeof(float));
-        
 
         listener->release(frames);
         frame_cnt++;
 
+        gettimeofday(&t_end, NULL);
+        t_delay = get_time_diff_ms(t_start, t_end);
+        std::printf("capture one frame: %0.2f ms \n", t_delay); fflush(stdout);
     }
     if(this->cameraStarted) dev->stop();
     dev->close();
-    std::printf("Thread Kinect Capture finish\n"); fflush(stdout);
     delete pipeline;
     delete listener;
+    std::printf("Thread Kinect Capture finish\n"); fflush(stdout);
     return true;
 }
 
 
-void KinectsManager::init() {
+void KinectsManager::init(int *stop_flag) {
     // this->DeviceSerialNumber[0] = "036669543547";
     // this->DeviceSerialNumber[1] = "021871240647";
     // this->DeviceSerialNumber[2] = "005275250347";
     // this->DeviceSerialNumber[1] = "010845342847";
     this->cameraStarted = false;
+    this->stop_flag = stop_flag;
 }
 
 //=======================================================================================
@@ -135,12 +145,10 @@ void KinectsManager::init() {
 //=======================================================================================
 bool KinectsManager::init_Kinect()
 {
-    printf("adsfasdf\n");
     if(numKinects > freenect2.enumerateDevices()) {
         std::cerr << "The number of devices does not match the specified\n";
         return false;
     }
-    printf("adsfasdf\n");
     
     for(int i=0; i<numKinects; i++) {
         this->DeviceSerialNumber[i] = freenect2.getDeviceSerialNumber(i);
@@ -150,7 +158,7 @@ bool KinectsManager::init_Kinect()
     usleep(2000000);
 
     for(int i=0; i<numKinects; i++) {
-        capture_thread[i] = std::thread(&Kinect::getFrameLoop, &this->cameras[i]);
+        capture_thread[i] = std::thread(&Kinect::getFrameLoop, &this->cameras[i], stop_flag);
         capture_thread[i].detach();
     }
     return true;
@@ -159,12 +167,15 @@ bool KinectsManager::init_Kinect()
 
 void KinectsManager::loop()
 {
-    while(true) {
+    while(!*this->stop_flag) {
         if(!this->cameraStarted) {
             this->init_Kinect();
             this->cameraStarted = true;
             printf("init Kinect Device\n");
         }
-        usleep(100000);
+        usleep(10000);
     }
+    usleep(2000000);
+    printf("Thread Kinect manager finish\n");
+    return;
 }

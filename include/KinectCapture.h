@@ -20,7 +20,7 @@ class Kinect
 {
 public:
     bool init(int idx, std::string serial, float colorExposure);
-    bool getFrameLoop();
+    bool getFrameLoop(int *stop_flag);
     void setStartFlag(bool flag);
     bool getFinishFlag();
 
@@ -59,9 +59,10 @@ public:
     std::thread capture_thread[numKinects];
 
     bool cameraStarted;
+    int *stop_flag;
 
 public:
-    void init();
+    void init(int *stop_flag);
     bool init_Kinect();
     void loop();
 };
