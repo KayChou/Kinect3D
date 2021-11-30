@@ -8,6 +8,9 @@
 #include <libfreenect2/packet_pipeline.h>
 #include <libfreenect2/config.h>
 #include "common.h"
+#include "FIFO.h"
+#include "typedef.h"
+#include "utils.h"
 
 #define USE_RAW_DEPTH 1
 
@@ -20,7 +23,7 @@ class Kinect
 {
 public:
     bool init(int idx, std::string serial, float colorExposure);
-    bool getFrameLoop(int *stop_flag);
+    bool getFrameLoop(int *stop_flag, FIFO<RGBD> *output);
     void setStartFlag(bool flag);
     bool getFinishFlag();
 
@@ -43,8 +46,6 @@ public:
 
     bool cameraStarted;
     float colorExposure;
-
-    char dataset_path[256];
 };
 
 
@@ -52,17 +53,19 @@ class KinectsManager
 {
 public:
     libfreenect2::Freenect2 freenect2;
-    Kinect cameras[numKinects];
+    Kinect cameras[CAM_NUM];
 
     std::string DeviceSerialNumber[4];
 
-    std::thread capture_thread[numKinects];
+    std::thread capture_thread[CAM_NUM];
 
     bool cameraStarted;
     int *stop_flag;
 
+    FIFO<RGBD> **output;
+
 public:
-    void init(int *stop_flag);
+    void init(int *stop_flag, FIFO<RGBD> **output);
     bool init_Kinect();
     void loop();
 };

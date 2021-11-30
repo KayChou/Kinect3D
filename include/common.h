@@ -1,5 +1,3 @@
-#include "config.h"
-
 #pragma once
 
 #include <string>
@@ -14,3 +12,5 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/opencv.hpp>
 #include "opencv/cv.h"
+
+#include "config.h"
