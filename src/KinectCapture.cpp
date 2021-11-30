@@ -49,12 +49,8 @@ bool Kinect::getFrameLoop(int *stop_flag, FIFO<RGBD> *output){
             // this->dev->setColorAutoExposure(colorExposure);
             this->dev->setColorManualExposure(30, 2);
             this->registration = new libfreenect2::Registration(this->dev->getIrCameraParams(), this->dev->getColorCameraParams());
+            save_cam_params(this->dev->getIrCameraParams(), this->dev->getColorCameraParams());
 
-            libfreenect2::Freenect2Device::IrCameraParams CamParam = this->dev->getIrCameraParams();
-            // context->K[idx].fx = CamParam.fx;
-            // context->K[idx].fy = CamParam.fy;
-            // context->K[idx].cx = CamParam.cx;
-            // context->K[idx].cy = CamParam.cy;
             this->cameraStarted = true;
         }
 
@@ -77,14 +73,78 @@ bool Kinect::getFrameLoop(int *stop_flag, FIFO<RGBD> *output){
 
         gettimeofday(&t_end, NULL);
         t_delay = get_time_diff_ms(t_start, t_end);
-        std::printf("capture one frame: %0.2f ms \n", t_delay); fflush(stdout);
+        std::printf("capture one frame: %0.2f ms \n", t_delay);
     }
     if(this->cameraStarted) dev->stop();
     dev->close();
     delete pipeline;
     delete listener;
-    std::printf("Thread Kinect Capture finish\n"); fflush(stdout);
+    std::printf("Thread Kinect Capture finish\n");
     return true;
+}
+
+
+void Kinect::save_cam_params(libfreenect2::Freenect2Device::IrCameraParams irParam, 
+                             libfreenect2::Freenect2Device::ColorCameraParams colorParam) {
+    char param_filename[256];
+    sprintf(param_filename, "%s/%d/params.txt", dataset_root, this->idx);
+
+    FILE *f = fopen(param_filename, "w");
+    fprintf(f, "Ir CameraParams\n");
+    fprintf(f, "\tfx, fy, cx, cy\n\tk1, k2, k3, p1, p2\n");
+    fprintf(f, "\t%0.6f %0.6f %0.6f\n\t%0.6f %0.6f %0.6f %0.6f %0.6f %0.6f\n", 
+                                irParam.fx, 
+                                irParam.fy,
+                                irParam.cx,
+                                irParam.cy,
+                                irParam.k1,
+                                irParam.k2,
+                                irParam.k3,
+                                irParam.p1,
+                                irParam.p2
+                                );
+    fprintf(f, "\nColor CameraParams: \n");
+    fprintf(f, "\tIntrinsic: fx, fy, cx, cy\n");
+    fprintf(f, "\t%0.6f %0.6f %0.6f %0.6f %0.6f\n", 
+                                colorParam.fx, 
+                                colorParam.fy,
+                                colorParam.cx,
+                                colorParam.cy
+                                );
+
+    fprintf(f, "\nExtrinsic(depth to color)\n");
+    fprintf(f, "\tshift_d, shift_m\n");
+    fprintf(f, "\tmx: xxx, yyy, xxy, yyx, xx, yy, xy, x, y, 1\n");
+    fprintf(f, "\tmy: xxx, yyy, xxy, yyx, xx, yy, xy, x, y, 1\n");
+    fprintf(f, "\t%0.6f %0.6f\n", 
+                                colorParam.shift_d,
+                                colorParam.shift_m
+                                );
+    fprintf(f, "\t%0.6f %0.6f %0.6f %0.6f %0.6f %0.6f %0.6f %0.6f %0.6f %0.6f\n", 
+                                colorParam.mx_x3y0,
+                                colorParam.mx_x0y3,
+                                colorParam.mx_x2y1,
+                                colorParam.mx_x1y2,
+                                colorParam.mx_x2y0,
+                                colorParam.mx_x0y2,
+                                colorParam.mx_x1y1,
+                                colorParam.mx_x1y0,
+                                colorParam.mx_x0y1,
+                                colorParam.mx_x0y0
+                                );
+    fprintf(f, "\t%0.6f %0.6f %0.6f %0.6f %0.6f %0.6f %0.6f %0.6f %0.6f %0.6f\n", 
+                                colorParam.my_x3y0,
+                                colorParam.my_x0y3,
+                                colorParam.my_x2y1,
+                                colorParam.my_x1y2,
+                                colorParam.my_x2y0,
+                                colorParam.my_x0y2,
+                                colorParam.my_x1y1,
+                                colorParam.my_x1y0,
+                                colorParam.my_x0y1,
+                                colorParam.my_x0y0
+                                );
+    fclose(f);
 }
 
 

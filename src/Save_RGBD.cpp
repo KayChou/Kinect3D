@@ -43,9 +43,9 @@ void Save_rgbd::loop() {
 
         RGBD *ptr = input->fetch_head_ptr();
 
-        fp_color.write(reinterpret_cast<const char*>(ptr->color), 1920 * 1080 * sizeof(float));
-        fp_depth.write(reinterpret_cast<const char*>(ptr->depth), 512 * 424 * sizeof(float));
-        fp_rgbd.write(reinterpret_cast<const char*>(ptr->registered), 512 * 424 * sizeof(float));
+        // fp_color.write(reinterpret_cast<const char*>(ptr->color), 1920 * 1080 * sizeof(float));
+        // fp_depth.write(reinterpret_cast<const char*>(ptr->depth), 512 * 424 * sizeof(float));
+        // fp_rgbd.write(reinterpret_cast<const char*>(ptr->registered), 512 * 424 * sizeof(float));
 
         cv::Mat img;
         cv::Mat(1080, 1920, CV_8UC4, (unsigned int*)ptr->color).copyTo(img);

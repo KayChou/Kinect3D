@@ -10,7 +10,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_FLAGS "  ${CMAKE_CXX_FLAGS} -std=c++11 -O3 -fopenmp")
 
 # Set cmake prefix path to enable cmake to find freenect2
-set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} $ENV{HOME}/lib/freenect2/lib/cmake/freenect2)
+set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} $ENV{HOME}/lib/freenect2-0.2.1/lib/cmake/freenect2)
 find_package(freenect2 REQUIRED)
 INCLUDE_DIRECTORIES( ${freenect2_INCLUDE_DIR} )
 

@@ -46,6 +46,10 @@ public:
 
     bool cameraStarted;
     float colorExposure;
+
+private:
+    void save_cam_params(libfreenect2::Freenect2Device::IrCameraParams irParam, 
+                         libfreenect2::Freenect2Device::ColorCameraParams colorParam);
 };
 
 
