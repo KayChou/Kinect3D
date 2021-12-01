@@ -92,7 +92,7 @@ void Kinect::save_cam_params(libfreenect2::Freenect2Device::IrCameraParams irPar
     FILE *f = fopen(param_filename, "w");
     fprintf(f, "Ir CameraParams\n");
     fprintf(f, "\tfx, fy, cx, cy\n\tk1, k2, k3, p1, p2\n");
-    fprintf(f, "\t%0.6f %0.6f %0.6f\n\t%0.6f %0.6f %0.6f %0.6f %0.6f %0.6f\n", 
+    fprintf(f, "\t%0.6f %0.6f %0.6f %0.6f\n\t%0.6f %0.6f %0.6f %0.6f %0.6f\n", 
                                 irParam.fx, 
                                 irParam.fy,
                                 irParam.cx,
@@ -105,7 +105,7 @@ void Kinect::save_cam_params(libfreenect2::Freenect2Device::IrCameraParams irPar
                                 );
     fprintf(f, "\nColor CameraParams: \n");
     fprintf(f, "\tIntrinsic: fx, fy, cx, cy\n");
-    fprintf(f, "\t%0.6f %0.6f %0.6f %0.6f %0.6f\n", 
+    fprintf(f, "\t%0.6f %0.6f %0.6f %0.6f\n", 
                                 colorParam.fx, 
                                 colorParam.fy,
                                 colorParam.cx,
