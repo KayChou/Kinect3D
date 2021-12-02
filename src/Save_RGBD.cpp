@@ -15,8 +15,8 @@ void Save_rgbd::init(int *stop_flag, FIFO<RGBD> *input, int idx) {
     sprintf(path_tmp, "%s/depth", dataset_path);
     mkdir(path_tmp, S_IRWXU | S_IRWXG | S_IRWXO);
 
-    sprintf(path_tmp, "%s/RGBD", dataset_path);
-    mkdir(path_tmp, S_IRWXU | S_IRWXG | S_IRWXO);
+    // sprintf(path_tmp, "%s/RGBD", dataset_path);
+    // mkdir(path_tmp, S_IRWXU | S_IRWXG | S_IRWXO);
 }
 
 
@@ -27,25 +27,18 @@ void Save_rgbd::loop() {
 
     char img_filename[256];
 
-    sprintf(img_filename, "%s/color.bin", dataset_path);
-    fp_color.open(img_filename, std::ios::out |  std::ios::trunc | std::ios::binary);
-    sprintf(img_filename, "%s/depth.bin", dataset_path);
-    fp_depth.open(img_filename, std::ios::out |  std::ios::trunc | std::ios::binary);
-    sprintf(img_filename, "%s/rgbd.bin", dataset_path);
-    fp_rgbd.open(img_filename, std::ios::out |  std::ios::trunc | std::ios::binary);
-
     timeval t_start, t_end;
     float t_delay;
     int frame_cnt = 0;
 
-    while(!*stop_flag) {
-        gettimeofday(&t_start, NULL);
+    while(true) {
 
         RGBD *ptr = input->fetch_head_ptr();
 
         // fp_color.write(reinterpret_cast<const char*>(ptr->color), 1920 * 1080 * sizeof(float));
         // fp_depth.write(reinterpret_cast<const char*>(ptr->depth), 512 * 424 * sizeof(float));
         // fp_rgbd.write(reinterpret_cast<const char*>(ptr->registered), 512 * 424 * sizeof(float));
+        gettimeofday(&t_start, NULL);
 
         cv::Mat img;
         cv::Mat(1080, 1920, CV_8UC4, (unsigned int*)ptr->color).copyTo(img);
@@ -56,9 +49,9 @@ void Save_rgbd::loop() {
         sprintf(img_filename, "%s/depth/%d.png", dataset_path, frame_cnt);
         cv::imwrite(img_filename, img);
 
-        cv::Mat(424, 512, CV_8UC4, ptr->registered).copyTo(img);
-        sprintf(img_filename, "%s/RGBD/%d.png", dataset_path, frame_cnt);
-        cv::imwrite(img_filename, img);
+        // cv::Mat(424, 512, CV_8UC4, ptr->registered).copyTo(img);
+        // sprintf(img_filename, "%s/RGBD/%d.png", dataset_path, frame_cnt);
+        // cv::imwrite(img_filename, img);
 
         input->release_head_ptr();
 

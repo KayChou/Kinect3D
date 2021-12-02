@@ -44,13 +44,17 @@ public:
 
     void destory() {
         if(this->cnt > 0) {
-            printf("WARNING: FIFO is not empty!\n");
+            printf("WARNING: FIFO is not empty: %d!\n", this->cnt);
         }
         for(int i = 0; i < this->max_size; i++) {
             delete [] this->buffer[i];
         }
         delete [] this->buffer;
         printf("FIFO destroyed\n");
+    }
+
+    int get_cnt() {
+        return this->cnt;
     }
 
     Data_pack* fetch_head_ptr() {
