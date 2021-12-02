@@ -4,3 +4,4 @@ datas/
 src/*
 !/src/*.*
 *.config
+*.png

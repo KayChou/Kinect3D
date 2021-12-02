@@ -66,6 +66,7 @@ bool Kinect::getFrameLoop(int *stop_flag, FIFO<RGBD> *output){
         memcpy(frame_pack->color, color->data, WIDTH_C * HEIGHT_C * 4);
         memcpy(frame_pack->depth, undistorted.data, WIDTH_D * HEIGHT_D * 4);
         memcpy(frame_pack->registered, registered.data, WIDTH_D * HEIGHT_D * 4);
+        frame_pack->time_stamp = color->timestamp;
         output->release_tail_ptr();
 
         listener->release(frames);
